@@ -60,6 +60,14 @@ var algos = module.exports = global.algos = {
             }
         }
     },
+    'yescrypt': {
+        multiplier: Math.pow(2, 16),
+        hash: function(){
+            return function(){
+                return multiHashing.yescrypt.apply(this, arguments);
+            }
+        }
+    },
     x11: {
         hash: function(){
             return function(){

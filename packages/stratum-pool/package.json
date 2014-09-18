@@ -1,5 +1,5 @@
 {
-    "name": "stratum-pool",
+    "name": "stratum-pool-yescrypt",
     "version": "0.1.6",
     "description": "High performance Stratum poolserver in Node.js",
     "keywords": [
@@ -12,9 +12,9 @@
         "litecoin",
         "scrypt"
     ],
-    "homepage": "https://github.com/zone117x/node-stratum-pool",
+    "homepage": "https://github.com/altpooler/node-stratum-pool-yescrypt",
     "bugs": {
-        "url": "https://github.com/zone117x/node-stratum-pool/issues"
+        "url": "https://github.com/altpooler/node-stratum-pool-yescrypt/issues"
     },
     "license": "GPL-2.0",
     "author": "Matthew Little",
@@ -25,10 +25,10 @@
     "main": "lib/index.js",
     "repository": {
         "type": "git",
-        "url": "https://github.com/zone117x/node-stratum-pool.git"
+        "url": "https://github.com/altpooler/node-stratum-pool-yescrypt.git"
     },
     "dependencies": {
-        "multi-hashing": "git://github.com/zone117x/node-multi-hashing.git",
+        "multi-hashing": "git://github.com/altpooler/node-multi-hashing-yescrypt.git",
         "bignum": "*",
         "base58-native": "*",
         "async": "*"
