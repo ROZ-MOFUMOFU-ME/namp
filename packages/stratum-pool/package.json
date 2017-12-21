@@ -12,9 +12,9 @@
         "litecoin",
         "scrypt"
     ],
-    "homepage": "https://github.com/altpooler/node-stratum-pool-yescrypt",
+    "homepage": "https://github.com/yoshuki43/node-stratum-pool-yescrypt",
     "bugs": {
-        "url": "https://github.com/altpooler/node-stratum-pool-yescrypt/issues"
+        "url": "https://github.com/yoshuki43/node-stratum-pool-yescrypt/issues"
     },
     "license": "GPL-2.0",
     "author": "Matthew Little",
@@ -25,10 +25,10 @@
     "main": "lib/index.js",
     "repository": {
         "type": "git",
-        "url": "https://github.com/altpooler/node-stratum-pool-yescrypt.git"
+        "url": "https://github.com/yoshuki43/node-stratum-pool-yescrypt.git"
     },
     "dependencies": {
-        "multi-hashing": "git://github.com/altpooler/node-multi-hashing-yescrypt.git",
+        "multi-hashing": "git://github.com/yoshuki43/node-multi-hashing-yescrypt.git",
         "bignum": "*",
         "base58-native": "*",
         "async": "*"
