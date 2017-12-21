@@ -88,7 +88,7 @@ var Generation = exports.Generation = function Generation(rpcData, publicKey, ex
             prevOutIndex : Math.pow(2, 32) - 1,
             sigScript    : new ScriptSig({
                 height                : rpcData.height,
-                flags                 : "0e6e6f64652d6b6f746f2d706f6f6c" /* node-koto-pool */,
+                flags                 : "086b6f746f706f6f6c" /* kotopool */,
                 extraNoncePlaceholder : extraNoncePlaceholder
             })
         })],
@@ -198,7 +198,7 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
 
     var scriptSigPart1 = Buffer.concat([
         util.serializeNumber(rpcData.height),
-        new Buffer("0e6e6f64652d6b6f746f2d706f6f6c" /* node-koto-pool */, 'hex'),
+        new Buffer("086b6f746f706f6f6c" /* kotopool */, 'hex'),
         util.serializeNumber(Date.now() / 1000 | 0),
         new Buffer([extraNoncePlaceholder.length])
     ]);
