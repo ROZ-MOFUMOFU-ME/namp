@@ -64,14 +64,14 @@ function TransactionOutput(params){
 function ScriptSig(params){
 
     var height = params.height,
-        flags = params.flags,
+        //flags = params.flags,
         extraNoncePlaceholder = params.extraNoncePlaceholder;
 
     this.toBuffer = function(){
 
         return Buffer.concat([
             util.serializeNumber(height),
-            new Buffer(flags, 'hex'),
+            //new Buffer(flags, 'hex'),
             util.serializeNumber(Date.now() / 1000 | 0),
             new Buffer([extraNoncePlaceholder.length]),
             extraNoncePlaceholder,
@@ -88,7 +88,7 @@ var Generation = exports.Generation = function Generation(rpcData, publicKey, ex
             prevOutIndex : Math.pow(2, 32) - 1,
             sigScript    : new ScriptSig({
                 height                : rpcData.height,
-                flags                 : rpcData.coinbaseaux.flags,
+                //flags                 : rpcData.coinbaseaux.flags,
                 extraNoncePlaceholder : extraNoncePlaceholder
             })
         })],
@@ -182,7 +182,7 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
     var txVersion = txMessages === true ? 2 : 1;
     var txLockTime = 0;
 
-    var txInPrevOutHash = 0;
+    var txInPrevOutHash = "0";
     var txInPrevOutIndex = Math.pow(2, 32) - 1;
     var txInSequence = 0;
 
@@ -198,7 +198,7 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
 
     var scriptSigPart1 = Buffer.concat([
         util.serializeNumber(rpcData.height),
-        new Buffer(rpcData.coinbaseaux.flags, 'hex'),
+        //new Buffer(rpcData.coinbaseaux.flags, 'hex'),
         util.serializeNumber(Date.now() / 1000 | 0),
         new Buffer([extraNoncePlaceholder.length])
     ]);
