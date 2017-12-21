@@ -61,7 +61,7 @@ var algos = module.exports = global.algos = {
         }
     },
     'yescrypt': {
-        multiplier: Math.pow(2, 16),
+        multiplier: 8192,
         hash: function(){
             return function(){
                 return multiHashing.yescrypt.apply(this, arguments);
