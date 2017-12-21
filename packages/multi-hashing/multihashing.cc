@@ -50,7 +50,7 @@ void quark(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
     
     uint32_t input_len = Buffer::Length(target);
 
@@ -72,7 +72,7 @@ void x11(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
 
     uint32_t input_len = Buffer::Length(target);
 
@@ -99,7 +99,7 @@ void scrypt(const FunctionCallbackInfo<Value>& args) {
    unsigned int rValue = numr->Value();
    
    char * input = Buffer::Data(target);
-   char output[32];
+   char* output = new char[32];
 
    uint32_t input_len = Buffer::Length(target);
    
@@ -126,7 +126,7 @@ void scryptn(const FunctionCallbackInfo<Value>& args) {
    unsigned int nFactor = num->Value();
 
    char * input = Buffer::Data(target);
-   char output[32];
+   char* output = new char[32];
 
    uint32_t input_len = Buffer::Length(target);
 
@@ -164,7 +164,7 @@ void scryptjane(const FunctionCallbackInfo<Value>& args) {
     int nMax = num4->Value();
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
 
     uint32_t input_len = Buffer::Length(target);
 
@@ -187,7 +187,7 @@ void yescrypt(const FunctionCallbackInfo<Value>& args) {
     
    
    char * input = Buffer::Data(target);
-   char output[32];
+   char* output = new char[32];
 
    
    yescrypt_hash(input, output);
@@ -208,7 +208,7 @@ void keccak(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
 
     unsigned int dSize = Buffer::Length(target);
 
@@ -231,7 +231,7 @@ void bcrypt(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
 
     bcrypt_hash(input, output);
 
@@ -251,7 +251,7 @@ void skein(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
 
     uint32_t input_len = Buffer::Length(target);
     
@@ -274,7 +274,7 @@ void groestl(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
     
     uint32_t input_len = Buffer::Length(target);
 
@@ -297,7 +297,7 @@ void groestlmyriad(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
     
     uint32_t input_len = Buffer::Length(target);
 
@@ -320,7 +320,7 @@ void blake(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
     
     uint32_t input_len = Buffer::Length(target);
 
@@ -343,7 +343,7 @@ void fugue(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
     
     uint32_t input_len = Buffer::Length(target);
 
@@ -366,7 +366,7 @@ void qubit(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
     
     uint32_t input_len = Buffer::Length(target);
 
@@ -389,7 +389,7 @@ void hefty1(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
     
     uint32_t input_len = Buffer::Length(target);
 
@@ -412,7 +412,7 @@ void shavite3(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
     
     uint32_t input_len = Buffer::Length(target);
 
@@ -442,7 +442,7 @@ void cryptonight(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
     
     uint32_t input_len = Buffer::Length(target);
 
@@ -467,7 +467,7 @@ void x13(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
 
     uint32_t input_len = Buffer::Length(target);
 
@@ -501,7 +501,7 @@ void boolberry(const FunctionCallbackInfo<Value>& args) {
 
     char * input = Buffer::Data(target);
     char * scratchpad = Buffer::Data(target_spad);
-    char output[32];
+    char* output = new char[32];
 
     uint32_t input_len = Buffer::Length(target);
     uint64_t spad_len = Buffer::Length(target_spad);
@@ -524,7 +524,7 @@ void nist5(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
 
     uint32_t input_len = Buffer::Length(target);
 
@@ -546,7 +546,7 @@ void sha1(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
 
     uint32_t input_len = Buffer::Length(target);
 
@@ -568,7 +568,7 @@ void x15(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
 
     uint32_t input_len = Buffer::Length(target);
 
@@ -590,7 +590,7 @@ void fresh(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
 
     uint32_t input_len = Buffer::Length(target);
 
