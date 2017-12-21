@@ -1,5 +1,5 @@
 {
-    "name": "stratum-pool-yescrypt",
+    "name": "stratum-pool",
     "version": "0.1.6",
     "description": "High performance Stratum poolserver in Node.js",
     "keywords": [
