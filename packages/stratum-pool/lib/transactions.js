@@ -64,14 +64,14 @@ function TransactionOutput(params){
 function ScriptSig(params){
 
     var height = params.height,
-        //flags = params.flags,
+        flags = params.flags,
         extraNoncePlaceholder = params.extraNoncePlaceholder;
 
     this.toBuffer = function(){
 
         return Buffer.concat([
             util.serializeNumber(height),
-            //new Buffer(flags, 'hex'),
+            new Buffer(flags, 'hex'),
             util.serializeNumber(Date.now() / 1000 | 0),
             new Buffer([extraNoncePlaceholder.length]),
             extraNoncePlaceholder,
@@ -88,7 +88,7 @@ var Generation = exports.Generation = function Generation(rpcData, publicKey, ex
             prevOutIndex : Math.pow(2, 32) - 1,
             sigScript    : new ScriptSig({
                 height                : rpcData.height,
-                //flags                 : rpcData.coinbaseaux.flags,
+                flags                 : "0e6e6f64652d6b6f746f2d706f6f6c" /* node-koto-pool */,
                 extraNoncePlaceholder : extraNoncePlaceholder
             })
         })],
@@ -198,7 +198,7 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
 
     var scriptSigPart1 = Buffer.concat([
         util.serializeNumber(rpcData.height),
-        //new Buffer(rpcData.coinbaseaux.flags, 'hex'),
+        new Buffer("0e6e6f64652d6b6f746f2d706f6f6c" /* node-koto-pool */, 'hex'),
         util.serializeNumber(Date.now() / 1000 | 0),
         new Buffer([extraNoncePlaceholder.length])
     ]);
