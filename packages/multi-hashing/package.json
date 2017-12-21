@@ -1,6 +1,7 @@
 {
     "name": "multi-hashing",
     "version": "0.0.9",
+    "license": "SEE LICENSE IN <filename>",
     "main": "multihashing",
     "author": {
         "name": "Matthew Little",
@@ -10,8 +11,9 @@
         "type": "git",
         "url": "https://github.com/altpooler/node-multi-hashing-yescrypt.git"
     },
-    "dependencies" : {
-        "bindings" : "*"
+    "dependencies": {
+        "bindings": "^1.3.0",
+        "nan": "^2.8.0"
     },
     "keywords": [
         "scrypt",
