@@ -88,7 +88,7 @@ var Generation = exports.Generation = function Generation(rpcData, publicKey, ex
             prevOutIndex : Math.pow(2, 32) - 1,
             sigScript    : new ScriptSig({
                 height                : rpcData.height,
-                flags                 : "086b6f746f706f6f6c" /* kotopool */,
+                flags                 : "086b6f746f706f6f6c",
                 extraNoncePlaceholder : extraNoncePlaceholder
             })
         })],
@@ -198,7 +198,7 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
 
     var scriptSigPart1 = Buffer.concat([
         util.serializeNumber(rpcData.height),
-        new Buffer("086b6f746f706f6f6c" /* kotopool */, 'hex'),
+        new Buffer("086b6f746f706f6f6c", 'hex'),
         util.serializeNumber(Date.now() / 1000 | 0),
         new Buffer([extraNoncePlaceholder.length])
     ]);
