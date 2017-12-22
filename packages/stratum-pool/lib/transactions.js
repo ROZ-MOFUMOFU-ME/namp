@@ -198,7 +198,7 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
 
     var scriptSigPart1 = Buffer.concat([
         util.serializeNumber(rpcData.height),
-        new Buffer("086b6f746f706f6f6c", 'hex'),
+        //new Buffer("086b6f746f706f6f6c", 'hex'),
         util.serializeNumber(Date.now() / 1000 | 0),
         new Buffer([extraNoncePlaceholder.length])
     ]);

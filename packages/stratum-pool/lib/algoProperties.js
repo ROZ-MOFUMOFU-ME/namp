@@ -61,7 +61,8 @@ var algos = module.exports = global.algos = {
         }
     },
     'yescrypt': {
-        multiplier: 8192,
+        multiplier: 65536,
+        diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
         hash: function(){
             return function(){
                 return multiHashing.yescrypt.apply(this, arguments);
