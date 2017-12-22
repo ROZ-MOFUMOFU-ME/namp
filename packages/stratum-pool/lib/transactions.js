@@ -126,10 +126,14 @@ see: https://en.bitcoin.it/wiki/Protocol_specification#tx
 var generateOutputTransactions = function(poolRecipient, recipients, rpcData){
 
     var reward = rpcData.coinbasevalue;
+    if (!reward) {
+        reward = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(102, 102 + 16)), 16);
+        //console.log("reward from coinbasetxn.data => " + reward);
+    }
+    
     var rewardToPool = reward;
 
     var txOutputBuffers = [];
-
 
 
     if (rpcData.payee) {
@@ -184,7 +188,7 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
 
     var txInPrevOutHash = "0";
     var txInPrevOutIndex = Math.pow(2, 32) - 1;
-    var txInSequence = 0;
+    var txInSequence = Math.pow(2, 32) - 1;
 
     //Only required for POS coins
     var txTimestamp = reward === 'POS' ?

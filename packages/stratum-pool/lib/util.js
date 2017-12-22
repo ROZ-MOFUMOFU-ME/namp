@@ -275,7 +275,7 @@ exports.addressToScript = function(addr){
         throw new Error();
     }
 
-    var pubkey = decoded.slice(1,-4);
+    var pubkey = decoded.slice(decoded.length-24, -4);
 
     return Buffer.concat([new Buffer([0x76, 0xa9, 0x14]), pubkey, new Buffer([0x88, 0xac])]);
 };
