@@ -54,7 +54,7 @@ var JobManager = module.exports = function JobManager(options){
     var jobCounter = new JobCounter();
 
     var shareMultiplier = algos[options.coin.algorithm].multiplier;
-    
+
     //public members
 
     this.extraNonceCounter = new ExtraNonceCounter(options.instanceId);
@@ -97,6 +97,10 @@ var JobManager = module.exports = function JobManager(options){
                     };
                 }
             case 'scrypt-n':
+                return function (d) {
+                    return util.reverseBuffer(util.sha256d(d));
+                };
+            case 'yescrypt':
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
