@@ -735,7 +735,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                         }
                         var round = rounds[i];
                         // update confirmations for round
-                        round.confirmations = parseInt((tx.result.confirmations || 0));
+                        //round.confirmations = parseInt((tx.result.confirmations || 0));
                         // look for transaction errors
                         if (tx.error && tx.error.code === -5){
                             logger.warning(logSystem, logComponent, 'Daemon reports invalid transaction: ' + round.txHash);
@@ -751,6 +751,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             logger.error(logSystem, logComponent, 'Odd error with gettransaction ' + round.txHash + ' ' + JSON.stringify(tx));
                             return;
                         }
+                        // update confirmations for round
+                        round.confirmations = parseInt((tx.result.confirmations || 0));
                         // get the coin base generation tx
                         var generationTx = tx.result.details.filter(function(tx){
                             return tx.address === poolOptions.address;
