@@ -5,10 +5,10 @@
     "address": "",
     "_comment_address": "a transparent address to send coinbase rewards to and to transfer to zAddress.",
 
-    "zAddress": ""
+    "zAddress": "",
     "_comment_zAddress": "a private address used to send coins to tAddress.",
 
-    "tAddress": ""
+    "tAddress": "",
     "_comment_tAddress": "transparent address used to send payments, make this a different address, otherwise payments will not send",
 
     "walletInterval": 2.5,
