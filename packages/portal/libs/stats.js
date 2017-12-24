@@ -420,8 +420,8 @@ module.exports = function(logger, portalConfig, poolConfigs){
                                 invalidShares: replies[i + 2] ? (replies[i + 2].invalidShares || 0) : 0,
                                 totalPaid: replies[i + 2] ? (replies[i + 2].totalPaid || 0) : 0,
 								networkBlocks: replies[i + 2] ? (replies[i + 2].networkBlocks || 0) : 0,
-                                //networkSols: replies[i + 2] ? (replies[i + 2].networkSols || 0) : 0,
-                                networkSols: replies[i + 2] ? (replies[i + 2].networkBlocks || 0) : 0, 
+                                networkSols: replies[i + 2] ? (replies[i + 2].networkSols || 0) : 0,
+                                //networkSols: replies[i + 2] ? (replies[i + 2].networkBlocks || 0) : 0, 
 								networkSolsString: getReadableNetworkHashRateString(replies[i + 2] ? (replies[i + 2].networkSols || 0) : 0),
 								networkDiff: replies[i + 2] ? (replies[i + 2].networkDiff || 0) : 0,
 								networkConnections: replies[i + 2] ? (replies[i + 2].networkConnections || 0) : 0,
@@ -751,11 +751,12 @@ module.exports = function(logger, portalConfig, poolConfigs){
 	}
 
     this.getReadableHashRateString = function(hashrate){
-		hashrate = (hashrate * 2);
+		hashrate = (hashrate * 1000000);
 		if (hashrate < 1000000) {
-			return (Math.round(hashrate / 1000) / 1000 ).toFixed(2)+' Sol/s';
+			return '0 Hash/s';
+			//return (Math.round(hashrate / 1000) / 1000 ).toFixed(2)+' Sol/s';
 		}
-        var byteUnits = [ ' Sol/s', ' KSol/s', ' MSol/s', ' GSol/s', ' TSol/s', ' PSol/s' ];
+        var byteUnits = [ ' Hash/s', ' KHash/s', ' MHash/s', ' GHash/s', ' THash/s', ' PHash/s' ];
         var i = Math.floor((Math.log(hashrate/1000) / Math.log(1000)) - 1);
         hashrate = (hashrate/1000) / Math.pow(1000, i + 1);
         return hashrate.toFixed(2) + byteUnits[i];
@@ -764,8 +765,8 @@ module.exports = function(logger, portalConfig, poolConfigs){
 	function getReadableNetworkHashRateString(hashrate) {
 		hashrate = (hashrate * 1000000);
 		if (hashrate < 1000000)
-			return '0 Sol';
-		var byteUnits = [ ' Sol/s', ' KSol/s', ' MSol/s', ' GSol/s', ' TSol/s', ' PSol/s' ];
+			return '0 Hash';
+		var byteUnits = [ ' Hash/s', ' KHash/s', ' MHash/s', ' GHash/s', ' THash/s', ' PHash/s' ];
 		var i = Math.floor((Math.log(hashrate/1000) / Math.log(1000)) - 1);
 		hashrate = (hashrate/1000) / Math.pow(1000, i + 1);
 		return hashrate.toFixed(2) + byteUnits[i];
