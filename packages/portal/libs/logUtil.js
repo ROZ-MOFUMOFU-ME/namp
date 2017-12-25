@@ -55,8 +55,8 @@ var PoolLogger = function (configuration) {
 
             if (subcat)
                 logString += ('(' + subcat + ') ').bold.grey;
-
-            logString += text.grey;
+            if (text)
+                logString += text.grey;
         }
         else {
             var logString =
