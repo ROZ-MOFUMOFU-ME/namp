@@ -53,7 +53,7 @@ function buildChartData(){
 			workerHistoryMax = a.hashrate.length;
 		}
 	}
-	
+
 	var i=0;
     workerHashrateData = [];
     for (var worker in workers){
@@ -178,7 +178,7 @@ function updateWorkerStats() {
 function addWorkerToDisplay(name, htmlSafeName, workerObj) {
 	var htmlToAdd = "";
 	htmlToAdd = '<div class="boxStats" id="boxStatsLeft" style="float:left; margin: 9px; min-width: 260px;"><div class="boxStatsList">';
-	htmlToAdd+='<div class="boxLowerHeader">'+name+'</div><div>';
+	htmlToAdd+='<div class="boxLowerHeader">'+name.replace(/[^\w\s]/gi, '')+'</div><div>';
 	htmlToAdd+='<div><i class="fa fa-tachometer"></i> <span id="statsHashrate'+htmlSafeName+'">'+getReadableHashRateString(workerObj.hashrate)+'</span> (Now)</div>';
 	htmlToAdd+='<div><i class="fa fa-tachometer"></i> <span id="statsHashrateAvg'+htmlSafeName+'">'+getReadableHashRateString(calculateAverageHashrate(name))+'</span> (Avg)</div>';
 	htmlToAdd+='<div><i class="fa fa-shield"></i> <small>Diff:</small> <span id="statsDiff'+htmlSafeName+'">'+workerObj.diff+'</span></div>';
@@ -209,7 +209,7 @@ $.getJSON('/api/worker_stats?'+_miner, function(data){
 	for (var w in statData.workers) { _workerCount++; }
 	buildChartData();
 	displayCharts();
-	rebuildWorkerDisplay();	
+	rebuildWorkerDisplay();
     updateStats();
 });
 
