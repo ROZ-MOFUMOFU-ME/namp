@@ -1,39 +1,35 @@
-# Zcash® and Zclassic - Node Open Mining Portal
+# Koto - Node Open Mining Portal
 
-**[Click here for the official - Zcash® and Zclassic Stratum Mining Pool Installation Guide](https://zdeveloper.org/wiki:z-nomp_install)**
-
-This is a Equihash mining pool based off of Node Open Mining Portal.
+This is a Yescrypt mining pool based off of Node Open Mining Portal.
 
 Donations for development are greatly appreciated!
-  * BTC: 18vHMxVzotQ9EPyESrf7Z1hNM9AwJeVHgD
-  * ZCL: zcXDWbgReztLLXSTUMT2nEumiDM6zTzUXFb7vUnx9JNfJDVqbodyxwEQwgDkFw7Dp128tBU8n8rmVxT43DshmeTEM4LHcdz
+  * KOTO: k12ocUADnMiUyrzr1oh2fxhDPLVAb9R3yTL
 
 #### Production Usage Notice
-This is beta software. All of the following are things that can change and break an existing Z-NOMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data. *Only tagged releases are considered stable.*
+This is beta software. All of the following are things that can change and break an existing K-NOMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data. *Only tagged releases are considered stable.*
 
 #### Paid Solution
-Usage of this software requires abilities with sysadmin, database admin, coin daemons, and sometimes a bit of programming. Running a production pool can literally be more work than a full-time job. 
+Usage of this software requires abilities with sysadmin, database admin, coin daemons, and sometimes a bit of programming. Running a production pool can literally be more work than a full-time job.
 
 
 ### Community / Support
-IRC
-* Support / general discussion join: https://gitter.im/zclassicorg/z-nomp
+Forum
+* Support / general discussion join: https://discourse.koto.cash/
 
-If your pool uses Z-NOMP let us know and we will list your website here.
+Wiki
+* http://koto.cswiki.jp/index.php?FrontPage
 
-### Some pools using Z-NOMP or node-stratum-module:
+If your pool uses K-NOMP let us know and we will list your website here.
 
-https://pool.cryptobroker.io/zcl Running MPOS and 0.5% of the fee goes to the Zclassic donation fund! 200+ blocks have been found as well! 
+### Some pools using K-NOMP or node-stratum-yescrypt-module:
 
-http://luckpool.org Zcash Pool with Custom Frontend w/Miner's Jackpot
+http://koto.poolof.work:8080/ K-NOMP
 
-http://zclmine.com/ Custom frontend
+https://kotopool.work:8080/ kotopool.work
 
-http://zclassic.miningspeed.com Custom frontend and 0% fee
+http://okoto.xyz/ おコトを少々（okoto.xyz)
 
-https://zpool.it 0.5% fee
-
-http://miningpool.io/
+http://www.kpool.jp/ kpool.jp
 
 Usage
 =====
@@ -57,7 +53,7 @@ you are using - a good place to start with redis is [data persistence](http://re
 Follow the build/install instructions for your coin daemon. Your coin.conf file should end up looking something like this:
 ```
 daemon=1
-rpcuser=zclassicrpc
+rpcuser=kotorpc
 rpcpassword=securepassword
 rpcport=8232
 ```
@@ -80,22 +76,22 @@ Clone the repository and run `npm update` for all the dependencies to be install
 sudo apt-get install build-essential libsodium-dev npm
 sudo npm install n -g
 sudo n stable
-git clone https://github.com/joshuayabut/node-open-mining-portal.git z-nomp
-cd z-nomp
+git clone https://github.com/yoshuki43/k-nomp.git k-nomp
+cd k-nomp
 npm update
 npm install
 ```
 
 ##### Pool config
-Take a look at the example json file inside the `pool_configs` directory. Rename it to `zclassic.json` and change the
+Take a look at the example json file inside the `pool_configs` directory. Rename it to `koto.json` and change the
 example fields to fit your setup.
 
 ```
 Please Note that: 1 Difficulty is actually 8192, 0.125 Difficulty is actually 1024.
 
-Whenever a miner submits a share, the pool counts the difficulty and keeps adding them as the shares. 
+Whenever a miner submits a share, the pool counts the difficulty and keeps adding them as the shares.
 
-ie: Miner 1 mines at 0.1 difficulty and finds 10 shares, the pool sees it as 1 share. Miner 2 mines at 0.5 difficulty and finds 5 shares, the pool sees it as 2.5 shares. 
+ie: Miner 1 mines at 0.1 difficulty and finds 10 shares, the pool sees it as 1 share. Miner 2 mines at 0.5 difficulty and finds 5 shares, the pool sees it as 2.5 shares.
 ```
 
 
@@ -105,9 +101,9 @@ ie: Miner 1 mines at 0.1 difficulty and finds 10 shares, the pool sees it as 1 s
 ```
 node [path to cli.js] [coin name in config] [block hash symbol]
 ```
-Example: inside `zclassic.conf` add the line
+Example: inside `koto.conf` add the line
 ```
-blocknotify=node /home/user/z-nomp/scripts/cli.js blocknotify zclassic %s
+blocknotify=node /home/user/k-nomp/scripts/cli.js blocknotify koto %s
 ```
 
 Alternatively, you can use a more efficient block notify script written in pure C. Build and usage instructions
@@ -122,18 +118,18 @@ npm start
 
 ###### Optional enhancements for your awesome new mining pool server setup:
 * Use something like [forever](https://github.com/nodejitsu/forever) to keep the node script running
-in case the master process crashes. 
+in case the master process crashes.
 * Use something like [redis-commander](https://github.com/joeferner/redis-commander) to have a nice GUI
 for exploring your redis database.
-* Use something like [logrotator](http://www.thegeekstuff.com/2010/07/logrotate-examples/) to rotate log 
-output from Z-NOMP.
-* Use [New Relic](http://newrelic.com/) to monitor your Z-NOMP instance and server performance.
+* Use something like [logrotator](http://www.thegeekstuff.com/2010/07/logrotate-examples/) to rotate log
+output from K-NOMP.
+* Use [New Relic](http://newrelic.com/) to monitor your K-NOMP instance and server performance.
 
 
-#### Upgrading Z-NOMP
-When updating Z-NOMP to the latest code its important to not only `git pull` the latest from this repo, but to also update
-the `node-stratum-pool` and `node-multi-hashing` modules, and any config files that may have been changed.
-* Inside your Z-NOMP directory (where the init.js script is) do `git pull` to get the latest Z-NOMP code.
+#### Upgrading K-NOMP
+When updating K-NOMP to the latest code its important to not only `git pull` the latest from this repo, but to also update
+the `node-stratum-pool-yescrypt` and `node-multi-hashing` modules, and any config files that may have been changed.
+* Inside your K-NOMP directory (where the init.js script is) do `git pull` to get the latest K-NOMP code.
 * Remove the dependenices by deleting the `node_modules` directory with `rm -r node_modules`.
 * Run `npm update` to force updating/reinstalling of the dependencies.
 * Compare your `config.json` and `pool_configs/coin.json` configurations to the latest example ones in this repo or the ones in the setup instructions where each config field is explained. <b>You may need to modify or add any new changes.</b>
@@ -141,6 +137,9 @@ the `node-stratum-pool` and `node-multi-hashing` modules, and any config files t
 
 Credits
 -------
+### K-NOMP
+* [yoshuki43](https://github.com/yoshuki43)
+
 ### Z-NOMP
 * [Joshua Yabut / movrcx](https://github.com/joshuayabut)
 * [Aayan L / anarch3](https://github.com/aayanl)
