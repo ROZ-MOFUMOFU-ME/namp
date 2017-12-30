@@ -55,7 +55,7 @@ Follow the build/install instructions for your coin daemon. Your coin.conf file 
 daemon=1
 rpcuser=kotorpc
 rpcpassword=securepassword
-rpcport=8232
+rpcport=8432
 ```
 For redundancy, its recommended to have at least two daemon instances running in case one drops out-of-sync or offline,
 all instances will be polled for block/transaction updates and be used for submitting blocks. Creating a backup daemon
