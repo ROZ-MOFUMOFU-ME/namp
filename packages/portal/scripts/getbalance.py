@@ -1,4 +1,39 @@
 #!/usr/bin/python
+#
+# Wallet Balance Graph Generator
+# - getbalance.py
+# - statsb.js
+# - kotobalance.service
+#
+# Assumption:
+#   - Username/Group = koto/koto
+#   - k-nomp was installed under ~/k-nomp
+#
+# Installation:
+# (1) copy scripts, install service
+# $ mkdir ~/bin
+# $ cp getbalance.py ~/bin
+# $ chmod 755 ~/bin/getbalane.py
+# $ cp statsb.js ~/k-nomp/website/static
+# $ sudo cp kotobalance.service /etc/systemd/system
+# $ sudo systemctl daemon-reload
+# $ sudo systemctl start kotobalance
+# $ sudo systemctl enable kotobalance
+#
+# (2) modify your ~/k-nomp/website/pages/stats.html
+#
+# <script>
+#     document.querySelector('main').appendChild(document.createElement('script')).src = '/static/stats.js';
+#+    document.querySelector('main').appendChild(document.createElement('script')).src = '/static/statsb.js';
+# </script>
+#
+# (3) add this html to your ~/k-nomp/website/pages/stats.html
+#+<div id="topCharts">
+#+    <div class="chartWrapper">
+#+        <div class="chartLabel">Pool Wallet Balance</div>
+#+        <div class="chartHolder"><svg id="poolBalance"/></div>
+#+    </div>
+#+</div>
 import commands
 import sys
 import json
