@@ -81,8 +81,12 @@ function DaemonInterface(daemons, logger){
                     + '\nReponse Data: ' + data);
 
             }
-            if (dataJson)
+            if (dataJson) {
                 callback(dataJson.error, dataJson, data);
+            } else {
+                logger('error', 'No dataJson from daemon instance  ' + instance.index);
+                callback({type: 'request error', message: data}, null, data);
+            }
         };
 
         var req = http.request(options, function(res) {
