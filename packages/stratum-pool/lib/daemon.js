@@ -85,7 +85,7 @@ function DaemonInterface(daemons, logger){
                 callback(dataJson.error, dataJson, data);
             } else {
                 logger('error', 'No dataJson from daemon instance  ' + instance.index);
-                callback({type: 'request error', message: data}, null, data);
+                callback({type: 'daemon error', code: -9999, message: data}, null, data);
             }
         };
 
