@@ -127,7 +127,19 @@ var generateOutputTransactions = function(poolRecipient, recipients, rpcData){
 
     var reward = rpcData.coinbasevalue;
     if (!reward) {
-        reward = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(104, 104 + 16)), 16);
+        var nScript = parseInt(rpcData.coinbasetxn.data.slice(82, 84), 16);
+        if (nScript == 253) {
+            nScript = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(84, 84 + 4)), 16);
+            nScript = nScript + 2;
+        } else if (nScript == 254) {
+            nScript = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(84, 84 + 8)), 16);
+            nScript = nScript + 4;
+        } else if (nScript == 255) {
+            nScript = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(84, 84 + 16)), 16);
+            nScript = nScript + 8;
+        }
+        var posReward = 94 + nScript*2;
+        reward = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(posReward, posReward + 16)), 16);
         //console.log("reward from coinbasetxn.data => " + reward);
     }
     
