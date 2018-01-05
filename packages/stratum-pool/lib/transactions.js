@@ -127,7 +127,7 @@ var generateOutputTransactions = function(poolRecipient, recipients, rpcData){
 
     var reward = rpcData.coinbasevalue;
     if (!reward) {
-        reward = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(103, 103 + 16)), 16);
+        reward = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(104, 104 + 16)), 16);
         //console.log("reward from coinbasetxn.data => " + reward);
     }
     
