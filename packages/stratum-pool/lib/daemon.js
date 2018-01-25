@@ -47,6 +47,7 @@ function DaemonInterface(daemons, logger){
         });
     }
 
+    var myagent = http.Agent({maxSockets: 16, keepAlive: false});
 
     function performHttpRequest(instance, jsonData, callback){
         var options = {
@@ -56,7 +57,8 @@ function DaemonInterface(daemons, logger){
             auth    : instance.user + ':' + instance.password,
             headers : {
                 'Content-Length': jsonData.length
-            }
+            },
+            agent: myagent
         };
 
         var parseJson = function(res, data){
