@@ -33,6 +33,8 @@
 #include <stdint.h>
 #include <stdlib.h> /* for size_t */
 
+void yescrypt_hash(const char *input, char *output);
+
 /**
  * Internal type used by the memory allocator.  Please do not use it directly.
  * Use yescrypt_shared_t and yescrypt_local_t as appropriate instead, since
