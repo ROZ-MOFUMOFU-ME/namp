@@ -8,7 +8,7 @@
                 "scryptn.c",
                 "yescrypt/sha256_c.h",
                 "yescrypt/yescrypt-best.c.h",
-		"yescrypt/yescrypt.c",
+		"yescrypt/yescryptcommon.c",
                 "keccak.c",
                 "skein.c",
                 "x11.c",
