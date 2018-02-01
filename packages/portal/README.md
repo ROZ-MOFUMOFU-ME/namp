@@ -18,7 +18,7 @@ Forum
 
 If your pool uses zny-NOMP let us know and we will list your website here.
 
-### Some pools using K-NOMP or node-stratum-yescrypt-module:
+### Some pools using ZNY-NOMP or node-stratum-yescrypt-module:
 
 
 Usage
