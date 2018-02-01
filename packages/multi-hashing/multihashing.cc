@@ -11,7 +11,6 @@ extern "C" {
     #include "scryptjane.h"
     #include "scryptn.h"
     #include "yescrypt/yescrypt.h"
-    #include "yescrypt/yescrypt.c"
     #include "yescrypt/sha256.h"
     #include "skein.h"
     #include "x11.h"
