@@ -23,7 +23,7 @@ If your pool uses ZNY-NOMP let us know and we will list your website here.
 
 ### Some pools using ZNY-NOMP or node-stratum-yescrypt-0.5-module:
 
-* https://zny.mofumofu.me/
+* [mofumofu.me - BitZeny Mining Pool](https://zny.mofumofu.me/)
 
 
 Usage
