@@ -12,9 +12,9 @@
         "koto",
         "yescrypt"
     ],
-    "homepage": "https://github.com/ROZ-MOFUMOFU-ME/k-nomp",
+    "homepage": "https://github.com/ROZ-MOFUMOFU-ME/zny-nomp",
     "bugs": {
-        "url": "https://github.com/ROZ-MOFUMOFU-ME/k-nomp/issues"
+        "url": "https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/issues"
     },
     "license": "MIT",
     "author": "Joshua Yabut",
@@ -32,7 +32,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/ROZ-MOFUMOFU-ME/k-nomp.git"
+        "url": "https://github.com/ROZ-MOFUMOFU-ME/zny-nomp.git"
     },
     "dependencies": {
         "async": "2.3.0",
@@ -50,7 +50,7 @@
         "nonce": "1.0.4",
         "redis": "2.7.1",
         "request": "2.81.0",
-        "stratum-pool": "git+https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool-yescrypt.git"
+        "stratum-pool": "git+https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool-yescrypt-0.5.git"
     },
     "engines": {
         "node": ">=0.10"
