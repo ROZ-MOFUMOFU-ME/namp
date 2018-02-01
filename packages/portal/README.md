@@ -16,9 +16,12 @@ Usage of this software requires abilities with sysadmin, database admin, coin da
 Forum
 * join: https://bitzeny.info/
 
+Wiki
+* http://bitzeny.cswiki.jp/
+
 If your pool uses ZNY-NOMP let us know and we will list your website here.
 
-### Some pools using ZNY-NOMP or node-stratum-yescrypt-module:
+### Some pools using ZNY-NOMP or node-stratum-yescrypt-0.5-module:
 
 
 Usage
