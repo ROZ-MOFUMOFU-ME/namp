@@ -184,25 +184,6 @@ function SetupForPool(logger, poolOptions, setupFinished){
         );
     }
 
-    // run shielding process every x minutes
-    var shieldIntervalState = 0; // do not send ZtoT and TtoZ and same time, this results in operation failed!
-    var shielding_interval = Math.max(parseInt(poolOptions.walletInterval || 1), 1) * 60 * 1000; // run every x minutes
-    // shielding not required for some equihash coins
-    if (requireShielding === true) {
-        var shieldInterval = setInterval(function() {
-            shieldIntervalState++;
-            switch (shieldIntervalState) {
-                case 1:
-                    listUnspent(poolOptions.address, null, minConfShield, false, sendTToZ);
-                    break;
-                default:
-                    listUnspentZ(poolOptions.zAddress, minConfShield, false, sendZToT);
-                    shieldIntervalState = 0;
-                    break;
-            }
-        }, shielding_interval);
-    }
-
     // network stats caching every 58 seconds
     var stats_interval = 58 * 1000;
     var statsInterval = setInterval(function() {
@@ -217,97 +198,6 @@ function SetupForPool(logger, poolOptions, setupFinished){
             // update market stats using coinmarketcap
             cacheMarketStats();
         }, market_stats_interval);
-    }
-
-    // check operation statuses every 57 seconds
-    var opid_interval =  57 * 1000;
-    // shielding not required for some equihash coins
-    if (requireShielding === true) {
-        var checkOpids = function() {
-            clearTimeout(opidTimeout);
-            var checkOpIdSuccessAndGetResult = function(ops) {
-                var batchRPC = [];
-                // if there are no op-ids
-                if (ops.length == 0) {
-                    // and we think there is
-                    if (opidCount !== 0) {
-                        // clear them!
-                        opidCount = 0;
-                        opids = [];
-                        logger.warning(logSystem, logComponent, 'Clearing operation ids due to empty result set.');
-                    }
-                }
-                // loop through op-ids checking their status
-                ops.forEach(function(op, i){
-                    // check operation id status
-                    if (op.status == "success" || op.status == "failed") {
-                        // clear operation id result
-                        var opid_index = opids.indexOf(op.id);
-                        if (opid_index > -1) {
-                            // clear operation id count
-                            batchRPC.push(['z_getoperationresult', [[op.id]]]);
-                            opidCount--;
-                            opids.splice(opid_index, 1);
-                        }
-                        // log status to console
-                        if (op.status == "failed") {
-                            if (op.error) {
-                              logger.error(logSystem, logComponent, "Shielding operation failed " + op.id + " " + op.error.code +", " + op.error.message);
-                            } else {
-                              logger.error(logSystem, logComponent, "Shielding operation failed " + op.id);
-                            }
-                        } else {
-                            logger.special(logSystem, logComponent, 'Shielding operation success ' + op.id + '  txid: ' + op.result.txid);
-                        }
-                    } else if (op.status == "executing") {
-                        logger.special(logSystem, logComponent, 'Shielding operation in progress ' + op.id );
-                    }
-                });
-                // if there are no completed operations
-                if (batchRPC.length <= 0) {
-                    opidTimeout = setTimeout(checkOpids, opid_interval);
-                    return;
-                }
-                // clear results for completed operations
-                daemon.batchCmd(batchRPC, function(error, results){
-                    if (error || !results) {
-                        opidTimeout = setTimeout(checkOpids, opid_interval);
-                        logger.error(logSystem, logComponent, 'Error with RPC call z_getoperationresult ' + JSON.stringify(error));
-                        return;
-                    }
-                    // check result execution_secs vs pool_config
-                    results.forEach(function(result, i) {
-                        if (result.result[i] && parseFloat(result.result[i].execution_secs || 0) > shielding_interval) {
-                            logger.warning(logSystem, logComponent, 'Warning, walletInverval shorter than opid execution time of '+result.result[i].execution_secs+' secs.');
-                        }
-                    });
-                    // keep checking operation ids
-                    opidTimeout = setTimeout(checkOpids, opid_interval);
-                });
-            };
-            // check for completed operation ids
-            daemon.cmd('z_getoperationstatus', null, function (result) {
-                var err = false;
-                if (result.error) {
-                    err = true;
-                    logger.error(logSystem, logComponent, 'Error with RPC call z_getoperationstatus ' + JSON.stringify(result.error));
-                } else if (result.response) {
-                    checkOpIdSuccessAndGetResult(result.response);
-                } else {
-                    err = true;
-                    logger.error(logSystem, logComponent, 'No response from z_getoperationstatus RPC call.');
-                }
-                if (err === true) {
-                    opidTimeout = setTimeout(checkOpids, opid_interval);
-                    if (opidCount !== 0) {
-                        opidCount = 0;
-                        opids = [];
-                        logger.warning(logSystem, logComponent, 'Clearing operation ids due to RPC call errors.');
-                    }
-                }
-            }, true, true);
-        }
-        var opidTimeout = setTimeout(checkOpids, opid_interval);
     }
 
     function roundTo(n, digits) {
