@@ -104,15 +104,32 @@ function triggerChartUpdates(){
 
 nv.utils.windowResize(triggerChartUpdates);
 
-$.getJSON('/api/pool_stats', function(data){
-    statData = data;
-    buildChartData();
-    displayCharts();
-});
+function rebuildAllChart() {
+    $.getJSON('/api/pool_stats', function(data){
+        statData = data;
+        buildChartData();
+        displayCharts();
+    });
+}
+rebuildAllChart();
+
+var poolChartHidden = false;
 
 statsSource.addEventListener('message', function(e){
+    if (document.hidden) {
+        poolChartHidden = true;
+        return;
+    }
+
+    if (poolChartHidden) {
+        poolChartHidden = false;
+        rebuildAllChart();
+        return;
+    }
+
     var stats = JSON.parse(e.data);
     statData.push(stats);
+    if (statData.length > 482) statData.shift();
 
     var newPoolAdded = (function(){
         for (var p in stats.pools){
