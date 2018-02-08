@@ -215,6 +215,8 @@ $.getJSON('/api/worker_stats?'+_miner, function(data){
 
 // live stat updates
 statsSource.addEventListener('message', function(e){
+	if (document.hidden) return;
+	
 	// TODO, create miner_live_stats...
 	// miner_live_stats will return the same josn except without the worker history
 	// FOR NOW, use this to grab updated stats
