@@ -126,6 +126,8 @@
 <script>
     $(function() {
         statsSource.addEventListener('message', function (e) {
+            if (document.hidden) return;
+            
             var stats = JSON.parse(e.data);
             for (algo in stats.algos) {
                 $('#statsMiners' + algo).text(stats.algos[algo].workers);
