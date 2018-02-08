@@ -321,6 +321,8 @@ legend.append('text')
 	window.statsSource = new EventSource("/api/live_stats");
     $(function() {
         statsSource.addEventListener('message', function (e) {
+	    if (document.hidden) return;	
+		
             var stats = JSON.parse(e.data);
             for (var pool in stats.pools) {
 				$('#statsMiners' + pool).text(stats.pools[pool].minerCount);
