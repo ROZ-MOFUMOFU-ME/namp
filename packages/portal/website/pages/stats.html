@@ -149,6 +149,8 @@
 						<a href="https://classic.zcha.in/blocks/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
 					{{ } else if (String(it.stats.pools[pool].name).startsWith("hush")) { }}
 						<a href="https://explorer.myhush.org/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+                    {{ } else if (String(it.stats.pools[pool].name).startsWith("bitzeny")) { }}
+                        <a href="https://insight.bitzeny.jp/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
 					{{ } else { }}
                                             {{=block[2]}}
                                         {{ } }}
@@ -177,6 +179,8 @@
 						<a href="https://explorer.zcha.in/blocks/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
 					{{ } else if (String(it.stats.pools[pool].name).startsWith("zclassic")) { }}
 						<a href="https://classic.zcha.in/blocks/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+                    {{ } else if (String(it.stats.pools[pool].name).startsWith("bitzeny")) { }}
+                        <a href="https://insight.bitzeny.jp/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
 					{{ } else { }}
 						{{=block[2]}}
 					{{ } }}
@@ -321,8 +325,8 @@ legend.append('text')
 	window.statsSource = new EventSource("/api/live_stats");
     $(function() {
         statsSource.addEventListener('message', function (e) {
-	    if (document.hidden) return;	
-		
+	    if (document.hidden) return;
+
             var stats = JSON.parse(e.data);
             for (var pool in stats.pools) {
 				$('#statsMiners' + pool).text(stats.pools[pool].minerCount);
