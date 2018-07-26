@@ -1,6 +1,6 @@
 # BitZeny - Node Open Mining Portal
 
-This is a Yescrypt-0.5 mining pool based off of Node Open Mining Portal.
+This is a YesPower mining pool based off of Node Open Mining Portal.
 
 Donations for development are greatly appreciated!
   * ZNY: ZmnBu9jPKvVFL22PcwMHSEuVpTxFeCdvNv
@@ -14,14 +14,14 @@ Usage of this software requires abilities with sysadmin, database admin, coin da
 
 ### Community
 Forum
-* join: https://bitzeny.info/
+* join: https://bitzeny.tech/
 
 Wiki
-* http://bitzeny.cswiki.jp/
+* https://bitzeny.wiki.fc2.com/
 
 If your pool uses ZNY-NOMP let us know and we will list your website here.
 
-### Some pools using ZNY-NOMP or node-stratum-yescrypt-0.5-module:
+### Some pools using ZNY-NOMP or node-stratum-yesPower-module:
 
 * [mofumofu.me - BitZeny Mining Pool](https://zny.mofumofu.me/)
 
