@@ -118,7 +118,7 @@ in case the master process crashes.
 for exploring your redis database.
 * Use something like [logrotator](http://www.thegeekstuff.com/2010/07/logrotate-examples/) to rotate log
 output from ZNY-NOMP.
-* Use [New Relic](http://newrelic.com/) to monitor your K-NOMP instance and server performance.
+* Use [New Relic](http://newrelic.com/) to monitor your ZNY-NOMP instance and server performance.
 
 
 #### Upgrading ZNY-NOMP
