@@ -146,7 +146,7 @@ var pool = module.exports = function pool(options, authorizeFn){
 
         var generateProgress = function(){
 
-            _this.daemon.cmd('getmininginfo', [], function(results) {
+            _this.daemon.cmd('getblockchaininfo', [], function(results) {
                 var blockCount = results.sort(function (a, b) {
                     return b.response.blocks - a.response.blocks;
                 })[0].response.blocks;
@@ -369,6 +369,7 @@ var pool = module.exports = function pool(options, authorizeFn){
         var batchRpcCalls = [
             ['validateaddress', [options.address]],
             ['getdifficulty', []],
+            ['getblockchaininfo', []],
             ['getnetworkinfo', []],
             ['getmininginfo', []],
             ['submitblock', []]
@@ -414,7 +415,7 @@ var pool = module.exports = function pool(options, authorizeFn){
             }
 
             options.testnet = (rpcResults.getblockchaininfo.chain === 'test') ? true : false;
-            
+
             options.network = (options.testnet ? options.coin.testnet : options.coin.mainnet);
 
             options.poolAddressScript = (function(){
@@ -430,7 +431,7 @@ var pool = module.exports = function pool(options, authorizeFn){
 
             options.initStats = {
                 connections: rpcResults.getnetworkinfo.connections,
-                difficulty: rpcResults.getmininginfo.difficulty * algos[options.coin.algorithm].multiplier,
+                difficulty: rpcResults.getblockchaininfo.difficulty * algos[options.coin.algorithm].multiplier,
                 networkHashRate: rpcResults.getmininginfo.networkhashps
             };
 
@@ -491,9 +492,9 @@ var pool = module.exports = function pool(options, authorizeFn){
                 } else {
                     this.sendDifficulty(8);
                 }
-                
+
                 this.sendMiningJob(_this.jobManager.currentJob.getJobParams());
-                
+
             }).on('submit', function(params, resultCallback){
                 var result =_this.jobManager.processShare(
                     params.jobId,
@@ -638,7 +639,7 @@ var pool = module.exports = function pool(options, authorizeFn){
                     cObj.client.removeAllListeners();
                     _this.stratumServer.removeStratumClientBySubId(cObj.subId);
                 });
-                
+
                 process.nextTick(function () {
                     resultCback(
                         clientsToRelinquish.map(
@@ -646,7 +647,7 @@ var pool = module.exports = function pool(options, authorizeFn){
                                 return item.client;
                             }
                         )
-                    );    
+                    );
                 });
             }
         )
