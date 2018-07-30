@@ -4,7 +4,7 @@ var events = require('events');
 
 var async = require('async');
 
-/** 
+/**
  * The daemon interface interacts with the coin daemon by using the rpc interface.
  * in order to make it work it needs, as constructor, an array of objects containing
  * - 'host'    : hostname where the coin lives
@@ -37,7 +37,7 @@ function DaemonInterface(daemons, logger){
     }
 
     function isOnline(callback){
-        cmd('getinfo', [], function(results){
+        cmd('getnetworkinfo', [], function(results){
             var allOnline = results.every(function(result){
                 return !results.error;
             });
@@ -47,7 +47,6 @@ function DaemonInterface(daemons, logger){
         });
     }
 
-    var myagent = http.Agent({maxSockets: 16, keepAlive: false});
 
     function performHttpRequest(instance, jsonData, callback){
         var options = {
@@ -57,8 +56,7 @@ function DaemonInterface(daemons, logger){
             auth    : instance.user + ':' + instance.password,
             headers : {
                 'Content-Length': jsonData.length
-            },
-            agent: myagent
+            }
         };
 
         var parseJson = function(res, data){
@@ -83,12 +81,8 @@ function DaemonInterface(daemons, logger){
                     + '\nReponse Data: ' + data);
 
             }
-            if (dataJson) {
+            if (dataJson)
                 callback(dataJson.error, dataJson, data);
-            } else {
-                logger('error', 'No dataJson from daemon instance  ' + instance.index);
-                callback({type: 'daemon error', code: -9999, message: data}, null, data);
-            }
         };
 
         var req = http.request(options, function(res) {
