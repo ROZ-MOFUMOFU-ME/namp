@@ -146,7 +146,7 @@ var pool = module.exports = function pool(options, authorizeFn){
 
         var generateProgress = function(){
 
-            _this.daemon.cmd('getinfo', [], function(results) {
+            _this.daemon.cmd('getmininginfo', [], function(results) {
                 var blockCount = results.sort(function (a, b) {
                     return b.response.blocks - a.response.blocks;
                 })[0].response.blocks;
@@ -273,7 +273,7 @@ var pool = module.exports = function pool(options, authorizeFn){
                 if (r.length === 40)
                     rObj.script = util.miningKeyToScript(r);
                 else
-                    rObj.script = util.addressToScript(r);
+                    rObj.script = util.addressToScript(options.network, r);
                 recipients.push(rObj);
                 options.feePercent += percent;
             }
@@ -369,7 +369,7 @@ var pool = module.exports = function pool(options, authorizeFn){
         var batchRpcCalls = [
             ['validateaddress', [options.address]],
             ['getdifficulty', []],
-            ['getinfo', []],
+            ['getnetworkinfo', []],
             ['getmininginfo', []],
             ['submitblock', []]
         ];
@@ -413,21 +413,24 @@ var pool = module.exports = function pool(options, authorizeFn){
                 return;
             }
 
+            options.testnet = (rpcResults.getblockchaininfo.chain === 'test') ? true : false;
+            
+            options.network = (options.testnet ? options.coin.testnet : options.coin.mainnet);
+
             options.poolAddressScript = (function(){
                 switch(options.coin.reward){
                     case 'POS':
                         return util.pubkeyToScript(rpcResults.validateaddress.pubkey);
                     case 'POW':
-                        return util.addressToScript(rpcResults.validateaddress.address);
+                        return util.addressToScript(options.network, rpcResults.validateaddress.address);
                 }
             })();
 
-            options.testnet = rpcResults.getinfo.testnet;
-            options.protocolVersion = rpcResults.getinfo.protocolversion;
+            options.protocolVersion = rpcResults.getnetworkinfo.protocolversion;
 
             options.initStats = {
-                connections: rpcResults.getinfo.connections,
-                difficulty: rpcResults.getinfo.difficulty * algos[options.coin.algorithm].multiplier,
+                connections: rpcResults.getnetworkinfo.connections,
+                difficulty: rpcResults.getmininginfo.difficulty * algos[options.coin.algorithm].multiplier,
                 networkHashRate: rpcResults.getmininginfo.networkhashps
             };
 
