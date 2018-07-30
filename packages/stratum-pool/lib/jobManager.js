@@ -116,7 +116,8 @@ var JobManager = module.exports = function JobManager(options){
             _this.extraNoncePlaceholder,
             options.coin.reward,
             options.coin.txMessages,
-            options.recipients
+            options.recipients,
+            options.network
         );
 
         _this.currentJob = tmpBlockTemplate;
@@ -151,7 +152,8 @@ var JobManager = module.exports = function JobManager(options){
             _this.extraNoncePlaceholder,
             options.coin.reward,
             options.coin.txMessages,
-            options.recipients
+            options.recipients,
+            options.network
         );
 
         this.currentJob = tmpBlockTemplate;
