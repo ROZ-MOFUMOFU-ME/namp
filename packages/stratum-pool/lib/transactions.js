@@ -88,7 +88,7 @@ var Generation = exports.Generation = function Generation(rpcData, publicKey, ex
             prevOutIndex : Math.pow(2, 32) - 1,
             sigScript    : new ScriptSig({
                 height                : rpcData.height,
-                flags                 : "086b6f746f706f6f6c",
+                flags                 : rpcData.coinbaseaux.flags,
                 extraNoncePlaceholder : extraNoncePlaceholder
             })
         })],
@@ -126,30 +126,53 @@ see: https://en.bitcoin.it/wiki/Protocol_specification#tx
 var generateOutputTransactions = function(poolRecipient, recipients, rpcData){
 
     var reward = rpcData.coinbasevalue;
-    if (!reward) {
-        var nScript = parseInt(rpcData.coinbasetxn.data.slice(82, 84), 16);
-        if (nScript == 253) {
-            nScript = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(84, 84 + 4)), 16);
-            nScript = nScript + 2;
-        } else if (nScript == 254) {
-            nScript = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(84, 84 + 8)), 16);
-            nScript = nScript + 4;
-        } else if (nScript == 255) {
-            nScript = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(84, 84 + 16)), 16);
-            nScript = nScript + 8;
-        }
-        var posReward = 94 + nScript*2;
-        reward = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(posReward, posReward + 16)), 16);
-        //console.log("reward from coinbasetxn.data => " + reward);
-    }
-    
     var rewardToPool = reward;
 
     var txOutputBuffers = [];
 
 
-    if (rpcData.payee) {
-        var payeeReward = Math.ceil(reward / 5);
+
+/* Dash 12.1 */
+if (rpcData.masternode && rpcData.superblock) {
+    if (rpcData.masternode.payee) {
+        var payeeReward = 0;
+
+        payeeReward = rpcData.masternode.amount;
+        reward -= payeeReward;
+        rewardToPool -= payeeReward;
+
+        var payeeScript = util.addressToScript(rpcData.masternode.payee);
+        txOutputBuffers.push(Buffer.concat([
+            util.packInt64LE(payeeReward),
+            util.varIntBuffer(payeeScript.length),
+            payeeScript
+        ]));
+    } else if (rpcData.superblock.length > 0) {
+        for(var i in rpcData.superblock){
+            var payeeReward = 0;
+
+            payeeReward = rpcData.superblock[i].amount;
+            reward -= payeeReward;
+            rewardToPool -= payeeReward;
+
+            var payeeScript = util.addressToScript(rpcData.superblock[i].payee);
+            txOutputBuffers.push(Buffer.concat([
+                util.packInt64LE(payeeReward),
+                util.varIntBuffer(payeeScript.length),
+                payeeScript
+            ]));
+        }
+    }
+}
+
+if (rpcData.payee) {
+    var payeeReward = 0;
+
+    if (rpcData.payee_amount) {
+        payeeReward = rpcData.payee_amount;
+    } else {
+        payeeReward = Math.ceil(reward / 5);
+    }
 
         reward -= payeeReward;
         rewardToPool -= payeeReward;
@@ -190,7 +213,7 @@ var generateOutputTransactions = function(poolRecipient, recipients, rpcData){
             witness_commitment
         ]));
     }
-    
+
     return Buffer.concat([
         util.varIntBuffer(txOutputBuffers.length),
         Buffer.concat(txOutputBuffers)
@@ -206,9 +229,9 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
     var txVersion = txMessages === true ? 2 : 1;
     var txLockTime = 0;
 
-    var txInPrevOutHash = "0";
+    var txInPrevOutHash = "";
     var txInPrevOutIndex = Math.pow(2, 32) - 1;
-    var txInSequence = Math.pow(2, 32) - 1;
+    var txInSequence = 0;
 
     //Only required for POS coins
     var txTimestamp = reward === 'POS' ?
@@ -222,7 +245,7 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
 
     var scriptSigPart1 = Buffer.concat([
         util.serializeNumber(rpcData.height),
-        //new Buffer("086b6f746f706f6f6c", 'hex'),
+        new Buffer(rpcData.coinbaseaux.flags, 'hex'),
         util.serializeNumber(Date.now() / 1000 | 0),
         new Buffer([extraNoncePlaceholder.length])
     ]);
