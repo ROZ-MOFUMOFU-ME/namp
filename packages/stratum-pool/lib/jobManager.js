@@ -54,7 +54,7 @@ var JobManager = module.exports = function JobManager(options){
     var jobCounter = new JobCounter();
 
     var shareMultiplier = algos[options.coin.algorithm].multiplier;
-
+    
     //public members
 
     this.extraNonceCounter = new ExtraNonceCounter(options.instanceId);
@@ -90,6 +90,12 @@ var JobManager = module.exports = function JobManager(options){
                         return util.reverseBuffer(hashDigest.apply(this, arguments));
                     };
                 }
+            case 'scrypt-og':
+                if (options.coin.reward === 'POS') {
+                    return function (d) {
+                        return util.reverseBuffer(hashDigest.apply(this, arguments));
+                    };
+                }
             case 'scrypt-jane':
                 if (options.coin.reward === 'POS') {
                     return function (d) {
@@ -97,6 +103,7 @@ var JobManager = module.exports = function JobManager(options){
                     };
                 }
             case 'scrypt-n':
+            case 'sha1':
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
