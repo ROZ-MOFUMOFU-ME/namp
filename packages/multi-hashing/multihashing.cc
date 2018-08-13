@@ -84,7 +84,8 @@ void x11(const FunctionCallbackInfo<Value>& args) {
     args.GetReturnValue().Set(buff);
 }
 
-void lyra2rev2(const FunctionCallbackInfo<Value>& args) {
+void lyra2re(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
 
     if (args.Length() < 1)
         return THROW_ERROR_EXCEPTION("You must provide one argument.");
@@ -98,6 +99,27 @@ void lyra2rev2(const FunctionCallbackInfo<Value>& args) {
     char output[32];
 
     lyra2re_hash(input, output);
+
+    NanReturnValue(
+        NanNewBufferHandle(output, 32)
+    );
+}
+
+void lyra2re2(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+
+    if (args.Length() < 1)
+        return THROW_ERROR_EXCEPTION("You must provide one argument.");
+
+    Local<Object> target = args[0]->ToObject();
+
+    if(!Buffer::HasInstance(target))
+        return THROW_ERROR_EXCEPTION("Argument should be a buffer object.");
+
+    char * input = Buffer::Data(target);
+    char output[32];
+
+    lyra2re2_hash(input, output);
 
     NanReturnValue(
         NanNewBufferHandle(output, 32)
@@ -625,6 +647,8 @@ void fresh(const FunctionCallbackInfo<Value>& args) {
 void init(Handle<Object> exports) {
     NODE_SET_METHOD(exports, "quark", quark);
     NODE_SET_METHOD(exports, "x11", x11);
+    NODE_SET_METHOD(exports, "lyra2re",lyra2re);
+    NODE_SET_METHOD(exports, "lyra2re2",lyra2re2);
     NODE_SET_METHOD(exports, "scrypt", scrypt);
     NODE_SET_METHOD(exports, "scryptn", scryptn);
     NODE_SET_METHOD(exports, "scryptjane", scryptjane);
