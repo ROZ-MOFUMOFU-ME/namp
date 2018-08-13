@@ -14,7 +14,7 @@ extern "C" {
     #include "yescrypt/sha256.h"
     #include "skein.h"
     #include "x11.h"
-    #include "lyra2rev2.h"
+    #include "Lyra2RE.h"
     #include "groestl.h"
     #include "blake.h"
     #include "fugue.h"
