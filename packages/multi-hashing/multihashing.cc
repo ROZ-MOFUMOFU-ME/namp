@@ -14,6 +14,7 @@ extern "C" {
     #include "yescrypt/sha256.h"
     #include "skein.h"
     #include "x11.h"
+    #include "lyra2rev2.h"
     #include "groestl.h"
     #include "blake.h"
     #include "fugue.h"
@@ -37,6 +38,7 @@ void except(const char* msg) {
 	Isolate* isolate = Isolate::GetCurrent();
     isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, msg)));
 }
+
 
 void quark(const FunctionCallbackInfo<Value>& args) {
      Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
@@ -80,6 +82,26 @@ void x11(const FunctionCallbackInfo<Value>& args) {
 
     Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
     args.GetReturnValue().Set(buff);
+}
+
+void lyra2rev2(const FunctionCallbackInfo<Value>& args) {
+
+    if (info.Length() < 2)
+        return THROW_ERROR_EXCEPTION("You must provide two arguments.");
+
+    Local<Object> target = Nan::To<Object>(info[0]).ToLocalChecked();
+
+    if(!Buffer::HasInstance(target))
+        return THROW_ERROR_EXCEPTION("Argument should be a buffer object.");
+
+    char * input = Buffer::Data(target);
+    char *output = (char*) malloc(sizeof(char) * 32);
+
+    uint32_t input_len = Buffer::Length(target);
+
+    lyra2rev2_hash(input, output);
+
+    info.GetReturnValue().Set(Nan::NewBuffer(output, 32).ToLocalChecked());
 }
 
 void scrypt(const FunctionCallbackInfo<Value>& args) {
