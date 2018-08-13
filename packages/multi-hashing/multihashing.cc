@@ -88,42 +88,40 @@ void lyra2re(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
 
     if (args.Length() < 1)
-        return THROW_ERROR_EXCEPTION("You must provide one argument.");
+        return except("You must provide one argument.");
 
     Local<Object> target = args[0]->ToObject();
 
     if(!Buffer::HasInstance(target))
-        return THROW_ERROR_EXCEPTION("Argument should be a buffer object.");
+        return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
     char output[32];
 
     lyra2re_hash(input, output);
 
-    NanReturnValue(
-        NanNewBufferHandle(output, 32)
-    );
+   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+   args.GetReturnValue().Set(buff);
 }
 
 void lyra2re2(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
 
     if (args.Length() < 1)
-        return THROW_ERROR_EXCEPTION("You must provide one argument.");
+        return except("You must provide one argument.");
 
     Local<Object> target = args[0]->ToObject();
 
     if(!Buffer::HasInstance(target))
-        return THROW_ERROR_EXCEPTION("Argument should be a buffer object.");
+        return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
     char output[32];
 
     lyra2re2_hash(input, output);
 
-    NanReturnValue(
-        NanNewBufferHandle(output, 32)
-    );
+   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+   args.GetReturnValue().Set(buff);
 }
 
 void scrypt(const FunctionCallbackInfo<Value>& args) {
