@@ -14,6 +14,7 @@ extern "C" {
     #include "yescrypt/sha256.h"
     #include "skein.h"
     #include "x11.h"
+    #include "Lyra2RE.h"
     #include "groestl.h"
     #include "blake.h"
     #include "fugue.h"
@@ -30,6 +31,9 @@ extern "C" {
 
 #include "boolberry.h"
 
+void lyra2re_hash(const char* input, char* output);
+void lyra2re2_hash(const char* input, char* output);
+
 using namespace node;
 using namespace v8;
 
@@ -37,6 +41,7 @@ void except(const char* msg) {
 	Isolate* isolate = Isolate::GetCurrent();
     isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, msg)));
 }
+
 
 void quark(const FunctionCallbackInfo<Value>& args) {
      Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
@@ -80,6 +85,46 @@ void x11(const FunctionCallbackInfo<Value>& args) {
 
     Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
     args.GetReturnValue().Set(buff);
+}
+
+void lyra2re(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+
+    if (args.Length() < 1)
+        return except("You must provide one argument.");
+
+    Local<Object> target = args[0]->ToObject();
+
+    if(!Buffer::HasInstance(target))
+        return except("Argument should be a buffer object.");
+
+    char * input = Buffer::Data(target);
+    char output[32];
+
+    lyra2re_hash(input, output);
+
+   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+   args.GetReturnValue().Set(buff);
+}
+
+void lyra2re2(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+
+    if (args.Length() < 1)
+        return except("You must provide one argument.");
+
+    Local<Object> target = args[0]->ToObject();
+
+    if(!Buffer::HasInstance(target))
+        return except("Argument should be a buffer object.");
+
+    char * input = Buffer::Data(target);
+    char output[32];
+
+    lyra2re2_hash(input, output);
+
+   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+   args.GetReturnValue().Set(buff);
 }
 
 void scrypt(const FunctionCallbackInfo<Value>& args) {
@@ -603,6 +648,8 @@ void fresh(const FunctionCallbackInfo<Value>& args) {
 void init(Handle<Object> exports) {
     NODE_SET_METHOD(exports, "quark", quark);
     NODE_SET_METHOD(exports, "x11", x11);
+    NODE_SET_METHOD(exports, "lyra2re",lyra2re);
+    NODE_SET_METHOD(exports, "lyra2re2",lyra2re2);
     NODE_SET_METHOD(exports, "scrypt", scrypt);
     NODE_SET_METHOD(exports, "scryptn", scryptn);
     NODE_SET_METHOD(exports, "scryptjane", scryptjane);
