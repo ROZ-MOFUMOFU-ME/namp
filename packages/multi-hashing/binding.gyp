@@ -12,6 +12,8 @@
                 "keccak.c",
                 "skein.c",
                 "x11.c",
+		"Lyra2.c",
+		"Lyra2RE.c",
                 "quark.c",
                 "bcrypt.c",
                 "groestl.c",
