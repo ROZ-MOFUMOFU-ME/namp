@@ -1,5 +1,5 @@
 {
     "name": "Mangacoin",
     "symbol": "MANGA",
-    "algorithm": "lyra2rev2"
+    "algorithm": "lyra2re2"
 }
