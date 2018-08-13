@@ -97,7 +97,7 @@ var algos = module.exports = global.algos = {
             }
         }
     },
-	lyra2re: {
+    lyra2re: {
 		multiplier: Math.pow(2, 7),
         hash: function(){
             return function(){
@@ -105,8 +105,8 @@ var algos = module.exports = global.algos = {
             }
         }
     },
-  lyra2re2: {
-		multiplier: Math.pow(2, 7),
+    lyra2re2: {
+		multiplier: Math.pow(2, 8),
         hash: function(){
             return function(){
                 return multiHashing.lyra2re2.apply(this, arguments);
