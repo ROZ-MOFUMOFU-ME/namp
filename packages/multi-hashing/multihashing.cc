@@ -99,7 +99,7 @@ void lyra2re(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output[32];
 
     lyra2re_hash(input, output);
 
@@ -119,7 +119,7 @@ void lyra2re2(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output[32];
 
     lyra2re2_hash(input, output);
 
