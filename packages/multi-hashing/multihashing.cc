@@ -14,9 +14,7 @@ extern "C" {
     #include "yescrypt/sha256.h"
     #include "skein.h"
     #include "x11.h"
-    #include "lyra2.h"
-    #include "lyra2re.h"
-    #include "lyra2z.h"
+    #include "Lyra2RE.h"
     #include "Sponge.h"
     #include "groestl.h"
     #include "blake.h"
@@ -90,8 +88,8 @@ void x11(const FunctionCallbackInfo<Value>& args) {
     args.GetReturnValue().Set(buff);
 }
 
-void lyra2re(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+void lyra2re(const FunctionCallbackInfo<Value>& args){
+     Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
 
     if (args.Length() < 1)
         return except("You must provide one argument.");
@@ -102,16 +100,17 @@ void lyra2re(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
 
     lyra2re_hash(input, output);
 
-   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
-   args.GetReturnValue().Set(buff);
+    Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+    args.GetReturnValue().Set(buff);
+
 }
 
-void lyra2re2(const FunctionCallbackInfo<Value>& args) {
-    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+void lyra2re2(const FunctionCallbackInfo<Value>& args){
+     Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
 
     if (args.Length() < 1)
         return except("You must provide one argument.");
@@ -122,12 +121,12 @@ void lyra2re2(const FunctionCallbackInfo<Value>& args) {
         return except("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char output[32];
+    char* output = new char[32];
 
     lyra2re2_hash(input, output);
 
-   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
-   args.GetReturnValue().Set(buff);
+    Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+    args.GetReturnValue().Set(buff);
 }
 
 void scrypt(const FunctionCallbackInfo<Value>& args) {
