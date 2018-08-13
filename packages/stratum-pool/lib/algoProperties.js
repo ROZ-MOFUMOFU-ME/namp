@@ -97,6 +97,14 @@ var algos = module.exports = global.algos = {
             }
         }
     },
+    lyra2rev2: {
+        multiplier: Math.pow(2, 8),
+        hash: function(){
+            return function(){
+                return multiHashing.lyra2rev2.apply(this, arguments);
+            }
+        }
+    },
     nist5: {
         hash: function(){
             return function(){
