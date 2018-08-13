@@ -86,22 +86,22 @@ void x11(const FunctionCallbackInfo<Value>& args) {
 
 void lyra2rev2(const FunctionCallbackInfo<Value>& args) {
 
-    if (info.Length() < 2)
-        return THROW_ERROR_EXCEPTION("You must provide two arguments.");
+    if (args.Length() < 1)
+        return THROW_ERROR_EXCEPTION("You must provide one argument.");
 
-    Local<Object> target = Nan::To<Object>(info[0]).ToLocalChecked();
+    Local<Object> target = args[0]->ToObject();
 
     if(!Buffer::HasInstance(target))
         return THROW_ERROR_EXCEPTION("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char *output = (char*) malloc(sizeof(char) * 32);
+    char output[32];
 
-    uint32_t input_len = Buffer::Length(target);
+    lyra2re_hash(input, output);
 
-    lyra2rev2_hash(input, output);
-
-    info.GetReturnValue().Set(Nan::NewBuffer(output, 32).ToLocalChecked());
+    NanReturnValue(
+        NanNewBufferHandle(output, 32)
+    );
 }
 
 void scrypt(const FunctionCallbackInfo<Value>& args) {
