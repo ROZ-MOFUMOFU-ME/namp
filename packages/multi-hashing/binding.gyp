@@ -13,6 +13,7 @@
                 "skein.c",
                 "x11.c",
 		"Lyra2.c",
+		"Sponge.c",
 		"Lyra2RE.c",
                 "quark.c",
                 "bcrypt.c",
