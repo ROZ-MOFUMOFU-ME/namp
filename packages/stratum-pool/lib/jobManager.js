@@ -107,6 +107,11 @@ var JobManager = module.exports = function JobManager(options){
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
+            case 'lyra2re2':
+                return function (d) {
+                    return util.reverseBuffer(util.sha256d(d));
+                };
+
             default:
                 return function () {
                     return util.reverseBuffer(hashDigest.apply(this, arguments));
