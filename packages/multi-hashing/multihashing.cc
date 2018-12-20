@@ -12,6 +12,8 @@ extern "C" {
     #include "scryptn.h"
     #include "yescrypt/yescrypt.h"
     #include "yescrypt/sha256.h"
+    #include "yespower/sha256.h"
+    #include "yespower/yespower.h"
     #include "skein.h"
     #include "x11.h"
     #include "Lyra2RE.h"
@@ -238,6 +240,138 @@ void yescrypt(const FunctionCallbackInfo<Value>& args) {
 
    
    yescrypt_hash(input, output);
+
+   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+   args.GetReturnValue().Set(buff);
+}
+
+void yespower(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+
+    if (args.Length() < 1)
+        return except("You must provide one argument.");
+
+   Local<Object> target = args[0]->ToObject();
+
+   if(!Buffer::HasInstance(target))
+       return except("Argument should be a buffer object.");
+
+
+   char * input = Buffer::Data(target);
+   char* output = new char[32];
+
+
+   yespower_hash(input, output);
+
+   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+   args.GetReturnValue().Set(buff);
+}
+
+void yespower_0_5_R8(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+
+    if (args.Length() < 1)
+        return except("You must provide one argument.");
+
+   Local<Object> target = args[0]->ToObject();
+
+   if(!Buffer::HasInstance(target))
+       return except("Argument should be a buffer object.");
+
+
+   char * input = Buffer::Data(target);
+   char* output = new char[32];
+
+
+   yespower_0_5_R8_hash(input, output);
+
+   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+   args.GetReturnValue().Set(buff);
+}
+
+void yespower_0_5_R8G(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+
+    if (args.Length() < 1)
+        return except("You must provide one argument.");
+
+   Local<Object> target = args[0]->ToObject();
+
+   if(!Buffer::HasInstance(target))
+       return except("Argument should be a buffer object.");
+
+
+   char * input = Buffer::Data(target);
+   char* output = new char[32];
+
+
+   yespower_0_5_R8G_hash(input, output);
+
+   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+   args.GetReturnValue().Set(buff);
+}
+
+void yespower_0_5_R16(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+
+    if (args.Length() < 1)
+        return except("You must provide one argument.");
+
+   Local<Object> target = args[0]->ToObject();
+
+   if(!Buffer::HasInstance(target))
+       return except("Argument should be a buffer object.");
+
+
+   char * input = Buffer::Data(target);
+   char* output = new char[32];
+
+
+   yespower_0_5_R16_hash(input, output);
+
+   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+   args.GetReturnValue().Set(buff);
+}
+
+void yespower_0_5_R24(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+
+    if (args.Length() < 1)
+        return except("You must provide one argument.");
+
+   Local<Object> target = args[0]->ToObject();
+
+   if(!Buffer::HasInstance(target))
+       return except("Argument should be a buffer object.");
+
+
+   char * input = Buffer::Data(target);
+   char* output = new char[32];
+
+
+   yespower_0_5_R24_hash(input, output);
+
+   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+   args.GetReturnValue().Set(buff);
+}
+
+void yespower_0_5_R32(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+
+    if (args.Length() < 1)
+        return except("You must provide one argument.");
+
+   Local<Object> target = args[0]->ToObject();
+
+   if(!Buffer::HasInstance(target))
+       return except("Argument should be a buffer object.");
+
+
+   char * input = Buffer::Data(target);
+   char* output = new char[32];
+
+
+   yespower_0_5_R32_hash(input, output);
 
    Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
    args.GetReturnValue().Set(buff);
@@ -656,6 +790,12 @@ void init(Handle<Object> exports) {
     NODE_SET_METHOD(exports, "scryptn", scryptn);
     NODE_SET_METHOD(exports, "scryptjane", scryptjane);
     NODE_SET_METHOD(exports, "yescrypt", yescrypt);
+    NODE_SET_METHOD(exports, "yespower_0_5_R8", yespower_0_5_R8);
+    NODE_SET_METHOD(exports, "yespower_0_5_R8G", yespower_0_5_R8G);
+    NODE_SET_METHOD(exports, "yespower_0_5_R16", yespower_0_5_R16);
+    NODE_SET_METHOD(exports, "yespower_0_5_R24", yespower_0_5_R24);
+    NODE_SET_METHOD(exports, "yespower_0_5_R32", yespower_0_5_R32);
+    NODE_SET_METHOD(exports, "yespower", yespower);
     NODE_SET_METHOD(exports, "keccak", keccak);
     NODE_SET_METHOD(exports, "bcrypt", bcrypt);
     NODE_SET_METHOD(exports, "skein", skein);
