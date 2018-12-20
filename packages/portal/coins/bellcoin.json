@@ -1,0 +1,7 @@
+{
+    "name": "Bellcoin",
+    "symbol": "BELL",
+    "algorithm": "yespower",
+    "blockTime": 30,
+    "txfee": 0.0001
+}
