@@ -107,7 +107,7 @@
                     <div><i class="fa fa-tachometer"></i><span id="statsHashrate{{=pool}}">{{=it.stats.pools[pool].hashrateString}}</span> (Now)</div>
 					<div><i class="fa fa-tachometer"></i><span id="statsHashrateAvg{{=pool}}">...</span> (Avg)</div>
 					<div><i class="fa fa-gavel"></i>Luck <span id="statsLuckDays{{=pool}}">{{=it.stats.pools[pool].luckDays}}</span> Days</div>
-                    <div><i class="fa fa-chart-bar"></i><span id="statsHashPercent{{=pool}}">
+                    <div><i class="fa fa-bar-chart"></i>&nbsp;Share:&nbsp;<span id="statsHashPercent{{=pool}}">
 {{
     var percent=0.0;
     if(it.stats.pools[pool].hashrate == 0 ) {
