@@ -347,12 +347,12 @@ legend.append('text')
                 $('#statsWorkers' + pool).text(stats.pools[pool].workerCount);
                 $('#statsHashrate' + pool).text(stats.pools[pool].hashrateString);
 				$('#statsHashrateAvg' + pool).text(getReadableHashRateString(calculateAverageHashrate(pool)));
-				$('#statsLuckDays' + pool).text(stats.pools[pool].luckDays);
+				$('#statsLuckDays' + pool).text(getReadableLuckTime(stats.pools[pool].luckDays));
 				$('#statsValidBlocks' + pool).text(stats.pools[pool].poolStats.validBlocks);
 				$('#statsTotalPaid' + pool).text((parseFloat(stats.pools[pool].poolStats.totalPaid)).toFixed(8));
 				$('#statsNetworkBlocks' + pool).text(stats.pools[pool].poolStats.networkBlocks);
 				$('#statsNetworkDiff' + pool).text(stats.pools[pool].poolStats.networkDiff);
-				$('#statsNetworkSols' + pool).text(getReadableNetworkHashRateString(stats.pools[pool].poolStats.networkSols));
+				$('#statsNetworkSols' + pool).text(getReadableHashRateString(stats.pools[pool].poolStats.networkSols));
 				$('#statsNetworkConnections' + pool).text(stats.pools[pool].poolStats.networkConnections);
                 $('#statsHashPercent' + pool).text((stats.pools[pool].hashrate/stats.pools[pool].poolStats.networkSols*100).toFixed(5));
             }
