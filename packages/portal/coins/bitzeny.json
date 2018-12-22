@@ -1,7 +1,7 @@
 {
     "name": "Bitzeny",
     "symbol": "ZNY",
-    "algorithm": "yescrypt"
+    "algorithm": "yescrypt",
     "blockTime": 90,
-     "txfee": 0.0001
+    "txfee": 0.0001
 }
