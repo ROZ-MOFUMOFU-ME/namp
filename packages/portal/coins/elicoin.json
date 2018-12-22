@@ -1,5 +1,6 @@
 {
 "name": "Elicoin",
 "symbol": "ELI",
-"algorithm": "yescryptR16"
+"algorithm": "yescryptR16",
+"blockTime": 60
 }
