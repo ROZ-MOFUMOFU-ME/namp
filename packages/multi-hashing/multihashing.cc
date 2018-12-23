@@ -302,10 +302,11 @@ void yespower_0_5_R8G(const FunctionCallbackInfo<Value>& args) {
 
 
    char * input = Buffer::Data(target);
+   uint32_t input_len = Buffer::Length(target);
    char* output = new char[32];
 
 
-   yespower_0_5_R8G_hash(input, output);
+   yespower_0_5_R8G_hash(input, input_len, output);
 
    Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
    args.GetReturnValue().Set(buff);
