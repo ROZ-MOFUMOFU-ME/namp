@@ -677,7 +677,7 @@ void boolberry(const FunctionCallbackInfo<Value>& args) {
 
     if(args.Length() >= 3)
         if(args[2]->IsUint32())
-            height = args[2]->ToUint32()->Uint32Value();
+            height = args[2]->Uint32Value();
         else
             return except("Argument 3 should be an unsigned integer.");
 
