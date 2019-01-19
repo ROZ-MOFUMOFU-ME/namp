@@ -71,9 +71,9 @@ function ScriptSig(params){
 
         return Buffer.concat([
             util.serializeNumber(height),
-            new Buffer(flags, 'hex'),
+            Buffer.from(flags, 'hex'),
             util.serializeNumber(Date.now() / 1000 | 0),
-            new Buffer([extraNoncePlaceholder.length]),
+            Buffer.from([extraNoncePlaceholder.length]),
             extraNoncePlaceholder,
             util.serializeString('/nodeStratum/')
         ]);
@@ -235,19 +235,19 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
 
     //Only required for POS coins
     var txTimestamp = reward === 'POS' ?
-        util.packUInt32LE(rpcData.curtime) : new Buffer([]);
+        util.packUInt32LE(rpcData.curtime) : Buffer.from([]);
 
     //For coins that support/require transaction comments
     var txComment = txMessages === true ?
         util.serializeString('https://github.com/zone117x/node-stratum') :
-        new Buffer([]);
+        Buffer.from([]);
 
 
     var scriptSigPart1 = Buffer.concat([
         util.serializeNumber(rpcData.height),
-        new Buffer(rpcData.coinbaseaux.flags, 'hex'),
+        Buffer.from(rpcData.coinbaseaux.flags, 'hex'),
         util.serializeNumber(Date.now() / 1000 | 0),
-        new Buffer([extraNoncePlaceholder.length])
+        Buffer.from([extraNoncePlaceholder.length])
     ]);
 
     var scriptSigPart2 = util.serializeString('/nodeStratum/');
