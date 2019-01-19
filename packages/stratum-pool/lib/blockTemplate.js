@@ -59,9 +59,9 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
 
 
 
-    this.prevHashReversed = util.reverseByteOrder(new Buffer(rpcData.previousblockhash, 'hex')).toString('hex');
+    this.prevHashReversed = util.reverseByteOrder(Buffer.from(rpcData.previousblockhash, 'hex')).toString('hex');
     this.transactionData = Buffer.concat(rpcData.transactions.map(function(tx){
-        return new Buffer(tx.data, 'hex');
+        return Buffer.from(tx.data, 'hex');
     }));
     this.merkleTree = new merkleTree(getTransactionBuffers(rpcData.transactions));
     this.merkleBranch = getMerkleHashes(this.merkleTree.steps);
@@ -88,7 +88,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
     //https://en.bitcoin.it/wiki/Protocol_specification#Block_Headers
     this.serializeHeader = function(merkleRoot, nTime, nonce){
 
-        var header =  new Buffer(80);
+        var header =  Buffer.from(80);
         var position = 0;
         header.write(nonce, position, 4, 'hex');
         header.write(rpcData.bits, position += 4, 4, 'hex');
@@ -111,7 +111,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
             getVoteData(),
 
             //POS coins require a zero byte appended to block which the daemon replaces with the signature
-            new Buffer(reward === 'POS' ? [0] : [])
+            Buffer.from(reward === 'POS' ? [0] : [])
         ]);
     };
 
