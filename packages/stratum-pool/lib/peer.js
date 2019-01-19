@@ -9,7 +9,7 @@ var util = require('./util.js');
 
 
 var fixedLenStringBuffer = function(s, len) {
-    var buff = Buffer alloc(len);
+    var buff = Buffer.alloc(len);
     buff.write(s);
     return buff;
 };
