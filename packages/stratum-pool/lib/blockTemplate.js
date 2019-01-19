@@ -88,7 +88,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
     //https://en.bitcoin.it/wiki/Protocol_specification#Block_Headers
     this.serializeHeader = function(merkleRoot, nTime, nonce){
 
-        var header =  Buffer.from(80);
+        var header =  Buffer.alloc(80);
         var position = 0;
         header.write(nonce, position, 4, 'hex');
         header.write(rpcData.bits, position += 4, 4, 'hex');
