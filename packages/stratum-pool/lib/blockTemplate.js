@@ -32,12 +32,12 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
     }
 
     function getVoteData(){
-        if (!rpcData.masternode_payments) return new Buffer([]);
+        if (!rpcData.masternode_payments) return Buffer.from([]);
 
         return Buffer.concat(
             [util.varIntBuffer(rpcData.votes.length)].concat(
                 rpcData.votes.map(function (vt) {
-                    return new Buffer(vt, 'hex');
+                    return Buffer.from(vt, 'hex');
                 })
             )
         );
