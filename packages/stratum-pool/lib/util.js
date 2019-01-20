@@ -356,7 +356,6 @@ exports.convertBitsToBuff = function(bitsBuff){
     var target = exports.bignumFromBitsBuffer(bitsBuff);
     var resultBuff = target.toBuffer();
     var buff256 = Buffer.alloc(32);
-    buff256.fill(0);
     resultBuff.copy(buff256, buff256.length - resultBuff.length);
     return buff256;
 };
