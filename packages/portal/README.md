@@ -72,7 +72,7 @@ Clone the repository and run `npm update` for all the dependencies to be install
 ```bash
 sudo apt-get install build-essential libsodium-dev npm
 sudo npm install n -g
-sudo n stable
+sudo n v9
 git clone https://github.com/ROZ-MOFUMOFU-ME/zny-nomp
 cd zny-nomp
 npm update
