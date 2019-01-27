@@ -49,6 +49,10 @@ Features
 * ✓ __Keccak__ (Maxcoin [MAX], HelixCoin, CryptoMeth, Galleon, 365coin, Slothcoin, BitcointalkCoin)
 * ✓ __Skein__ (Skeincoin [SKC])
 * ✓ __Groestl__ (Groestlcoin [GRS])
+* ✓ __Yescrypt-0.5__ (BitZeny [ZNY])
+* ✓ __YesPoWer__ ( Cryply [CRP], Bellcoin [GRS], Elicoin [ELI], etc..)
+* ✓ __LyraREv2__ ( Monacoin [MONA], Mangacoin [MANGA], etc..)
+
 
 May be working (needs additional testing):
 * ? *Blake* (Blakecoin [BLC])
