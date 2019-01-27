@@ -1,6 +1,6 @@
 # BitZeny - Node Open Mining Portal
 
-This is a Yescrypt-0.5, YesPoWer and Lyra2REv2 mining pool based off of Node Open Mining Portal.
+This is a Yescrypt-0.5, YesPoWer, Lyra2REv2 and more algo mining pool based off of Node Open Mining Portal.
 
 Donations for development are greatly appreciated!
   * ZNY: ZmnBu9jPKvVFL22PcwMHSEuVpTxFeCdvNv
