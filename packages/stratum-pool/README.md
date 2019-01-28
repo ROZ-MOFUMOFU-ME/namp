@@ -38,7 +38,7 @@ Features
 * When started with a coin deamon that hasn't finished syncing to the network it shows the blockchain download progress and initializes once synced
 
 #### Hashing algorithms supported:
-* ✓ __SHA256__ (Bitcoin, Freicoin, Peercoin/PPCoin, Terracoin, etc..)
+* ✓ __SHA256__ (Bitcoin, Freicoin, Peercoin/PPCoin, Terracoin, Susucoin [SUSU], etc..)
 * ✓ __Scrypt__ (Litecoin, Dogecoin, Feathercoin, etc..)
 * ✓ __Scrypt-Jane__ (YaCoin, CopperBars, Pennies, Tickets, etc..)
 * ✓ __Scrypt-N__ (Vertcoin [VTC])
@@ -50,7 +50,7 @@ Features
 * ✓ __Skein__ (Skeincoin [SKC])
 * ✓ __Groestl__ (Groestlcoin [GRS])
 * ✓ __Yescrypt-0.5__ (BitZeny [ZNY])
-* ✓ __YesPoWer__ ( Cryply [CRP], Bellcoin [GRS], Elicoin [ELI], etc..)
+* ✓ __YesPoWer__ ( Cryply [CRP], Bellcoin [BELL], Elicoin [ELI], etc..)
 * ✓ __LyraREv2__ ( Monacoin [MONA], Mangacoin [MANGA], etc..)
 
 
