@@ -11,7 +11,7 @@ var algos = module.exports = global.algos = {
         //diff: '00000000ffff0000000000000000000000000000000000000000000000000000',
         hash: function(){
             return function(){
-                return multihashing.sha256d.apply(this, arguments);
+                return multiashing.sha256d.apply(this, arguments);
             }
         }
     },
