@@ -115,8 +115,6 @@ using namespace v8;
  DECLARE_CALLBACK(bcrypt, bcrypt_hash, 32);
  DECLARE_CALLBACK(blake, blake_hash, 32);
  DECLARE_CALLBACK(c11, c11_hash, 32);
- DECLARE_CALLBACK(cryptonight, cryptnight_hash, 32);
- DECLARE_CALLBACK(cryptonight_fast, cryptnight_fast_hash, 32);
  DECLARE_CALLBACK(fresh, fresh_hash, 32);
  DECLARE_CALLBACK(fugue, fugue_hash, 32);
  DECLARE_CALLBACK(groestl, groestl_hash, 32);
@@ -126,7 +124,6 @@ using namespace v8;
  DECLARE_CALLBACK(lbry, lbry_hash, 32);
  DECLARE_CALLBACK(lyra2re, lyra2re_hash, 32);
  DECLARE_CALLBACK(lyra2re2, lyra2re2_hash, 32);
- DECLARE_CALLBACK(neoscrypt, neosvrypt_hash, 32);
  DECLARE_CALLBACK(nist5, nist5_hash, 32);
  DECLARE_CALLBACK(quark, quark_hash, 32);
  DECLARE_CALLBACK(qubit, qubit_hash, 32);
@@ -283,7 +280,6 @@ DECLARE_FUNC(cryptonight) {
     }
     SET_BUFFER_RETURN(output, 32);
 }
-
 DECLARE_FUNC(cryptonightfast) {
     DECLARE_SCOPE;
 
@@ -321,7 +317,6 @@ DECLARE_FUNC(cryptonightfast) {
     }
     SET_BUFFER_RETURN(output, 32);
 }
-
 DECLARE_FUNC(boolberry) {
     DECLARE_SCOPE;
 
