@@ -21,6 +21,7 @@ extern "C" {
     #include "Sponge.h"
     #include "groestl.h"
     #include "blake.h"
+    #include "c11.h"
     #include "fugue.h"
     #include "qubit.h"
     #include "hefty1.h"
@@ -538,6 +539,27 @@ void blake(const FunctionCallbackInfo<Value>& args) {
     args.GetReturnValue().Set(buff);
 }
 
+void c11(const FunctionCallbackInfo<Value>& args) {
+     Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+
+    if (args.Length() < 1)
+        return except("You must provide one argument.");
+
+    Local<Object> target = args[0]->ToObject();
+
+    if(!Buffer::HasInstance(target))
+        return except("Argument should be a buffer object.");
+
+    char * input = Buffer::Data(target);
+    char* output = new char[32];
+
+    uint32_t input_len = Buffer::Length(target);
+
+    sha1_hash(input, output, input_len);
+
+    Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+    args.GetReturnValue().Set(buff);
+}
 
 void fugue(const FunctionCallbackInfo<Value>& args) {
      Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
@@ -837,6 +859,7 @@ void init(Handle<Object> exports) {
     NODE_SET_METHOD(exports, "cryptonight", cryptonight);
     NODE_SET_METHOD(exports, "x13", x13);
     NODE_SET_METHOD(exports, "boolberry", boolberry);
+    NODE_SET_METHOD(exports, "c11", c11);
     NODE_SET_METHOD(exports, "nist5", nist5);
     NODE_SET_METHOD(exports, "sha1", sha1);
     NODE_SET_METHOD(exports, "sha256d", sha256d);
