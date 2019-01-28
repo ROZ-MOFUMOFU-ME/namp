@@ -661,9 +661,12 @@ void cryptonight(const FunctionCallbackInfo<Value>& args) {
         return except("You must provide one argument.");
     
     if (args.Length() >= 2) {
-        if(!args[1]->IsBoolean())
-            return except("Argument 2 should be a boolean");
-        fast = args[1]->ToBoolean()->BooleanValue();
+        if(args[1]->IsBoolean())
+           fast = args[1]->ToBoolean()->BooleanValue();
+	else if(args[1]->IsUint32())
+           cn_variant = args[1]->ToUint32()->Uint32Value();
+	else
+           return except("Argument 2 should be a boolean or uint32_t");
     }
 
     Local<Object> target = args[0]->ToObject();
@@ -679,7 +682,7 @@ void cryptonight(const FunctionCallbackInfo<Value>& args) {
     if(fast)
         cryptonight_fast_hash(input, output, input_len);
     else
-        cryptonight_hash(input, output, input_len);
+        cryptonight_hash(input, output, input_len, cn_variant);
 
     Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
     args.GetReturnValue().Set(buff);
