@@ -841,6 +841,7 @@ void init(Handle<Object> exports) {
     NODE_SET_METHOD(exports, "sha1", sha1);
     NODE_SET_METHOD(exports, "sha256d", sha256d);
     NODE_SET_METHOD(exports, "x15", x15);
+    NODE_SET_METHOD(exports, "neoscrypt", neoscrypt);
     NODE_SET_METHOD(exports, "fresh", fresh);
 }
 
