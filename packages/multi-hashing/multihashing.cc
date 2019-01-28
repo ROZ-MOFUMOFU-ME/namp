@@ -28,8 +28,9 @@ extern "C" {
     #include "x13.h"
     #include "nist5.h"
     #include "sha1.h"
+    #include "sha256d.h"
     #include "x15.h"
-	#include "fresh.h"
+    #include "fresh.h"
 }
 
 #include "boolberry.h"
@@ -812,6 +813,7 @@ void init(Handle<Object> exports) {
     NODE_SET_METHOD(exports, "boolberry", boolberry);
     NODE_SET_METHOD(exports, "nist5", nist5);
     NODE_SET_METHOD(exports, "sha1", sha1);
+    NODE_SET_METHOD(exports, "sha256d", sha256d);
     NODE_SET_METHOD(exports, "x15", x15);
     NODE_SET_METHOD(exports, "fresh", fresh);
 }
