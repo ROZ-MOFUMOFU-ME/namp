@@ -27,6 +27,7 @@ extern "C" {
     #include "hefty1.h"
     #include "shavite3.h"
     #include "cryptonight.h"
+    #include "cryptonight_fast.h"
     #include "x13.h"
     #include "nist5.h"
     #include "sha1.h"
@@ -688,6 +689,42 @@ void cryptonight(const FunctionCallbackInfo<Value>& args) {
     args.GetReturnValue().Set(buff);
 }
 
+void cryptonightfast(const FunctionCallbackInfo<Value>& args) {
+     Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
+
+    bool fast = false;
+
+    if (args.Length() < 1)
+        return except("You must provide one argument.");
+    
+    if (args.Length() >= 2) {
+        if(args[1]->IsBoolean())
+           fast = args[1]->ToBoolean()->BooleanValue();
+	else if(args[1]->IsUint32())
+           cn_variant = args[1]->ToUint32()->Uint32Value();
+	else
+           return except("Argument 2 should be a boolean or uint32_t");
+    }
+
+    Local<Object> target = args[0]->ToObject();
+
+    if(!Buffer::HasInstance(target))
+        return except("Argument should be a buffer object.");
+
+    char * input = Buffer::Data(target);
+    char* output = new char[32];
+    
+    uint32_t input_len = Buffer::Length(target);
+
+    if(fast)
+        cryptonightfast_fast_hash(input, output, input_len);
+    else
+        cryptonightfast_hash(input, output, input_len, cn_variant);
+
+    Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+    args.GetReturnValue().Set(buff);
+}
+
 void x13(const FunctionCallbackInfo<Value>& args) {
      Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
 
@@ -860,6 +897,7 @@ void init(Handle<Object> exports) {
     NODE_SET_METHOD(exports, "hefty1", hefty1);
     NODE_SET_METHOD(exports, "shavite3", shavite3);
     NODE_SET_METHOD(exports, "cryptonight", cryptonight);
+    NODE_SET_METHOD(exports, "cryptonightfast", cryptonightfast);
     NODE_SET_METHOD(exports, "x13", x13);
     NODE_SET_METHOD(exports, "boolberry", boolberry);
     NODE_SET_METHOD(exports, "c11", c11);
