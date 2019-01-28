@@ -7,6 +7,7 @@
 extern "C" {
     #include "bcrypt.h"
     #include "keccak.h"
+    #include "lbry.h"
     #include "quark.h"
     #include "scryptjane.h"
     #include "scryptn.h"
@@ -799,6 +800,7 @@ void init(Handle<Object> exports) {
     NODE_SET_METHOD(exports, "yespower_0_5_R32", yespower_0_5_R32);
     NODE_SET_METHOD(exports, "yespower", yespower);
     NODE_SET_METHOD(exports, "keccak", keccak);
+    NODE_SET_METHOD(exports, "lbry", lbry);
     NODE_SET_METHOD(exports, "bcrypt", bcrypt);
     NODE_SET_METHOD(exports, "skein", skein);
     NODE_SET_METHOD(exports, "groestl", groestl);
