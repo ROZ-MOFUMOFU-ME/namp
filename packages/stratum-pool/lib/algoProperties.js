@@ -219,6 +219,14 @@ var algos = module.exports = global.algos = {
             }
         }
     },
+    neoscrypt: {
+        multiplier: Math.pow(2, 5),
+        hash: function(){
+            return function(){
+                return multiHashing.neoscrypt.apply(this, arguments);
+            }
+        }
+    },
     skein: {
         hash: function(){
             return function(){
