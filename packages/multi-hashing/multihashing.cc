@@ -355,7 +355,7 @@ DECLARE_FUNC(lyra2re){
         RETURN_EXCEPT("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char* output = new char[32];
+    char output[32];
 
     lyra2re(input, output);
 
@@ -374,7 +374,7 @@ DECLARE_FUNC(lyra2re2){
         RETURN_EXCEPT("Argument should be a buffer object.");
 
     char * input = Buffer::Data(target);
-    char* output = new char[32];
+    char output[32];
 
     lyra2re2(input, output);
 
@@ -394,7 +394,7 @@ DECLARE_FUNC(yescrypt){
     
    
     char * input = Buffer::Data(target);
-    char* output = new char[32];
+    char output[32];
 
    
     yescrypt(input, output);
@@ -415,7 +415,7 @@ DECLARE_FUNC(yespower){
 
 
     char * input = Buffer::Data(target);
-    char* output = new char[32];
+    char output[32];
 
 
     yespower(input, output);
@@ -436,7 +436,7 @@ DECLARE_FUNC(yespower_0_5_R8){
 
 
    char * input = Buffer::Data(target);
-   char* output = new char[32];
+   char output[32];
 
 
    yespower_0_5_R8(input, output);
@@ -458,7 +458,7 @@ DECLARE_FUNC(yespower_0_5_R8G){
 
    char * input = Buffer::Data(target);
    uint32_t input_len = Buffer::Length(target);
-   char* output = new char[32];
+   char output[32];
 
 
    yespower_0_5_R8G(input, input_len, output);
@@ -479,7 +479,7 @@ DECLARE_FUNC(yespower_0_5_R16){
 
 
    char * input = Buffer::Data(target);
-   char* output = new char[32];
+   char output[32];
 
 
    yespower_0_5_R16(input, output);
@@ -500,7 +500,7 @@ DECLARE_FUNC(yespower_0_5_R24){
 
 
    char * input = Buffer::Data(target);
-   char* output = new char[32];
+   char output[32];
 
 
    yespower_0_5_R24(input, output);
@@ -521,7 +521,7 @@ DECLARE_FUNC(yespower_0_5_R32){
 
 
    char * input = Buffer::Data(target);
-   char* output = new char[32];
+   char output[32];
 
 
    yespower_0_5_R32(input, output);
