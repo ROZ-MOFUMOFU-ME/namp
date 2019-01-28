@@ -31,6 +31,7 @@
                 "boolberry.cc",
                 "nist5.c",
                 "sha1.c",
+		"sha256d.c",
                 "x15.c",
                 "fresh.c",
                 "sha3/sph_hefty1.c",
