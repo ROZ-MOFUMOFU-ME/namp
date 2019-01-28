@@ -28,6 +28,7 @@
                 "hefty1.c",
                 "shavite3.c",
                 "cryptonight.c",
+		"cryptonight_fast.c",
                 "x13.c",
                 "boolberry.cc",
                 "nist5.c",
