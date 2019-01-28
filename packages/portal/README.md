@@ -4,7 +4,12 @@ This is a Yescrypt-0.5, YesPoWer, Lyra2REv2 and more algo mining pool based off 
 
 Donations for development are greatly appreciated!
   * ZNY: ZmnBu9jPKvVFL22PcwMHSEuVpTxFeCdvNv
-
+  * NUKO: 0xa79bde46faab3c40632604728e9f2165b052581c
+  * KOTO :k16dV6stRkFtZpFtMTrznqvavRuMfh4PB1R
+  * SUSU: SeXbMBaax7NgnTEFEMxin5ycXy9r9CDBot
+  * MONA: mona1qnur6ljkl5pe8w6ql8xfqw4aa38d5xa9q68dxll
+  * BTC: 3KedzPANAtCzADPbhT7GMv3LjxyeRXc4AE
+  
 #### Production Usage Notice
 This is beta software. All of the following are things that can change and break an existing ZNY-NOMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data. *Only tagged releases are considered stable.*
 
@@ -18,6 +23,9 @@ Forum
 
 Wiki
 * https://bitzeny.wiki.fc2.com/
+
+Discord
+* https://discord.gg/xmWd3yy
 
 If your pool uses ZNY-NOMP let us know and we will list your website here.
 
