@@ -28,6 +28,8 @@ Algorithms
 * shavite3
 * cryptonight
 * boolberry
+* sha256d
+* lbry
 * yescrypt-0.5
 * yespower
 * lyra2re2
