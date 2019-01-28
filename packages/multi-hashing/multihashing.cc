@@ -357,7 +357,7 @@ DECLARE_FUNC(lyra2re){
     char * input = Buffer::Data(target);
     char output[32];
 
-    lyra2re(input, output);
+    lyra2re_hash(input, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
@@ -376,7 +376,7 @@ DECLARE_FUNC(lyra2re2){
     char * input = Buffer::Data(target);
     char output[32];
 
-    lyra2re2(input, output);
+    lyra2re2_hash(input, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
@@ -397,7 +397,7 @@ DECLARE_FUNC(yescrypt){
     char output[32];
 
    
-    yescrypt(input, output);
+    yescrypt_hash(input, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
@@ -418,7 +418,7 @@ DECLARE_FUNC(yespower){
     char output[32];
 
 
-    yespower(input, output);
+    yespower_hash(input, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
@@ -439,7 +439,7 @@ DECLARE_FUNC(yespower_0_5_R8){
    char output[32];
 
 
-   yespower_0_5_R8(input, output);
+   yespower_0_5_R8_hash(input, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
@@ -461,7 +461,7 @@ DECLARE_FUNC(yespower_0_5_R8G){
    char output[32];
 
 
-   yespower_0_5_R8G(input, input_len, output);
+   yespower_0_5_R8G_hash(input, input_len, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
@@ -482,7 +482,7 @@ DECLARE_FUNC(yespower_0_5_R16){
    char output[32];
 
 
-   yespower_0_5_R16(input, output);
+   yespower_0_5_R16_hash(input, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
@@ -503,7 +503,7 @@ DECLARE_FUNC(yespower_0_5_R24){
    char output[32];
 
 
-   yespower_0_5_R24(input, output);
+   yespower_0_5_R24_hash(input, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
@@ -524,7 +524,7 @@ DECLARE_FUNC(yespower_0_5_R32){
    char output[32];
 
 
-   yespower_0_5_R32(input, output);
+   yespower_0_5_R32_hash(input, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
