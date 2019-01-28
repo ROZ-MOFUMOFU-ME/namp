@@ -122,8 +122,6 @@ using namespace v8;
  DECLARE_CALLBACK(hefty1, hefty1_hash, 32);
  DECLARE_CALLBACK(keccak, keccak_hash, 32);
  DECLARE_CALLBACK(lbry, lbry_hash, 32);
- DECLARE_CALLBACK(lyra2re, lyra2re_hash, 32);
- DECLARE_CALLBACK(lyra2re2, lyra2re2_hash, 32);
  DECLARE_CALLBACK(nist5, nist5_hash, 32);
  DECLARE_CALLBACK(quark, quark_hash, 32);
  DECLARE_CALLBACK(qubit, qubit_hash, 32);
@@ -134,13 +132,6 @@ using namespace v8;
  DECLARE_CALLBACK(x11, x11_hash, 32);
  DECLARE_CALLBACK(x13, x13_hash, 32);
  DECLARE_CALLBACK(x15, x15_hash, 32);
- DECLARE_CALLBACK(yescrypt, yescrypt_hash, 32);
- DECLARE_CALLBACK(yespower, yespower_hash, 32);
- DECLARE_CALLBACK(yespower_0_5_R8, yespower_0_5_R8_hash, 32);
- DECLARE_CALLBACK(yespower_0_5_R8G, yespower_0_5_R8G_hash, 32);
- DECLARE_CALLBACK(yespower_0_5_R16, yespower_0_5_16_hash, 32);
- DECLARE_CALLBACK(yespower_0_5_R24, yespower_0_5_24_hash, 32);
- DECLARE_CALLBACK(yespower_0_5_R32, yespower_0_5_32_hash, 32);
 
 
 DECLARE_FUNC(scrypt) {
