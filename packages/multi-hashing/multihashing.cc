@@ -31,6 +31,7 @@ extern "C" {
     #include "sha1.h"
     #include "sha256d.h"
     #include "x15.h"
+    #include "neoscrypt.h"
     #include "fresh.h"
 }
 
@@ -160,7 +161,30 @@ void scrypt(const FunctionCallbackInfo<Value>& args) {
    args.GetReturnValue().Set(buff);
 }
 
+void neoscrypt(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
 
+   if (args.Length() < 2)
+       return except("You must provide buffer to hash and N factor.");
+
+   Local<Object> target = args[0]->ToObject();
+
+   if(!Buffer::HasInstance(target))
+       RETURN_EXCEPT("Argument should be a buffer object.");
+
+   // unsigned int nValue = args[1]->Uint32Value();
+   // unsigned int rValue = args[2]->Uint32Value();
+
+   char * input = Buffer::Data(target);
+   char output[32];
+
+   uint32_t input_len = Buffer::Length(target);
+
+   neoscrypt_hash(input, output, 0);
+
+   Local<Object> buff = Nan::NewBuffer(output, 32).ToLocalChecked();
+   args.GetReturnValue().Set(buff);
+}
 
 void scryptn(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = Isolate::GetCurrent();HandleScope scope(isolate);
