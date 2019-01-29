@@ -249,7 +249,7 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
         new Buffer([extraNoncePlaceholder.length])
     ]);
 
-    ar scriptSigPart2 = util.serializeString(util.getBlockIdentifier());
+    var scriptSigPart2 = util.serializeString(util.getBlockIdentifier());
 
     // for Koto transaction v3/v4 format 
     var nVersionGroupId = (txVersion & 0x7fffffff) == 3 ? util.packUInt32LE(0x2e7d970) :
