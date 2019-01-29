@@ -27,7 +27,6 @@ extern "C" {
     #include "sha256d.h"
     #include "shavite3.h"
     #include "skein.h"
-    #include "Sponge.h"
     #include "x11.h"
     #include "x13.h"
     #include "x15.h"
