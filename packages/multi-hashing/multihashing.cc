@@ -122,8 +122,6 @@ using namespace v8;
  DECLARE_CALLBACK(hefty1, hefty1_hash, 32);
  DECLARE_CALLBACK(keccak, keccak_hash, 32);
  DECLARE_CALLBACK(lbry, lbry_hash, 32);
- DECLARE_CALLBACK(lyra2re, lyra2re_hash, 32);
- DECLARE_CALLBACK(lyra2re, lyra2re2_hash, 32);
  DECLARE_CALLBACK(nist5, nist5_hash, 32);
  DECLARE_CALLBACK(quark, quark_hash, 32);
  DECLARE_CALLBACK(qubit, qubit_hash, 32);
@@ -341,6 +339,44 @@ DECLARE_FUNC(boolberry) {
     uint64_t spad_len = Buffer::Length(target_spad);
 
     boolberry_hash(input, input_len, scratchpad, spad_len, output, height);
+
+    SET_BUFFER_RETURN(output, 32);
+}
+
+DECLARE_FUNC(lyra2re){
+    DECLARE_SCOPE;
+
+    if (args.Length() < 1)
+        RETURN_EXCEPT("You must provide one argument.");
+
+    Local<Object> target = args[0]->ToObject();
+
+    if(!Buffer::HasInstance(target))
+        RETURN_EXCEPT("Argument should be a buffer object.");
+
+    char * input = Buffer::Data(target);
+    char output[32];
+
+    lyra2re_hash(input, output);
+
+    SET_BUFFER_RETURN(output, 32);
+}
+
+DECLARE_FUNC(lyra2re2){
+    DECLARE_SCOPE;
+
+    if (args.Length() < 1)
+        RETURN_EXCEPT("You must provide one argument.");
+
+    Local<Object> target = args[0]->ToObject();
+
+    if(!Buffer::HasInstance(target))
+        RETURN_EXCEPT("Argument should be a buffer object.");
+
+    char * input = Buffer::Data(target);
+    char output[32];
+
+    lyra2re2_hash(input, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
