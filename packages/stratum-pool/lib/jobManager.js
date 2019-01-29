@@ -96,15 +96,9 @@ var JobManager = module.exports = function JobManager(options){
                     };
                 }
             case 'scrypt-n':
-            case 'sha1':
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
-            case 'lyra2re2':
-                return function (d) {
-                    return util.reverseBuffer(util.sha256d(d));
-                };
-
             default:
                 return function () {
                     return util.reverseBuffer(hashDigest.apply(this, arguments));
@@ -121,8 +115,7 @@ var JobManager = module.exports = function JobManager(options){
             _this.extraNoncePlaceholder,
             options.coin.reward,
             options.coin.txMessages,
-            options.recipients,
-            options.network
+            options.recipients
         );
 
         _this.currentJob = tmpBlockTemplate;
@@ -157,8 +150,7 @@ var JobManager = module.exports = function JobManager(options){
             _this.extraNoncePlaceholder,
             options.coin.reward,
             options.coin.txMessages,
-            options.recipients,
-            options.network
+            options.recipients
         );
 
         this.currentJob = tmpBlockTemplate;
@@ -236,13 +228,12 @@ var JobManager = module.exports = function JobManager(options){
         //Check if share is a block candidate (matched network difficulty)
         if (job.target.ge(headerBigNum)){
             blockHex = job.serializeBlock(headerBuffer, coinbaseBuffer).toString('hex');
-            if (options.coin.algorithm === 'blake' || options.coin.algorithm === 'neoscrypt') {                      
+            if (options.coin.algorithm === 'blake' || options.coin.algorithm === 'neoscrypt') {                
                 blockHash = util.reverseBuffer(util.sha256d(headerBuffer, nTime)).toString('hex');
             }
             else {
             	blockHash = blockHasher(headerBuffer, nTime).toString('hex');
             }
-            blockHash = blockHasher(headerBuffer, nTime).toString('hex');
         }
         else {
             if (options.emitInvalidBlockHashes)
