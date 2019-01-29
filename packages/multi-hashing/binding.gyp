@@ -18,6 +18,7 @@
                 "x11.c",
                 "Lyra2RE.c",
                 "Lyra2.c",
+		"Sponge.c",
                 "quark.c",
                 "bcrypt.c",
                 "groestl.c",
