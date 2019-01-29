@@ -101,12 +101,33 @@ For some (probably outdated and incorrect) documentation about whats kinda going
 see: https://en.bitcoin.it/wiki/Protocol_specification#tx
  */
 
-var generateOutputTransactions = function(poolRecipient, recipients, rpcData, network){
+var generateOutputTransactions = function(poolRecipient, recipients, rpcData){
 
     var reward = rpcData.coinbasevalue;
+    if (!reward) {
+        reward = util.getKotoBlockSubsidy(rpcData.height);
+        reward -= rpcData.coinbasetxn.fee; /* rpcData.coinbasetxn.fee := <total fee of transaxtions> * -1)
+        /*
+        var nScript = parseInt(rpcData.coinbasetxn.data.slice(82, 84), 16);
+        if (nScript == 253) {
+            nScript = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(84, 84 + 4)), 16);
+            nScript = nScript + 2;
+        } else if (nScript == 254) {
+            nScript = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(84, 84 + 8)), 16);
+            nScript = nScript + 4;
+        } else if (nScript == 255) {
+            nScript = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(84, 84 + 16)), 16);
+            nScript = nScript + 8;
+        }
+        var posReward = 94 + nScript*2;
+        reward = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(posReward, posReward + 16)), 16);
+        */
+       //console.log("reward from coinbasetxn, height => " + reward);
+    }
+   
     var rewardToPool = reward;
 
-    var txOutputBuffers = [];
+var txOutputBuffers = [];
 
 
 
@@ -228,8 +249,12 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
         new Buffer([extraNoncePlaceholder.length])
     ]);
 
-    var scriptSigPart2 = util.serializeString('/nodeStratum/');
+    ar scriptSigPart2 = util.serializeString(util.getBlockIdentifier());
 
+    // for Koto transaction v3/v4 format 
+    var nVersionGroupId = (txVersion & 0x7fffffff) == 3 ? util.packUInt32LE(0x2e7d970) :
+    (txVersion & 0x7fffffff) == 4 ? util.packUInt32LE(0x9023e50a) : new Buffer([]);
+    
     var p1 = Buffer.concat([
         util.packUInt32LE(txVersion),
         txTimestamp,
@@ -252,6 +277,13 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
 
     var outputTransactions = generateOutputTransactions(publicKey, recipients, rpcData, network);
 
+    // for Koto transaction v2/v3/v4 format
+    var nExpiryHeight = (txVersion & 0x7fffffff) >= 3 ? util.packUInt32LE(0) : new Buffer([]);
+    var valueBalance = (txVersion & 0x7fffffff) >= 4 ? util.packInt64LE(0) : new Buffer([]);
+    var vShieldedSpend = (txVersion & 0x7fffffff) >= 4 ? new Buffer([0]) : new Buffer([]);
+    var vShieldedOutput = (txVersion & 0x7fffffff) >= 4 ? new Buffer([0]) : new Buffer([]);
+    var nJoinSplit = (txVersion & 0x7fffffff) >= 2 ? new Buffer([0]) : new Buffer([]);
+    
     var p2 = Buffer.concat([
         scriptSigPart2,
         util.packUInt32LE(txInSequence),
@@ -262,6 +294,11 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
         //end transaction ouput
 
         util.packUInt32LE(txLockTime),
+        nExpiryHeight,
+        valueBalance,
+        vShieldedSpend,
+        vShieldedOutput,
+        nJoinSplit,
         txComment
     ]);
 
