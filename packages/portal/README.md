@@ -7,7 +7,7 @@ Donations for development are greatly appreciated!
   * NUKO: 0xa79bde46faab3c40632604728e9f2165b052581c
   * KOTO :k16dV6stRkFtZpFtMTrznqvavRuMfh4PB1R
   * SUSU: SeXbMBaax7NgnTEFEMxin5ycXy9r9CDBot
-  * MONA: mona1qnur6ljkl5pe8w6ql8xfqw4aa38d5xa9q68dxll
+  * MONA: MAD1ZFzKKioESwc7xJWvDj1gWDePbEgTGe
   * BELL: BCVicYRSqKKt1ynJKPrXHA46hUWLrbjR49
   * BTC: 3KedzPANAtCzADPbhT7GMv3LjxyeRXc4AE
   
