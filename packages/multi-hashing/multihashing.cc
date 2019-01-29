@@ -461,7 +461,7 @@ DECLARE_FUNC(yespower_0_5_R8G){
    char output[32];
 
 
-   yespower_0_5_R8G_hash(input, input_len, output);
+   yespower_0_5_R8_hash(input, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
