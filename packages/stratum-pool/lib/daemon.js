@@ -23,13 +23,8 @@ function DaemonInterface(daemons, logger){
 
 
     var instances = (function(){
-        for (var i = 0; i < daemons.length; i++) {
+        for (var i = 0; i < daemons.length; i++)
             daemons[i]['index'] = i;
-            if (daemons[i].maxSockets)
-                daemons[i].myagent = http.Agent({maxSockets: daemons[i].maxSockets, keepAlive: false});
-            else
-                daemons[i].myagent = http.Agent({maxSockets: 16, keepAlive: false});
-        }
         return daemons;
     })();
 
@@ -52,8 +47,7 @@ function DaemonInterface(daemons, logger){
         });
     }
 
-    var myagent = http.Agent({maxSockets: 16, keepAlive: false});
-    
+
     function performHttpRequest(instance, jsonData, callback){
         var options = {
             hostname: (typeof(instance.host) === 'undefined' ? '127.0.0.1' : instance.host),
@@ -62,8 +56,7 @@ function DaemonInterface(daemons, logger){
             auth    : instance.user + ':' + instance.password,
             headers : {
                 'Content-Length': jsonData.length
-            },
-            agent: instance.myagent
+            }
         };
 
         var parseJson = function(res, data){
@@ -88,12 +81,8 @@ function DaemonInterface(daemons, logger){
                     + '\nReponse Data: ' + data);
 
             }
-            if (dataJson){
-                callback({type: 'daemon error', code: -9999, message: data}, null, data);
-            } else {
-                logger('error', 'No dataJson from daemon instance  ' + instance.index);
-                callback({type: 'request error', message: data}, null, data);
-            }
+            if (dataJson)
+                callback(dataJson.error, dataJson, data);
         };
 
         var req = http.request(options, function(res) {
