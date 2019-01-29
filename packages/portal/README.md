@@ -8,7 +8,7 @@ Donations for development are greatly appreciated!
   * KOTO :k16dV6stRkFtZpFtMTrznqvavRuMfh4PB1R
   * SUSU: SeXbMBaax7NgnTEFEMxin5ycXy9r9CDBot
   * MONA: mona1qnur6ljkl5pe8w6ql8xfqw4aa38d5xa9q68dxll
-  * BELL: bDuCforokZ2CsG4VBDE31rUGb9htMpWyq9
+  * BELL: BCVicYRSqKKt1ynJKPrXHA46hUWLrbjR49
   * BTC: 3KedzPANAtCzADPbhT7GMv3LjxyeRXc4AE
   
 #### Production Usage Notice
