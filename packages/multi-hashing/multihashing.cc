@@ -31,9 +31,6 @@ extern "C" {
     #include "x11.h"
     #include "x13.h"
     #include "x15.h"
-    #include "yescrypt/yescrypt.h"
-    #include "yescrypt/sha256.h"
-    #include "yespower/sha256.h"
     #include "yespower/yespower.h"
 }
 
