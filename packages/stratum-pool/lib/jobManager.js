@@ -69,6 +69,7 @@ var JobManager = module.exports = function JobManager(options){
     var coinbaseHasher = (function(){
         switch(options.coin.algorithm){
             case 'keccak':
+            case 'blake':
             case 'fugue':
             case 'groestl':
                 if (options.coin.normalHashing === true)
@@ -89,6 +90,12 @@ var JobManager = module.exports = function JobManager(options){
                         return util.reverseBuffer(hashDigest.apply(this, arguments));
                     };
                 }
+            case 'scrypt-og':
+                if (options.coin.reward === 'POS') {
+                    return function (d) {
+                        return util.reverseBuffer(hashDigest.apply(this, arguments));
+                    };
+                }
             case 'scrypt-jane':
                 if (options.coin.reward === 'POS') {
                     return function (d) {
@@ -100,11 +107,6 @@ var JobManager = module.exports = function JobManager(options){
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
-            case 'lyra2re2':
-                return function (d) {
-                    return util.reverseBuffer(util.sha256d(d));
-                };
-
             default:
                 return function () {
                     return util.reverseBuffer(hashDigest.apply(this, arguments));
@@ -112,30 +114,6 @@ var JobManager = module.exports = function JobManager(options){
         }
     })();
 
-    var getKotoFoundersReward = function (rpcData, recipients) {
-        if (!options.coin.kotoFoundersReward) {
-            return recipients;
-        }
-
-        var founders = []
-        for (var i = 0; i < options.coin.kotoFoundersReward.length; i++) {
-            var founder = options.coin.kotoFoundersReward[i];
-            if (rpcData.height >= founder.start && rpcData.height <= founder.last) {
-                try {
-                    founders.push({
-                        percent: 0,
-                        value: rpcData.coinbasetxn.foundersreward,
-                        script: util.getFounderRewardScript(founder.address)
-                    });
-                } catch(e) {
-                    emitErrorLog('Error generating transaction output script for ' + founder.address + ' in rewardRecipients');
-                }
-            }
-        }
-
-        return founders.concat(recipients);
-    }
-    
     this.updateCurrentJob = function(rpcData){
 
         var tmpBlockTemplate = new blockTemplate(
@@ -145,7 +123,7 @@ var JobManager = module.exports = function JobManager(options){
             _this.extraNoncePlaceholder,
             options.coin.reward,
             options.coin.txMessages,
-            getKotoFoundersReward(rpcData, options.recipients),
+            options.recipients,
             options.network
         );
 
@@ -181,7 +159,7 @@ var JobManager = module.exports = function JobManager(options){
             _this.extraNoncePlaceholder,
             options.coin.reward,
             options.coin.txMessages,
-            getKotoFoundersReward(rpcData, options.recipients),
+            options.recipients,
             options.network
         );
 
@@ -260,12 +238,6 @@ var JobManager = module.exports = function JobManager(options){
         //Check if share is a block candidate (matched network difficulty)
         if (job.target.ge(headerBigNum)){
             blockHex = job.serializeBlock(headerBuffer, coinbaseBuffer).toString('hex');
-            if (options.coin.algorithm === 'blake' || options.coin.algorithm === 'neoscrypt') {                      
-                blockHash = util.reverseBuffer(util.sha256d(headerBuffer, nTime)).toString('hex');
-            }
-            else {
-            	blockHash = blockHasher(headerBuffer, nTime).toString('hex');
-            }
             blockHash = blockHasher(headerBuffer, nTime).toString('hex');
         }
         else {
