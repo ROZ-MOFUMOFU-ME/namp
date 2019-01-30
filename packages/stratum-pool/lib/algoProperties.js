@@ -5,6 +5,17 @@ var util = require('./util.js');
 var diff1 = global.diff1 = 0x00000000ffff0000000000000000000000000000000000000000000000000000;
 
 var algos = module.exports = global.algos = {
+
+    sha256d: {
+        //Uncomment diff if you want to use hardcoded truncated diff
+        //diff: '00000000ffff0000000000000000000000000000000000000000000000000000',
+        hash: function(){
+            return function(){
+                return multiHashing.sha256d.apply(this, arguments);
+            }
+        }
+    },
+    
     sha256: {
         //Uncomment diff if you want to use hardcoded truncated diff
         //diff: '00000000ffff0000000000000000000000000000000000000000000000000000',
@@ -216,6 +227,14 @@ var algos = module.exports = global.algos = {
         hash: function(){
             return function(){
                 return multiHashing.blake.apply(this, arguments);
+            }
+        }
+    },
+    neoscrypt: {
+        multiplier: Math.pow(2, 5),
+        hash: function(){
+            return function(){
+                return multiHashing.neoscrypt.apply(this, arguments);
             }
         }
     },
