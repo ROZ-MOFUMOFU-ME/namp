@@ -104,6 +104,9 @@ var JobManager = module.exports = function JobManager(options){
                 }
             case 'scrypt-n':
             case 'sha1':
+            case 'yescrypt':
+            case 'yescrcryptR8G':
+            case 'yespower':
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
