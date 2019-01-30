@@ -378,27 +378,6 @@ DECLARE_FUNC(lyra2re2){
     SET_BUFFER_RETURN(output, 32);
 }
 
-DECLARE_FUNC(yescrypt){
-    DECLARE_SCOPE;
-
-    if (args.Length() < 1)
-        RETURN_EXCEPT("You must provide one argument.");
-
-    Local<Object> target = args[0]->ToObject();
-
-    if(!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
-    
-   
-    char * input = Buffer::Data(target);
-    char output[32];
-
-   
-    yescrypt_hash(input, output);
-
-    SET_BUFFER_RETURN(output, 32);
-}
-
 DECLARE_FUNC(yespower){
     DECLARE_SCOPE;
 
@@ -556,7 +535,6 @@ DECLARE_INIT(init) {
     NODE_SET_METHOD(exports, "x11", x11);
     NODE_SET_METHOD(exports, "x13", x13);
     NODE_SET_METHOD(exports, "x15", x15);
-    NODE_SET_METHOD(exports, "yescrypt", yescrypt);
     NODE_SET_METHOD(exports, "yespower", yespower);
     NODE_SET_METHOD(exports, "yespower_0_5_R8", yespower_0_5_R8);
     NODE_SET_METHOD(exports, "yespower_0_5_R8G", yespower_0_5_R8G);
