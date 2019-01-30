@@ -317,6 +317,20 @@ SHA256_Final(unsigned char digest[32], SHA256_CTX * ctx)
 	memset((void *)ctx, 0, sizeof(*ctx));
 }
 
+/**
+ * SHA256_Buf(in, len, digest):
+ * Compute the SHA256 hash of ${len} bytes from ${in} and write it to ${digest}.
+ */
+static void
+SHA256_Buf(const void * in, size_t len, uint8_t digest[32])
+{
+	SHA256_CTX ctx;
+
+	SHA256_Init(&ctx);
+	SHA256_Update(&ctx, in, len);
+	SHA256_Final(digest, &ctx);
+}
+
 /* Initialize an HMAC-SHA256 operation with the given key. */
 static void
 HMAC_SHA256_Init(HMAC_SHA256_CTX * ctx, const void * _K, size_t Klen)
@@ -379,6 +393,23 @@ HMAC_SHA256_Final(unsigned char digest[32], HMAC_SHA256_CTX * ctx)
 
 	/* Clean the stack. */
 	memset(ihash, 0, 32);
+}
+
+
+/**
+ * HMAC_SHA256_Buf(K, Klen, in, len, digest):
+ * Compute the HMAC-SHA256 of ${len} bytes from ${in} using the key ${K} of
+ * length ${Klen}, and write the result to ${digest}.
+ */
+static void
+HMAC_SHA256_Buf(const void * K, size_t Klen, const void * in, size_t len,
+    uint8_t digest[32])
+{
+	HMAC_SHA256_CTX ctx;
+
+	HMAC_SHA256_Init(&ctx, K, Klen);
+	HMAC_SHA256_Update(&ctx, in, len);
+	HMAC_SHA256_Final(digest, &ctx);
 }
 
 /**
