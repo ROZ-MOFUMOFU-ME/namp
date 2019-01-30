@@ -50,8 +50,9 @@ Features
 * ✓ __Skein__ (Skeincoin [SKC])
 * ✓ __Groestl__ (Groestlcoin [GRS])
 * ✓ __Yescrypt-0.5__ (BitZeny [ZNY])
-* ✓ __YesPoWer__ ( Cryply [CRP], Bellcoin [BELL], Elicoin [ELI], etc..)
-* ✓ __LyraREv2__ ( Monacoin [MONA], Mangacoin [MANGA], etc..)
+* ✓ __Yescrypt__ (Koto [KOTO], Elicoin,[ELI], etc..)
+* ✓ __YesPoWer__ (Cryply [CRP], Bellcoin [BELL], etc..)
+* ✓ __LyraREv2__ (Monacoin [MONA], Mangacoin [MANGA], etc..)
 
 
 May be working (needs additional testing):
