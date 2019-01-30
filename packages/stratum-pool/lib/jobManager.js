@@ -113,6 +113,30 @@ var JobManager = module.exports = function JobManager(options){
                 };
         }
     })();
+    var getKotoFoundersReward = function (rpcData, recipients) {
+        if (!options.coin.kotoFoundersReward) {
+            return recipients;
+        }
+
+        var founders = []
+        for (var i = 0; i < options.coin.kotoFoundersReward.length; i++) {
+            var founder = options.coin.kotoFoundersReward[i];
+            if (rpcData.height >= founder.start && rpcData.height <= founder.last) {
+                try {
+                    founders.push({
+                        percent: 0,
+                        value: rpcData.coinbasetxn.foundersreward,
+                        script: util.getFounderRewardScript(founder.address)
+                    });
+                } catch(e) {
+                    emitErrorLog('Error generating transaction output script for ' + founder.address + ' in rewardRecipients');
+                }
+            }
+        }
+
+        return founders.concat(recipients);
+    }
+
 
     this.updateCurrentJob = function(rpcData){
 
@@ -123,7 +147,7 @@ var JobManager = module.exports = function JobManager(options){
             _this.extraNoncePlaceholder,
             options.coin.reward,
             options.coin.txMessages,
-            options.recipients,
+            getKotoFoundersReward(rpcData, options.recipients),
             options.network
         );
 
@@ -159,7 +183,7 @@ var JobManager = module.exports = function JobManager(options){
             _this.extraNoncePlaceholder,
             options.coin.reward,
             options.coin.txMessages,
-            options.recipients,
+            getKotoFoundersReward(rpcData, options.recipients),
             options.network
         );
 
