@@ -60,9 +60,6 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
 
 
     this.prevHashReversed = util.reverseByteOrder(new Buffer(rpcData.previousblockhash, 'hex')).toString('hex');
-    if (rpcData.finalsaplingroothash) {
-        this.finalsaplingroothashReversed = util.reverseByteOrder(new Buffer(rpcData.finalsaplingroothash, 'hex')).toString('hex');
-    }
     this.transactionData = Buffer.concat(rpcData.transactions.map(function(tx){
         return new Buffer(tx.data, 'hex');
     }));
@@ -91,18 +88,8 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
     //https://en.bitcoin.it/wiki/Protocol_specification#Block_Headers
     this.serializeHeader = function(merkleRoot, nTime, nonce){
 
-        var headerSize;
-        if (rpcData.version == 5) {
-            headerSize = 112;
-        } else {
-            headerSize = 80;
-        }
-        var header = new Buffer(headerSize);
+        var header =  new Buffer(80);
         var position = 0;
-        if (rpcData.version == 5) {
-            header.write(rpcData.finalsaplingroothash, position, 32, 'hex');
-            position += 32;
-        }
         header.write(nonce, position, 4, 'hex');
         header.write(rpcData.bits, position += 4, 4, 'hex');
         header.write(nTime, position += 4, 4, 'hex');
@@ -150,9 +137,6 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
                 util.packUInt32BE(this.rpcData.curtime).toString('hex'),
                 true
             ];
-            if (this.finalsaplingroothashReversed) {
-                this.jobParams.push(this.finalsaplingroothashReversed);
-            }
         }
         return this.jobParams;
     };
