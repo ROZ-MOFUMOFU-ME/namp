@@ -184,7 +184,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
     if (requireShielding === true) {
         async.parallel([validateAddress, validateTAddress, validateZAddress, getBalance], asyncComplete);
     } else {
-        if (poolOption.tAddress)
+        if (poolOptions.tAddress)
             async.parallel([validateAddress, validateTAddress, getBalance], asyncComplete);
         else
             async.parallel([validateAddress, getBalance], asyncComplete);
