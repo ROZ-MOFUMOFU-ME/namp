@@ -80,6 +80,15 @@ var algos = module.exports = global.algos = {
             }
         }
     },
+    'yescrypt_bitzeny': {
+        multiplier: 65536,
+        diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
+        hash: function(){
+            return function(){
+                return multiHashing.yescrypt_bitzeny.apply(this, arguments);
+            }
+        }
+    },
     'yescryptR8': {
         multiplier: 65536,
         diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
