@@ -38,7 +38,6 @@ var pool = module.exports = function pool(options, authorizeFn){
     this.start = function(){
         SetupVarDiff();
         SetupApi();
-        util.setupKotoConsensusParams(options);
         SetupDaemonInterface(function(){
             DetectCoinData(function(){
                 SetupRecipients();
