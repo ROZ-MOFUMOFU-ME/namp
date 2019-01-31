@@ -13,7 +13,7 @@
                 "yescrypt/yescryptcommon.c",
                 "yescrypt-0.5/sha256_c.h",
                 "yescrypt-0.5/yescrypt-best.c",
-                "yescrypt-0.5/yescryptcommon.c",
+                "yescrypt-0.5/yescrypt.c",
                 "keccak.c",
 		"lbry.c",
                 "skein.c",
