@@ -542,7 +542,7 @@ DECLARE_FUNC(yescrypt_bitzeny){
    char output[32];
 
 
-   yescrypt_bitzeny(input, output);
+   yescrypt_bitzeny_hash(input, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
