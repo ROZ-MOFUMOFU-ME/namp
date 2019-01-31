@@ -11,7 +11,7 @@
                 "yescrypt/sha256_Y.c",
                 "yescrypt/yescrypt-best.c",
                 "yescrypt/yescryptcommon.c",
-                "yescrypt-0.5/sha256_Y.c",
+                "yescrypt-0.5/sha256_c.h",
                 "yescrypt-0.5/yescrypt-best.c",
                 "yescrypt-0.5/yescryptcommon.c",
                 "keccak.c",
