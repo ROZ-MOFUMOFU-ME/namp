@@ -100,7 +100,7 @@ static int yescrypt_bitzeny(const uint8_t *passwd, size_t passwdlen,
 
 #endif
 
-void yescrypt_hash(const char *input, char *output)
+void yescrypt_bitzeny_hash(const char *input, char *output)
 {
     yescrypt_bitzeny((const uint8_t *) input, 80,
                      (const uint8_t *) input, 80,
