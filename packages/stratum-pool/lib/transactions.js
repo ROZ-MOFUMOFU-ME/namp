@@ -230,10 +230,6 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
 
     var scriptSigPart2 = util.serializeString('/nodeStratum/');
 
-    // for Koto transaction v3/v4 format 
-    var nVersionGroupId = (txVersion & 0x7fffffff) == 3 ? util.packUInt32LE(0x2e7d970) :
-    (txVersion & 0x7fffffff) == 4 ? util.packUInt32LE(0x9023e50a) : new Buffer([]);
-    
     var p1 = Buffer.concat([
         util.packUInt32LE(txVersion),
         txTimestamp,
@@ -256,13 +252,6 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
 
     var outputTransactions = generateOutputTransactions(publicKey, recipients, rpcData, network);
 
-    // for Koto transaction v2/v3/v4 format
-    var nExpiryHeight = (txVersion & 0x7fffffff) >= 3 ? util.packUInt32LE(0) : new Buffer([]);
-    var valueBalance = (txVersion & 0x7fffffff) >= 4 ? util.packInt64LE(0) : new Buffer([]);
-    var vShieldedSpend = (txVersion & 0x7fffffff) >= 4 ? new Buffer([0]) : new Buffer([]);
-    var vShieldedOutput = (txVersion & 0x7fffffff) >= 4 ? new Buffer([0]) : new Buffer([]);
-    var nJoinSplit = (txVersion & 0x7fffffff) >= 2 ? new Buffer([0]) : new Buffer([]);
- 
     var p2 = Buffer.concat([
         scriptSigPart2,
         util.packUInt32LE(txInSequence),
@@ -273,9 +262,6 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
         //end transaction ouput
 
         util.packUInt32LE(txLockTime),
-        valueBalance,
-        vShieldedSpend,
-        vShieldedOutput,
         txComment
     ]);
 
