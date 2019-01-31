@@ -33,7 +33,7 @@ extern "C" {
     #include "x15.h"
     #include "yespower/yespower.h"
     #include "yescrypt/yescrypt.h"
-    #include "yescrypt-0.5/yespower.h"
+    #include "yescrypt-0.5/yescrypt.h"
 }
 
 #include "boolberry.h"
