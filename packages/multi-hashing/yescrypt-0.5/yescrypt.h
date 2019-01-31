@@ -33,8 +33,6 @@
 #include <stdint.h>
 #include <stdlib.h> /* for size_t */
 
-void yescrypt_bitzeny_hash(const char *input, char *output);
-
 /**
  * Internal type used by the memory allocator.  Please do not use it directly.
  * Use yescrypt_shared_t and yescrypt_local_t as appropriate instead, since
@@ -274,3 +272,5 @@ static int yescrypt_kdf(const yescrypt_shared_t * __shared,
     uint8_t * __buf, size_t __buflen);
 
 #endif /* !_YESCRYPT_H_ */
+
+void yescrypt_bitzeny_hash(const char *input, char *output);
