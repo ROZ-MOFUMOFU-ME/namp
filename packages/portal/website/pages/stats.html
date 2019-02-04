@@ -173,6 +173,8 @@
 						<a href="https://insight.kotocoin.info/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
                                         {{ } else if (String(it.stats.pools[pool].name).startsWith("susucoin")) { }}
                                                 <a href="https://explore.susukino.com/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+	                                {{ } else if (String(it.stats.pools[pool].name).startsWith("susucoin")) { }}
+                                                <a href="https://ytn.overemo.com/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
 					{{ } else { }}
                                             {{=block[2]}}
                                         {{ } }}
@@ -209,6 +211,8 @@
 						<a href="https://insight.kotocoin.info/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
                                         {{ } else if (String(it.stats.pools[pool].name).startsWith("susucoin")) { }}
                                                 <a href="https://explore.susukino.com/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+		    			{{ } else if (String(it.stats.pools[pool].name).startsWith("susucoin")) { }}
+                                                <a href="https://ytn.overemo.com/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
 					{{ } else { }}
 						{{=block[2]}}
 					{{ } }}
