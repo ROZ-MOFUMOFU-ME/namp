@@ -93,6 +93,12 @@
         <div class="chartHolder"><svg id="poolHashrate"/></div>
     </div>
 </div>
+<div id="topCharts">
+    <div class="chartWrapper">
+        <div class="chartLabel">Pool Pending Blocks</div>
+        <div class="chartHolder"><svg id="poolPending"/></div>
+    </div>
+</div>
 {{ function capitalizeFirstLetter(t){return t.charAt(0).toUpperCase()+t.slice(1)} }}
 {{ function readableDate(a){ return new Date(parseInt(a)).toString(); } }}
 <div class="pure-g-r" id="boxesLower">
