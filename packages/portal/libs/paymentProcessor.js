@@ -97,7 +97,10 @@ function SetupForPool(logger, poolOptions, setupFinished){
     var disablePeymentProcessing = false;
 
     function validateAddress (callback){
-        daemon.cmd('validateaddress', [poolOptions.address], function(result) {
+        var cmd = "validateaddress"
+        if(poolOptions.BTCover16)
+            cmd = "getaddressinfo"
+        daemon.cmd(cmd, [poolOptions.address], function(result) {
             if (result.error){
                 logger.error(logSystem, logComponent, 'Error with payment processing daemon ' + JSON.stringify(result.error));
                 callback(true);
@@ -184,10 +187,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
     if (requireShielding === true) {
         async.parallel([validateAddress, validateTAddress, validateZAddress, getBalance], asyncComplete);
     } else {
-        if (poolOptions.tAddress)
-            async.parallel([validateAddress, validateTAddress, getBalance], asyncComplete);
-        else
-            async.parallel([validateAddress, getBalance], asyncComplete);
+        //async.parallel([validateAddress, validateTAddress, getBalance], asyncComplete);
+        async.parallel([validateAddress, getBalance], asyncComplete);
     }
 
     //get t_address coinbalance
@@ -1414,7 +1415,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
 
     var getProperAddress = function(address){
-        if (address.length >= 50){
+        if (address.length >= 40){
             logger.warning(logSystem, logComponent, 'Invalid address '+address+', convert to address '+(poolOptions.invalidAddress || poolOptions.address));
             return (poolOptions.invalidAddress || poolOptions.address);
         }
