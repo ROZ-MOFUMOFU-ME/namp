@@ -3,6 +3,8 @@
     "coin": "susucoin.json",
 
     "address": "",
+    "BTCover16": true,
+    "_comment_BTCover16": "If BTC 0.16 or higher, payment does not work please enable it",
 
     "rewardRecipients": {
         "": 1.0
