@@ -1,0 +1,7 @@
+{
+    "name": "Yenten",
+    "symbol": "YTN",
+    "algorithm": "yescryptR16",
+    "blockTime": 120,
+    "txfee": 0.001
+}

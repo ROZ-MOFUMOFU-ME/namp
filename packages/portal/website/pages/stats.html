@@ -93,6 +93,12 @@
         <div class="chartHolder"><svg id="poolHashrate"/></div>
     </div>
 </div>
+<div id="topCharts">
+    <div class="chartWrapper">
+        <div class="chartLabel">Pool Pending Blocks</div>
+        <div class="chartHolder"><svg id="poolPending"/></div>
+    </div>
+</div>
 {{ function capitalizeFirstLetter(t){return t.charAt(0).toUpperCase()+t.slice(1)} }}
 {{ function readableDate(a){ return new Date(parseInt(a)).toString(); } }}
 <div class="pure-g-r" id="boxesLower">
@@ -107,6 +113,16 @@
                     <div><i class="fa fa-tachometer"></i><span id="statsHashrate{{=pool}}">{{=it.stats.pools[pool].hashrateString}}</span> (Now)</div>
 					<div><i class="fa fa-tachometer"></i><span id="statsHashrateAvg{{=pool}}">...</span> (Avg)</div>
 					<div><i class="fa fa-gavel"></i>Luck <span id="statsLuckDays{{=pool}}">{{=it.stats.pools[pool].luckDays}}</span> Days</div>
+                    <div><i class="fa fa-bar-chart"></i>&nbsp;Share:&nbsp;<span id="statsHashPercent{{=pool}}">
+{{
+    var percent=0.0;
+    if(it.stats.pools[pool].hashrate == 0 ) {
+        percent=0.0;
+    } else {
+        percent=it.stats.pools[pool].hashrate / it.stats.pools[pool].poolStats.networkSols * 100;
+    }
+}}
+                    {{=percent.toFixed(5)}}</span> %</div>
                 </div>
             </div>
         </div>
@@ -149,8 +165,16 @@
 						<a href="https://classic.zcha.in/blocks/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
 					{{ } else if (String(it.stats.pools[pool].name).startsWith("hush")) { }}
 						<a href="https://explorer.myhush.org/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
-                    {{ } else if (String(it.stats.pools[pool].name).startsWith("bitzeny")) { }}
-                        <a href="https://insight.bitzeny.jp/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+               				{{ } else if (String(it.stats.pools[pool].name).startsWith("bitzeny")) { }}
+                				<a href="https://insight.bitzeny.jp/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+					{{ } else if (String(it.stats.pools[pool].name).startsWith("bellcoin")) { }}
+						<a href="https://explorer.bellcoin.web4u.jp/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+					{{ } else if (String(it.stats.pools[pool].name).startsWith("koto")) { }}
+						<a href="https://insight.kotocoin.info/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+                                        {{ } else if (String(it.stats.pools[pool].name).startsWith("susucoin")) { }}
+                                                <a href="https://explore.susukino.com/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+	                                {{ } else if (String(it.stats.pools[pool].name).startsWith("yenten")) { }}
+                                                <a href="https://ytn.overemo.com/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
 					{{ } else { }}
                                             {{=block[2]}}
                                         {{ } }}
@@ -179,8 +203,16 @@
 						<a href="https://explorer.zcha.in/blocks/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
 					{{ } else if (String(it.stats.pools[pool].name).startsWith("zclassic")) { }}
 						<a href="https://classic.zcha.in/blocks/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
-                    {{ } else if (String(it.stats.pools[pool].name).startsWith("bitzeny")) { }}
-                        <a href="https://insight.bitzeny.jp/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+                			{{ } else if (String(it.stats.pools[pool].name).startsWith("bitzeny")) { }}
+                        			<a href="https://insight.bitzeny.jp/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+					{{ } else if (String(it.stats.pools[pool].name).startsWith("bellcoin")) { }}
+						<a href="https://explorer.bellcoin.web4u.jp/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+					{{ } else if (String(it.stats.pools[pool].name).startsWith("koto")) { }}
+						<a href="https://insight.kotocoin.info/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+                                        {{ } else if (String(it.stats.pools[pool].name).startsWith("susucoin")) { }}
+                                                <a href="https://explore.susukino.com/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
+		    			{{ } else if (String(it.stats.pools[pool].name).startsWith("yenten")) { }}
+                                                <a href="https://ytn.overemo.com/block/{{=block[0]}}" target="_blank">{{=block[2]}}</a>
 					{{ } else { }}
 						{{=block[2]}}
 					{{ } }}
@@ -333,13 +365,14 @@ legend.append('text')
                 $('#statsWorkers' + pool).text(stats.pools[pool].workerCount);
                 $('#statsHashrate' + pool).text(stats.pools[pool].hashrateString);
 				$('#statsHashrateAvg' + pool).text(getReadableHashRateString(calculateAverageHashrate(pool)));
-				$('#statsLuckDays' + pool).text(stats.pools[pool].luckDays);
+				$('#statsLuckDays' + pool).text(getReadableLuckTime(stats.pools[pool].luckDays));
 				$('#statsValidBlocks' + pool).text(stats.pools[pool].poolStats.validBlocks);
 				$('#statsTotalPaid' + pool).text((parseFloat(stats.pools[pool].poolStats.totalPaid)).toFixed(8));
 				$('#statsNetworkBlocks' + pool).text(stats.pools[pool].poolStats.networkBlocks);
 				$('#statsNetworkDiff' + pool).text(stats.pools[pool].poolStats.networkDiff);
-				$('#statsNetworkSols' + pool).text(getReadableNetworkHashRateString(stats.pools[pool].poolStats.networkSols));
+				$('#statsNetworkSols' + pool).text(getReadableHashRateString(stats.pools[pool].poolStats.networkSols));
 				$('#statsNetworkConnections' + pool).text(stats.pools[pool].poolStats.networkConnections);
+                $('#statsHashPercent' + pool).text((stats.pools[pool].hashrate/stats.pools[pool].poolStats.networkSols*100).toFixed(5));
             }
         });
     });

@@ -1,0 +1,6 @@
+{
+    "name": "Monacoin",
+    "symbol": "MONA",
+    "algorithm": "lyra2re2",
+    "blockTime": 90
+}

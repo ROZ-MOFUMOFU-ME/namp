@@ -184,8 +184,10 @@ function SetupForPool(logger, poolOptions, setupFinished){
     if (requireShielding === true) {
         async.parallel([validateAddress, validateTAddress, validateZAddress, getBalance], asyncComplete);
     } else {
-        //async.parallel([validateAddress, validateTAddress, getBalance], asyncComplete);
-        async.parallel([validateAddress, getBalance], asyncComplete);
+        if (poolOptions.tAddress)
+            async.parallel([validateAddress, validateTAddress, getBalance], asyncComplete);
+        else
+            async.parallel([validateAddress, getBalance], asyncComplete);
     }
 
     //get t_address coinbalance
@@ -1412,7 +1414,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
 
     var getProperAddress = function(address){
-        if (address.length >= 40){
+        if (address.length >= 50){
             logger.warning(logSystem, logComponent, 'Invalid address '+address+', convert to address '+(poolOptions.invalidAddress || poolOptions.address));
             return (poolOptions.invalidAddress || poolOptions.address);
         }

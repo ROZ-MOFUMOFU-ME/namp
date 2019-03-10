@@ -1,10 +1,16 @@
 # BitZeny - Node Open Mining Portal
 
-This is a Yescrypt-0.5 mining pool based off of Node Open Mining Portal.
+This is a Yescrypt-0.5, YesPoWer, Lyra2REv2, sha256d and more algo mining pool based off of Node Open Mining Portal.
 
 Donations for development are greatly appreciated!
   * ZNY: ZmnBu9jPKvVFL22PcwMHSEuVpTxFeCdvNv
-
+  * NUKO: 0xa79bde46faab3c40632604728e9f2165b052581c
+  * KOTO :k16dV6stRkFtZpFtMTrznqvavRuMfh4PB1R
+  * SUSU: SeXbMBaax7NgnTEFEMxin5ycXy9r9CDBot
+  * MONA: mona1qnur6ljkl5pe8w6ql8xfqw4aa38d5xa9q68dxll
+  * BELL: BCVicYRSqKKt1ynJKPrXHA46hUWLrbjR49
+  * BTC: 3KedzPANAtCzADPbhT7GMv3LjxyeRXc4AE
+  
 #### Production Usage Notice
 This is beta software. All of the following are things that can change and break an existing ZNY-NOMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data. *Only tagged releases are considered stable.*
 
@@ -14,17 +20,22 @@ Usage of this software requires abilities with sysadmin, database admin, coin da
 
 ### Community
 Forum
-* join: https://bitzeny.info/
+* join: https://bitzeny.tech/
 
 Wiki
-* http://bitzeny.cswiki.jp/
+* https://bitzeny.wiki.fc2.com/
+
+Discord
+* https://discord.gg/xmWd3yy
 
 If your pool uses ZNY-NOMP let us know and we will list your website here.
 
 ### Some pools using ZNY-NOMP or node-stratum-yescrypt-0.5-module:
 
 * [mofumofu.me - BitZeny Mining Pool](https://zny.mofumofu.me/)
-
+* [人のプール](https://mining.zinntikumugai.xyz/)
+* [みんなのプール](https://www.minnano-pool.work/)
+* [SEMI-POOL](https://zny.semi-pool.com/)
 
 Usage
 =====
@@ -70,7 +81,7 @@ Clone the repository and run `npm update` for all the dependencies to be install
 ```bash
 sudo apt-get install build-essential libsodium-dev npm
 sudo npm install n -g
-sudo n stable
+sudo n v9
 git clone https://github.com/ROZ-MOFUMOFU-ME/zny-nomp
 cd zny-nomp
 npm update
@@ -118,7 +129,7 @@ in case the master process crashes.
 for exploring your redis database.
 * Use something like [logrotator](http://www.thegeekstuff.com/2010/07/logrotate-examples/) to rotate log
 output from ZNY-NOMP.
-* Use [New Relic](http://newrelic.com/) to monitor your K-NOMP instance and server performance.
+* Use [New Relic](http://newrelic.com/) to monitor your ZNY-NOMP instance and server performance.
 
 
 #### Upgrading ZNY-NOMP
