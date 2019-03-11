@@ -98,7 +98,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
     function validateAddress (callback){
         var cmd = "validateaddress"
-        if(poolOptions.BTCover16)
+        if(poolOptions.BTCover17)
             cmd = "getaddressinfo"
         daemon.cmd(cmd, [poolOptions.address], function(result) {
             if (result.error){
