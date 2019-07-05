@@ -1,0 +1,7 @@
+{
+    "name": "CPUchain",
+    "symbol": "CPU",
+    "algorithm": "cpupower",
+    "blockTime": 60,
+    "txfee": 0.0001
+}
