@@ -20,6 +20,21 @@ function getReadableHashRateString(hashrate){
 	return hashrate.toFixed(2) + byteUnits[i];
 }
 
+function getReadableLuckTime(lucktime){
+	var luck = lucktime;
+	var timeUnits = [ ' Days', ' Hours', ' Minutes' ];
+	if (luck < 1) {
+		luck = luck * 24;
+		if (luck < 1) {
+			luck = luck * 60;
+			return luck.toFixed(0) + timeUnits[2];
+		} else {
+			return luck.toFixed(2) + timeUnits[1];
+		}
+	}
+	return luck + timeUnits[0];
+}
+
 function timeOfDayFormat(timestamp){
     var dStr = d3.time.format('%I:%M %p')(new Date(timestamp));
     if (dStr.indexOf('0') === 0) dStr = dStr.slice(1);
