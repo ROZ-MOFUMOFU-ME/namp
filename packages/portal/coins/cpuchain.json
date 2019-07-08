@@ -2,6 +2,8 @@
     "name": "CPUchain",
     "symbol": "CPU",
     "algorithm": "cpupower",
+    "peerMagic": "deadbeef",
+    "peerMagicTestnet": "faceb00c",
     "blockTime": 60,
     "txfee": 0.0001
 }
