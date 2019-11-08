@@ -528,6 +528,27 @@ DECLARE_FUNC(cpupower){
     SET_BUFFER_RETURN(output, 32);
 }
 
+DECLARE_FUNC(sugarchain){
+    DECLARE_SCOPE;
+
+    if (args.Length() < 1)
+        RETURN_EXCEPT("You must provide one argument.");
+
+    Local<Object> target = args[0]->ToObject();
+
+    if(!Buffer::HasInstance(target))
+        RETURN_EXCEPT("Argument should be a buffer object.");
+
+
+    char * input = Buffer::Data(target);
+    char output[32];
+
+
+    sugarchain_hash(input, output);
+
+    SET_BUFFER_RETURN(output, 32);
+}
+
 DECLARE_FUNC(yescrypt){
     DECLARE_SCOPE;
 
@@ -606,6 +627,7 @@ DECLARE_INIT(init) {
     NODE_SET_METHOD(exports, "yespower_0_5_R24", yespower_0_5_R24);
     NODE_SET_METHOD(exports, "yespower_0_5_R32", yespower_0_5_R32);
     NODE_SET_METHOD(exports, "cpupower", cpupower);
+    NODE_SET_METHOD(exports, "sugarchain", sugarchain);
     NODE_SET_METHOD(exports, "yescrypt", yescrypt);
     NODE_SET_METHOD(exports, "yescrypt_bitzeny", yescrypt_bitzeny);
 }
