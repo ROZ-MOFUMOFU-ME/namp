@@ -7,7 +7,7 @@
                 "scryptjane.c",
                 "scryptn.c",
 		"yespower-1.0.1/yespower-opt.c",
-		"yespower-1.0.1/yespower.c",
+		"yespower-1.0.1/yespower_sugarchain.c",
 		"yespower/yespower-opt.c",
 		"yespower/yespower.c",
                 "yescrypt/sha256_Y.c",
