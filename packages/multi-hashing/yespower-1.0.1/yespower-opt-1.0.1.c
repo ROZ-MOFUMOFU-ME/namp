@@ -98,7 +98,7 @@
 #include "sha256.h"
 #include "sysendian.h"
 
-#include "yespower.h"
+#include "yespower-1.0.1.h"
 
 #include "yespower-platform.c"
 
