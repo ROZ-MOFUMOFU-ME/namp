@@ -128,3 +128,5 @@ extern int yespower_tls(const uint8_t *src, size_t srclen,
 #endif
 
 #endif /* !_YESPOWER_H_ */
+
+void sugarchain_hash(const char *input, char *output, uint32_t len);
