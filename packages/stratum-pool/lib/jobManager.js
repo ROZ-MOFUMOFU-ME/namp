@@ -108,8 +108,12 @@ var JobManager = module.exports = function JobManager(options){
                     return util.reverseBuffer(util.sha256d(d));
                 };
             case 'sugarchain':
-            return function (d) {
-                return util.reverseBuffer(util.sha256d(d));
+                return function (d) {
+                    return util.reverseBuffer(util.sha256d(d));
+                };
+            case 'yescryptR8G':
+                return function (d) {
+                    return util.reverseBuffer(util.sha256d(d));
                 };
             default:
                 return function () {
