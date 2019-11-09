@@ -541,8 +541,8 @@ DECLARE_FUNC(sugarchain){
 
 
     char * input = Buffer::Data(target);
+    uint32_t input_len = Buffer::Length(target);
     char output[32];
-
 
     sugarchain_hash(input, output, input_len);
 
