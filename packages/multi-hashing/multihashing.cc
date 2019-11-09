@@ -544,7 +544,7 @@ DECLARE_FUNC(sugarchain){
     char output[32];
 
 
-    sugarchain_hash(input, output);
+    sugarchain_hash(input, output, input_len);
 
     SET_BUFFER_RETURN(output, 32);
 }
