@@ -60,8 +60,8 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
 
 
     this.prevHashReversed = util.reverseByteOrder(new Buffer(rpcData.previousblockhash, 'hex')).toString('hex');
-        if (rpcData.finalsaplingroothash) {
-        this.finalsaplingroothashReversed = util.reverseByteOrder(new Buffer(rpcData.finalsaplingroothash, 'hex')).toString('hex');
+    if (rpcData.finalsaplingroothash) {
+    this.finalsaplingroothashReversed = util.reverseByteOrder(new Buffer(rpcData.finalsaplingroothash, 'hex')).toString('hex');
     }
     this.transactionData = Buffer.concat(rpcData.transactions.map(function(tx){
         return new Buffer(tx.data, 'hex');
