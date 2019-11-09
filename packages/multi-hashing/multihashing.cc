@@ -32,7 +32,7 @@ extern "C" {
     #include "x13.h"
     #include "x15.h"
     #include "yespower/yespower.h"
-    #include "yespower-1.0.1/yespower-1.0.1.h"
+    #include "yespower-1.0.1/yespower.h"
     #include "yescrypt/yescrypt.h"
     #include "yescrypt-0.5/yescrypt.h"
 }
