@@ -137,4 +137,3 @@ void yespower_0_5_R16_hash(const char *input, char *output);
 void yespower_0_5_R24_hash(const char *input, char *output);
 void yespower_0_5_R32_hash(const char *input, char *output);
 void cpupower_hash(const char *input, char *output);
-void sugarchain_hash(const char *input, char *output, uint32_t len);
