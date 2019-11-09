@@ -1,4 +1,4 @@
-#include "yespower.h"
+#include "yespower-1.0.1.h"
 
 void sugarchain_hash(const char *input, char *output, uint32_t len) {
     static const yespower_params_t params = {
