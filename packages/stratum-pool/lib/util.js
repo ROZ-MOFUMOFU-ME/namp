@@ -420,4 +420,6 @@ exports.getFounderRewardScript = function (network, addr) {
         return bitcoin.address.toOutputScript(addr, network);
     } else {
         return Buffer.concat([new Buffer([0x76, 0xa9, 0x14]), bitcoin.address.fromBase58Check(addr).hash, new Buffer([0x88, 0xac])]);
-} 
+    } 
+
+};
