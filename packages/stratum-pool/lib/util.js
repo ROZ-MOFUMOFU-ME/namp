@@ -414,21 +414,10 @@ exports.getKotoBlockSubsidy = function (nHeight) {
     return nSubsidy.toNumber();
 };
 
-exports.getFounderRewardScript = function (addr) {
+exports.getFounderRewardScript = function (network, addr) {
 
-    var decoded = base58.decode(addr);
-
-    if (decoded.length != 25 && decoded.length != 26){
-        console.error('invalid address length for ' + addr);
-        throw new Error();
-    }
-
-    if (!decoded){
-        console.error('base58 decode failed for ' + addr);
-        throw new Error();
-    }
-
-    var pubkey = decoded.slice(decoded.length-24,-4);
-
-    return Buffer.concat([new Buffer([0xa9, 0x14]), pubkey, new Buffer([0x87])]);
+    if (typeof network !== 'undefined' && network !== null){
+        return bitcoin.address.toOutputScript(addr, network);
+    } else {
+        return Buffer.concat([new Buffer([0x76, 0xa9, 0x14]), bitcoin.address.fromBase58Check(addr).hash, new Buffer([0x88, 0xac])]);
 } 
