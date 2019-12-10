@@ -162,6 +162,16 @@ var algos = module.exports = global.algos = {
             }
         }
     },
+    'ltncg': {
+        multiplier: Math.pow(2, 16),
+        hash: function(coinConfig){
+            var nValue = coinConfig.nValue || 2048;
+            var rValue = coinConfig.rValue || 32;
+            return function(data){
+                return multiHashing.sugarchain(data,nValue,rValue);
+            }
+        }
+    },
     c11: {
         hash: function(){
             return function(){
