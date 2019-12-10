@@ -168,7 +168,7 @@ var algos = module.exports = global.algos = {
             var nValue = coinConfig.nValue || 2048;
             var rValue = coinConfig.rValue || 32;
             return function(data){
-                return multiHashing.sugarchain(data,nValue,rValue);
+                return multiHashing.ltncg(data,nValue,rValue);
             }
         }
     },
