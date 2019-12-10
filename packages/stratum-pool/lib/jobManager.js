@@ -119,6 +119,10 @@ var JobManager = module.exports = function JobManager(options){
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
+            case 'ltncg':
+                return function (d) {
+                    return util.reverseBuffer(util.sha256d(d));
+                };
             default:
                 return function () {
                     return util.reverseBuffer(hashDigest.apply(this, arguments));
