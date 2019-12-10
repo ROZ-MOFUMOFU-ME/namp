@@ -28,7 +28,6 @@
         "url": "https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool-yescrypt-0.5.git"
     },
     "dependencies": {
-        "equihashverify": "git+https://github.com/ROZ-MOFUMOFU-ME/equihashverify.git",
         "multi-hashing": "git://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing-yescrypt-0.5.git#ltncg",
         "bitcoinjs-lib": "*",
         "bignum": "*",
