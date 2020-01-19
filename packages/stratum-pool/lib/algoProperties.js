@@ -142,16 +142,6 @@ var algos = module.exports = global.algos = {
             }
         }
     },
-    'cpupower': {
-        multiplier: Math.pow(2, 16),
-        hash: function(coinConfig){
-            var nValue = coinConfig.nValue || 2048;
-            var rValue = coinConfig.rValue || 32;
-            return function(data){
-                return multiHashing.cpupower(data,nValue,rValue);
-            }
-        }
-    },
     'sugarchain': {
         multiplier: Math.pow(2, 16),
         hash: function(coinConfig){
