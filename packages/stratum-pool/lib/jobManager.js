@@ -124,8 +124,8 @@ var JobManager = module.exports = function JobManager(options){
                     return util.reverseBuffer(util.sha256d(d));
                 };
             default:
-                return function () {
-                    return util.reverseBuffer(hashDigest.apply(this, arguments));
+                return function (d) {
+                    return util.reverseBuffer(util.sha256d(d));
                 };
         }
     })();
