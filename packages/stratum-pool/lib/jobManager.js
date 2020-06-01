@@ -123,9 +123,13 @@ var JobManager = module.exports = function JobManager(options){
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
-            default:
+            case 'yescryptR16':
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
+                };
+            default:
+                return function () {
+                    return util.reverseBuffer(hashDigest.apply(this, arguments));
                 };
         }
     })();
