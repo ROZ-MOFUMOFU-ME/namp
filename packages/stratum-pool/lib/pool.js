@@ -262,22 +262,25 @@ var pool = module.exports = function pool(options, authorizeFn){
     }
 
 
-    function SetupRecipients() {
+    function SetupRecipients(){
         var recipients = [];
         options.feePercent = 0;
         options.rewardRecipients = options.rewardRecipients || {};
-
-        for (var r in options.rewardRecipients) {
+        for (var r in options.rewardRecipients){
             var percent = options.rewardRecipients[r];
             var rObj = {
-                percent: percent,
-                address: r
+                percent: percent / 100
             };
-            recipients.push(rObj);
-            options.feePercent += percent;
+            try {
+                rObj.script = util.addressToScript(options.network, r);
+                recipients.push(rObj);
+                options.feePercent += percent;
+            }
+            catch(e){
+                emitErrorLog('Error generating transaction output script for ' + r + ' in rewardRecipients');
+            }
         }
-
-        if (recipients.length === 0) {
+        if (recipients.length === 0){
             emitErrorLog('No rewardRecipients have been setup which means no fees will be taken');
         }
         options.recipients = recipients;
