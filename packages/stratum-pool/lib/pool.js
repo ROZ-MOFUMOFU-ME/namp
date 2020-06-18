@@ -147,7 +147,8 @@ var pool = module.exports = function pool(options, authorizeFn){
 
         var generateProgress = function(){
 
-            _this.daemon.cmd('getblockchaininfo', [], function(results) {
+            var cmd = options.coin.hasGetInfo ? 'getinfo' : 'getblockchaininfo';
+            _this.daemon.cmd(cmd, [], function (results) {
                 var blockCount = results.sort(function (a, b) {
                     return b.response.blocks - a.response.blocks;
                 })[0].response.blocks;
@@ -261,28 +262,22 @@ var pool = module.exports = function pool(options, authorizeFn){
     }
 
 
-    function SetupRecipients(){
+    function SetupRecipients() {
         var recipients = [];
         options.feePercent = 0;
         options.rewardRecipients = options.rewardRecipients || {};
-        for (var r in options.rewardRecipients){
+
+        for (var r in options.rewardRecipients) {
             var percent = options.rewardRecipients[r];
             var rObj = {
-                percent: percent / 100
+                percent: percent,
+                address: r
             };
-            try {
-                if (r.length === 40)
-                    rObj.script = util.miningKeyToScript(r);
-                else
-                    rObj.script = util.addressToScript(options.network, r);
-                recipients.push(rObj);
-                options.feePercent += percent;
-            }
-            catch(e){
-                emitErrorLog('Error generating transaction output script for ' + r + ' in rewardRecipients');
-            }
+            recipients.push(rObj);
+            options.feePercent += percent;
         }
-        if (recipients.length === 0){
+
+        if (recipients.length === 0) {
             emitErrorLog('No rewardRecipients have been setup which means no fees will be taken');
         }
         options.recipients = recipients;
@@ -370,11 +365,15 @@ var pool = module.exports = function pool(options, authorizeFn){
         var batchRpcCalls = [
             ['validateaddress', [options.address]],
             ['getdifficulty', []],
-            ['getblockchaininfo', []],
-            ['getnetworkinfo', []],
             ['getmininginfo', []],
             ['submitblock', []]
         ];
+
+        if (options.coin.hasGetInfo) {
+            batchRpcCalls.push(['getinfo', []]);
+        } else {
+            batchRpcCalls.push(['getblockchaininfo', []], ['getnetworkinfo', []]);
+        }
 
         _this.daemon.batchCmd(batchRpcCalls, function(error, results){
             if (error || !results){
