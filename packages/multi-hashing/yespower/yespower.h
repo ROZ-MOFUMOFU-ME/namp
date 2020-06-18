@@ -37,91 +37,91 @@
 extern "C" {
 #endif
 
-/**
- * Internal type used by the memory allocator.  Please do not use it directly.
- * Use yespower_local_t instead.
- */
-typedef struct {
-	void *base, *aligned;
-	size_t base_size, aligned_size;
-} yespower_region_t;
+	/**
+	 * Internal type used by the memory allocator.  Please do not use it directly.
+	 * Use yespower_local_t instead.
+	 */
+	typedef struct {
+		void* base, * aligned;
+		size_t base_size, aligned_size;
+	} yespower_region_t;
 
-/**
- * Type for thread-local (RAM) data structure.
- */
-typedef yespower_region_t yespower_local_t;
+	/**
+	 * Type for thread-local (RAM) data structure.
+	 */
+	typedef yespower_region_t yespower_local_t;
 
-/*
- * Type for yespower algorithm version numbers.
- */
-typedef enum { YESPOWER_0_5 = 5, YESPOWER_1_0 = 10 } yespower_version_t;
+	/*
+	 * Type for yespower algorithm version numbers.
+	 */
+	typedef enum { YESPOWER_0_5 = 5, YESPOWER_1_0 = 10 } yespower_version_t;
 
-/**
- * yespower parameters combined into one struct.
- */
-typedef struct {
-	yespower_version_t version;
-	uint32_t N, r;
-	const uint8_t *pers;
-	size_t perslen;
-} yespower_params_t;
+	/**
+	 * yespower parameters combined into one struct.
+	 */
+	typedef struct {
+		yespower_version_t version;
+		uint32_t N, r;
+		const uint8_t* pers;
+		size_t perslen;
+	} yespower_params_t;
 
-/**
- * A 256-bit yespower hash.
- */
-typedef struct {
-	unsigned char uc[32];
-} yespower_binary_t;
+	/**
+	 * A 256-bit yespower hash.
+	 */
+	typedef struct {
+		unsigned char uc[32];
+	} yespower_binary_t;
 
-/**
- * yespower_init_local(local):
- * Initialize the thread-local (RAM) data structure.  Actual memory allocation
- * is currently fully postponed until a call to yespower().
- *
- * Return 0 on success; or -1 on error.
- *
- * MT-safe as long as local is local to the thread.
- */
-extern int yespower_init_local(yespower_local_t *local);
+	/**
+	 * yespower_init_local(local):
+	 * Initialize the thread-local (RAM) data structure.  Actual memory allocation
+	 * is currently fully postponed until a call to yespower().
+	 *
+	 * Return 0 on success; or -1 on error.
+	 *
+	 * MT-safe as long as local is local to the thread.
+	 */
+	extern int yespower_init_local(yespower_local_t* local);
 
-/**
- * yespower_free_local(local):
- * Free memory that may have been allocated for an initialized thread-local
- * (RAM) data structure.
- *
- * Return 0 on success; or -1 on error.
- *
- * MT-safe as long as local is local to the thread.
- */
-extern int yespower_free_local(yespower_local_t *local);
+	/**
+	 * yespower_free_local(local):
+	 * Free memory that may have been allocated for an initialized thread-local
+	 * (RAM) data structure.
+	 *
+	 * Return 0 on success; or -1 on error.
+	 *
+	 * MT-safe as long as local is local to the thread.
+	 */
+	extern int yespower_free_local(yespower_local_t* local);
 
-/**
- * yespower(local, src, srclen, params, dst):
- * Compute yespower(src[0 .. srclen - 1], N, r), to be checked for "< target".
- * local is the thread-local data structure, allowing to preserve and reuse a
- * memory allocation across calls, thereby reducing processing overhead.
- *
- * Return 0 on success; or -1 on error.
- *
- * local must be initialized with yespower_init_local().
- *
- * MT-safe as long as local and dst are local to the thread.
- */
-extern int yespower(yespower_local_t *local,
-    const uint8_t *src, size_t srclen,
-    const yespower_params_t *params, yespower_binary_t *dst);
+	/**
+	 * yespower(local, src, srclen, params, dst):
+	 * Compute yespower(src[0 .. srclen - 1], N, r), to be checked for "< target".
+	 * local is the thread-local data structure, allowing to preserve and reuse a
+	 * memory allocation across calls, thereby reducing processing overhead.
+	 *
+	 * Return 0 on success; or -1 on error.
+	 *
+	 * local must be initialized with yespower_init_local().
+	 *
+	 * MT-safe as long as local and dst are local to the thread.
+	 */
+	extern int yespower(yespower_local_t* local,
+		const uint8_t* src, size_t srclen,
+		const yespower_params_t* params, yespower_binary_t* dst);
 
-/**
- * yespower_tls(src, srclen, params, dst):
- * Compute yespower(src[0 .. srclen - 1], N, r), to be checked for "< target".
- * The memory allocation is maintained internally using thread-local storage.
- *
- * Return 0 on success; or -1 on error.
- *
- * MT-safe as long as dst is local to the thread.
- */
-extern int yespower_tls(const uint8_t *src, size_t srclen,
-    const yespower_params_t *params, yespower_binary_t *dst);
+	/**
+	 * yespower_tls(src, srclen, params, dst):
+	 * Compute yespower(src[0 .. srclen - 1], N, r), to be checked for "< target".
+	 * The memory allocation is maintained internally using thread-local storage.
+	 *
+	 * Return 0 on success; or -1 on error.
+	 *
+	 * MT-safe as long as dst is local to the thread.
+	 */
+	extern int yespower_tls(const uint8_t* src, size_t srclen,
+		const yespower_params_t* params, yespower_binary_t* dst);
 
 #ifdef __cplusplus
 }
@@ -129,11 +129,12 @@ extern int yespower_tls(const uint8_t *src, size_t srclen,
 
 #endif /* !_YESPOWER_H_ */
 
-void yespower_hash(const char *input, char *output);
-void yespower_0_5_R8_hash(const char *input, char *output);
-void yespower_0_5_R8G_hash(const char *input, size_t inputlen, char *output);
-void yespower_0_5_R16_hash(const char *input, char *output);
-void yespower_0_5_R16_hash(const char *input, char *output);
-void yespower_0_5_R24_hash(const char *input, char *output);
-void yespower_0_5_R32_hash(const char *input, char *output);
-void ltncg_hash(const char *input, char *output);
+void yespower_hash(const char* input, char* output);
+void yespower_0_5_R8_hash(const char* input, char* output);
+void yespower_0_5_R8G_hash(const char* input, size_t inputlen, char* output);
+void yespower_0_5_R16_hash(const char* input, char* output);
+void yespower_0_5_R16_hash(const char* input, char* output);
+void yespower_0_5_R24_hash(const char* input, char* output);
+void yespower_0_5_R32_hash(const char* input, char* output);
+void yespower_sugar_hash(const char* input, char* output, uint32_t len);
+void yespower_ltncg_hash(const char* input, char* output);
