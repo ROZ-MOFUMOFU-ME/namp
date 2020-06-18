@@ -16,7 +16,7 @@ extern "C" {
 #include "hefty1.h"
 #include "keccak.h"
 #include "lbry.h"
-#include "Lyra2RE.h"
+#include "lyra2re.h"
 #include "neoscrypt.h"
 #include "nist5.h"
 #include "quark.h"
@@ -34,9 +34,6 @@ extern "C" {
 #include "x16r.c"
 #include "x16rv2.h"
 #include "yespower/yespower.h"
-#include "yespower-1.0.1/yespower-1.0.1.h"
-#include "yescrypt/yescrypt.h"
-#include "yescrypt-0.5/yescrypt.h"
 }
 
 #include "boolberry.h"
