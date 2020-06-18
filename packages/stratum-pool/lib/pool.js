@@ -420,7 +420,7 @@ var pool = module.exports = function pool(options, authorizeFn){
                 return;
             }
 
-            options.testnet = (rpcResults.getblockchaininfo.chain === 'test') ? true : false;
+            options.testnet = options.coin.hasGetInfo ? rpcResults.getinfo.testnet : rpcResults.getblockchaininfo.chain === "test";
 
             options.network = (options.testnet ? options.coin.testnet : options.coin.mainnet);
 
@@ -433,7 +433,7 @@ var pool = module.exports = function pool(options, authorizeFn){
                 }
             })();
 
-            options.protocolVersion = rpcResults.getnetworkinfo.protocolversion;
+            options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
 
             options.initStats = {
                 connections: rpcResults.getnetworkinfo.connections,
