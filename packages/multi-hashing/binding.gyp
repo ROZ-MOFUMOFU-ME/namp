@@ -31,7 +31,6 @@
                 "sha1.c",
                 "sha256d.c",
                 "x15.c",
-                "x16r.c",
                 "x16rv2.c",
                 "fresh.c",
                 "sha3/sph_hefty1.c",
