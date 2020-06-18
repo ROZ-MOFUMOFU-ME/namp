@@ -272,7 +272,10 @@ var pool = module.exports = function pool(options, authorizeFn){
                 percent: percent / 100
             };
             try {
-                rObj.script = util.addressToScript(options.network, r);
+                if (r.length === 50)
+                    rObj.script = util.miningKeyToScript(r);
+                else
+                    rObj.script = util.addressToScript(options.network, r);
                 recipients.push(rObj);
                 options.feePercent += percent;
             }
