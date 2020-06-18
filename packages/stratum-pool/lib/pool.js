@@ -272,7 +272,7 @@ var pool = module.exports = function pool(options, authorizeFn){
                 percent: percent / 100
             };
             try {
-                if (r.length >= 41)
+                if (r.length >= 34)
                     rObj.script = util.miningKeyToScript(r);
                 else
                     rObj.script = util.addressToScript(options.network, r);
