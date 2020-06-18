@@ -371,15 +371,11 @@ var pool = module.exports = function pool(options, authorizeFn){
         var batchRpcCalls = [
             ['validateaddress', [options.address]],
             ['getdifficulty', []],
+            ['getblockchaininfo', []],
+            ['getnetworkinfo', []],
             ['getmininginfo', []],
             ['submitblock', []]
         ];
-
-        if (options.coin.hasGetInfo) {
-            batchRpcCalls.push(['getinfo', []]);
-        } else {
-            batchRpcCalls.push(['getblockchaininfo', []], ['getnetworkinfo', []]);
-        }
 
         _this.daemon.batchCmd(batchRpcCalls, function(error, results){
             if (error || !results){
@@ -420,7 +416,7 @@ var pool = module.exports = function pool(options, authorizeFn){
                 return;
             }
 
-            options.testnet = options.coin.hasGetInfo ? rpcResults.getinfo.testnet : rpcResults.getblockchaininfo.chain === "test";
+            options.testnet = (rpcResults.getblockchaininfo.chain === 'test') ? true : false;
 
             options.network = (options.testnet ? options.coin.testnet : options.coin.mainnet);
 
@@ -433,7 +429,7 @@ var pool = module.exports = function pool(options, authorizeFn){
                 }
             })();
 
-            options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
+            options.protocolVersion = rpcResults.getnetworkinfo.protocolversion;
 
             options.initStats = {
                 connections: rpcResults.getnetworkinfo.connections,
