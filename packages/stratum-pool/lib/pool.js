@@ -147,7 +147,8 @@ var pool = module.exports = function pool(options, authorizeFn){
 
         var generateProgress = function(){
 
-            _this.daemon.cmd('getblockchaininfo', [], function(results) {
+            var cmd = options.coin.hasGetInfo ? 'getinfo' : 'getblockchaininfo';
+            _this.daemon.cmd(cmd, [], function (results) {
                 var blockCount = results.sort(function (a, b) {
                     return b.response.blocks - a.response.blocks;
                 })[0].response.blocks;
@@ -271,7 +272,7 @@ var pool = module.exports = function pool(options, authorizeFn){
                 percent: percent / 100
             };
             try {
-                if (r.length === 40)
+                if (r.length >= 34)
                     rObj.script = util.miningKeyToScript(r);
                 else
                     rObj.script = util.addressToScript(options.network, r);
