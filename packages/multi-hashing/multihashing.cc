@@ -519,7 +519,7 @@ DECLARE_FUNC(yespower_0_5_R32) {
     SET_BUFFER_RETURN(output, 32);
 }
 
-DECLARE_FUNC(sugarchain) {
+DECLARE_FUNC(yespower_sugar) {
     DECLARE_SCOPE;
 
     if (args.Length() < 1)
@@ -535,12 +535,12 @@ DECLARE_FUNC(sugarchain) {
     uint32_t input_len = Buffer::Length(target);
     char output[32];
 
-    sugarchain_hash(input, output, input_len);
+    yespower_sugar_hash(input, output, input_len);
 
     SET_BUFFER_RETURN(output, 32);
 }
 
-DECLARE_FUNC(ltncg) {
+DECLARE_FUNC(yespower_ltncg) {
     DECLARE_SCOPE;
 
     if (args.Length() < 1)
@@ -555,48 +555,7 @@ DECLARE_FUNC(ltncg) {
     char* input = Buffer::Data(target);
     char output[32];
 
-    ltncg_hash(input, output);
-
-    SET_BUFFER_RETURN(output, 32);
-}
-
-DECLARE_FUNC(yescrypt) {
-    DECLARE_SCOPE;
-
-    if (args.Length() < 1)
-        RETURN_EXCEPT("You must provide one argument.");
-
-    Local<Object> target = args[0]->ToObject();
-
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
-
-
-    char* input = Buffer::Data(target);
-    char output[32];
-
-
-    yescrypt_hash(input, output);
-
-    SET_BUFFER_RETURN(output, 32);
-}
-DECLARE_FUNC(yescrypt_bitzeny) {
-    DECLARE_SCOPE;
-
-    if (args.Length() < 1)
-        RETURN_EXCEPT("You must provide one argument.");
-
-    Local<Object> target = args[0]->ToObject();
-
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
-
-
-    char* input = Buffer::Data(target);
-    char output[32];
-
-
-    yescrypt_bitzeny_hash(input, output);
+    yespower_ltncg_hash(input, output);
 
     SET_BUFFER_RETURN(output, 32);
 }
