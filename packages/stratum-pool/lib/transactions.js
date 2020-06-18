@@ -243,7 +243,7 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
 
     var scriptSigPart1 = Buffer.concat([
         util.serializeNumber(rpcData.height),
-        //new Buffer(rpcData.coinbaseaux.flags, 'hex'),
+        new Buffer([]),
         util.serializeNumber(Date.now() / 1000 | 0),
         new Buffer([extraNoncePlaceholder.length])
     ]);

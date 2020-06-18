@@ -71,24 +71,6 @@ var algos = module.exports = global.algos = {
             }
         }
     },
-    'yescrypt': {
-        multiplier: 65536,
-        diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
-        hash: function(){
-            return function(){
-                return multiHashing.yescrypt.apply(this, arguments);
-            }
-        }
-    },
-    'yescrypt_bitzeny': {
-        multiplier: 65536,
-        diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
-        hash: function(){
-            return function(){
-                return multiHashing.yescrypt_bitzeny.apply(this, arguments);
-            }
-        }
-    },
     'yescryptR8': {
         multiplier: 65536,
         diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
@@ -142,23 +124,23 @@ var algos = module.exports = global.algos = {
             }
         }
     },
-    'sugarchain': {
+    'yespowerSUGAR': {
         multiplier: Math.pow(2, 16),
         hash: function(coinConfig){
             var nValue = coinConfig.nValue || 2048;
             var rValue = coinConfig.rValue || 32;
             return function(data){
-                return multiHashing.sugarchain(data,nValue,rValue);
+                return multiHashing.yespower_sugar(data,nValue,rValue);
             }
         }
     },
-    'ltncg': {
+    'yespowerLTNCG': {
         multiplier: Math.pow(2, 16),
         hash: function(coinConfig){
             var nValue = coinConfig.nValue || 2048;
             var rValue = coinConfig.rValue || 32;
             return function(data){
-                return multiHashing.ltncg(data,nValue,rValue);
+                return multiHashing.yespower_ltncg(data,nValue,rValue);
             }
         }
     },
