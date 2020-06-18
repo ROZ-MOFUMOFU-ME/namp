@@ -42,9 +42,9 @@ enum Algo {
 	HASH_FUNC_COUNT
 };
 
-static void getAlgoString(const uint8_t* prevblock, char *output)
+static void getAlgoString(const uint8_t* prevblock, char* output)
 {
-	char *sptr = output;
+	char* sptr = output;
 	int j;
 
 	for (j = 0; j < HASH_FUNC_COUNT; j++) {
@@ -53,7 +53,7 @@ static void getAlgoString(const uint8_t* prevblock, char *output)
 		if (algoDigit >= 10)
 			sprintf(sptr, "%c", 'A' + (algoDigit - 10));
 		else
-			sprintf(sptr, "%u", (uint32_t) algoDigit);
+			sprintf(sptr, "%u", (uint32_t)algoDigit);
 		sptr++;
 	}
 	*sptr = '\0';
@@ -61,7 +61,7 @@ static void getAlgoString(const uint8_t* prevblock, char *output)
 
 void x16r_hash(const char* input, char* output, uint32_t len)
 {
-	uint32_t hash[64/4];
+	uint32_t hash[64 / 4];
 	char hashOrder[HASH_FUNC_COUNT + 1] = { 0 };
 
 	sph_blake512_context     ctx_blake;
@@ -81,9 +81,9 @@ void x16r_hash(const char* input, char* output, uint32_t len)
 	sph_whirlpool_context    ctx_whirlpool;
 	sph_sha512_context       ctx_sha512;
 
-	void *in = (void*) input;
+	void* in = (void*)input;
 	int size = len;
-    int i;
+	int i;
 
 	getAlgoString(&input[4], hashOrder);
 
@@ -170,11 +170,11 @@ void x16r_hash(const char* input, char* output, uint32_t len)
 			break;
 		case SHA512:
 			sph_sha512_init(&ctx_sha512);
-			sph_sha512(&ctx_sha512,(const void*) in, size);
-			sph_sha512_close(&ctx_sha512,(void*) hash);
+			sph_sha512(&ctx_sha512, (const void*)in, size);
+			sph_sha512_close(&ctx_sha512, (void*)hash);
 			break;
 		}
-		in = (void*) hash;
+		in = (void*)hash;
 		size = 64;
 	}
 	memcpy(output, hash, 32);
