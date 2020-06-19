@@ -433,3 +433,22 @@ exports.getFounderRewardScript = function (network, addr) {
     }
 
 };
+
+exports.getKotoFounderRewardScript = function (addr) {
+
+    var decoded = base58.decode(addr);
+
+    if (decoded.length != 25 && decoded.length != 26) {
+        console.error('invalid address length for ' + addr);
+        throw new Error();
+    }
+
+    if (!decoded) {
+        console.error('base58 decode failed for ' + addr);
+        throw new Error();
+    }
+
+    var pubkey = decoded.slice(decoded.length - 24, -4);
+
+    return Buffer.concat([Buffer.from([0xa9, 0x14]), pubkey, Buffer.from([0x87])]);
+}

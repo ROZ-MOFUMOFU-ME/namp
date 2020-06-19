@@ -54,13 +54,13 @@ var JobManager = module.exports = function JobManager(options) {
     var jobCounter = new JobCounter();
 
     var shareMultiplier = algos[options.coin.algorithm].multiplier;
+    var emitErrorLog = function (text) { _this.emit('log', 'error', text); };
 
     //public members
 
     this.extraNonceCounter = new ExtraNonceCounter(options.instanceId);
     this.extraNoncePlaceholder = new Buffer('f000000ff111111f', 'hex');
     this.extraNonce2Size = this.extraNoncePlaceholder.length - this.extraNonceCounter.size;
-
     this.currentJob;
     this.validJobs = {};
 
@@ -147,7 +147,7 @@ var JobManager = module.exports = function JobManager(options) {
                     founders.push({
                         percent: 0,
                         value: rpcData.coinbasetxn.foundersreward,
-                        script: util.getFounderRewardScript(founder.address)
+                        script: util.getKotoFounderRewardScript(founder.address)
                     });
                 } catch (e) {
                     emitErrorLog('Error generating transaction output script for ' + founder.address + ' in rewardRecipients');
