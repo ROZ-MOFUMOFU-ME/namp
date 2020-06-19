@@ -289,7 +289,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
             try {
                 if (options.coin.name === 'koto') {
                     rObj.script = util.kotoAddressToScript(r);
-                } else if (r.length >= 34) {
+                } else if (r.length === 40) {
                     rObj.script = util.miningKeyToScript(r);
                 } else {
                     rObj.script = util.addressToScript(options.network, r);
