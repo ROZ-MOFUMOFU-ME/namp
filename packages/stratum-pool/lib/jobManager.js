@@ -107,7 +107,7 @@ var JobManager = module.exports = function JobManager(options) {
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
-            case 'sugarchain':
+            case 'yespowerSUGAR':
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
@@ -119,7 +119,7 @@ var JobManager = module.exports = function JobManager(options) {
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
-            case 'ltncg':
+            case 'yespowerLTNCG':
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
