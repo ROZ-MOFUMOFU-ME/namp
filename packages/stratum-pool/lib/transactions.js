@@ -101,7 +101,7 @@ For some (probably outdated and incorrect) documentation about whats kinda going
 see: https://en.bitcoin.it/wiki/Protocol_specification#tx
  */
 
-var generateOutputTransactions = function(poolRecipient, recipients, rpcData, network){
+var generateOutputTransactions = function (poolRecipient, recipients, rpcData, network) {
 
     var reward = rpcData.coinbasevalue;
     if (!reward) {
@@ -122,7 +122,7 @@ var generateOutputTransactions = function(poolRecipient, recipients, rpcData, ne
         var posReward = 94 + nScript*2;
         reward = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(posReward, posReward + 16)), 16);
         */
-       //console.log("reward from coinbasetxn, height => " + reward);
+        //console.log("reward from coinbasetxn, height => " + reward);
     }
     var rewardToPool = reward;
 
@@ -146,7 +146,7 @@ var generateOutputTransactions = function(poolRecipient, recipients, rpcData, ne
                 payeeScript
             ]));
         } else if (rpcData.superblock.length > 0) {
-            for(var i in rpcData.superblock){
+            for (var i in rpcData.superblock) {
                 var payeeReward = 0;
 
                 payeeReward = rpcData.superblock[i].amount;
@@ -185,8 +185,17 @@ var generateOutputTransactions = function(poolRecipient, recipients, rpcData, ne
 
 
 
-    for (var i = 0; i < recipients.length; i++){
-        var recipientReward = Math.floor(recipients[i].percent * reward);
+    for (var i = 0; i < recipients.length; i++) {
+        var recipientReward;
+        if (recipients[i].percent == 0) {
+            if (recipients[i].value < rewardToPool) {
+                recipientReward = recipients[i].value;
+            } else {
+                continue;
+            }
+        } else {
+            recipientReward = Math.floor(recipients[i].percent * reward);
+        }
         rewardToPool -= recipientReward;
 
         txOutputBuffers.push(Buffer.concat([
@@ -202,8 +211,8 @@ var generateOutputTransactions = function(poolRecipient, recipients, rpcData, ne
         util.varIntBuffer(poolRecipient.length),
         poolRecipient
     ]));
-    
-    if (rpcData.default_witness_commitment !== undefined){
+
+    if (rpcData.default_witness_commitment !== undefined) {
         witness_commitment = new Buffer(rpcData.default_witness_commitment, 'hex');
         txOutputBuffers.unshift(Buffer.concat([
             util.packInt64LE(0),
@@ -220,11 +229,14 @@ var generateOutputTransactions = function(poolRecipient, recipients, rpcData, ne
 };
 
 
-exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, reward, txMessages, recipients, network){
+exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, reward, txMessages, recipients, network) {
 
     var txInputsCount = 1;
     var txOutputsCount = 1;
     var txVersion = txMessages === true ? 2 : 1;
+    if (rpcData.coinbasetxn && rpcData.coinbasetxn.data) {
+        txVersion = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(0, 8)), 16); // tx version is first 4byte of coinbasetxn.data
+    }
     var txLockTime = 0;
 
     var txInPrevOutHash = "";
@@ -248,14 +260,15 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
         new Buffer([extraNoncePlaceholder.length])
     ]);
 
-    var scriptSigPart2 = util.serializeString('/nodeStratum/');
+    var scriptSigPart2 = util.serializeString(util.getBlockIdentifier());
 
     // for Koto transaction v3/v4 format 
     var nVersionGroupId = (txVersion & 0x7fffffff) == 3 ? util.packUInt32LE(0x2e7d970) :
-    (txVersion & 0x7fffffff) == 4 ? util.packUInt32LE(0x9023e50a) : new Buffer([]);
-    
+        (txVersion & 0x7fffffff) == 4 ? util.packUInt32LE(0x9023e50a) : new Buffer([]);
+
     var p1 = Buffer.concat([
         util.packUInt32LE(txVersion),
+        nVersionGroupId,
         txTimestamp,
 
         //transaction input
@@ -282,7 +295,7 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
     var vShieldedSpend = (txVersion & 0x7fffffff) >= 4 ? new Buffer([0]) : new Buffer([]);
     var vShieldedOutput = (txVersion & 0x7fffffff) >= 4 ? new Buffer([0]) : new Buffer([]);
     var nJoinSplit = (txVersion & 0x7fffffff) >= 2 ? new Buffer([0]) : new Buffer([]);
- 
+
     var p2 = Buffer.concat([
         scriptSigPart2,
         util.packUInt32LE(txInSequence),
@@ -293,9 +306,11 @@ exports.CreateGeneration = function(rpcData, publicKey, extraNoncePlaceholder, r
         //end transaction ouput
 
         util.packUInt32LE(txLockTime),
+        nExpiryHeight,
         valueBalance,
         vShieldedSpend,
         vShieldedOutput,
+        nJoinSplit,
         txComment
     ]);
 

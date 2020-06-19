@@ -9,20 +9,20 @@ var util = require('./util.js');
  * The BlockTemplate class holds a single job.
  * and provides several methods to validate and submit it to the daemon coin
 **/
-var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, poolAddressScript, extraNoncePlaceholder, reward, txMessages, recipients, network){
+var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, poolAddressScript, extraNoncePlaceholder, reward, txMessages, recipients, network) {
 
     //private members
 
     var submits = [];
 
-    function getMerkleHashes(steps){
-        return steps.map(function(step){
+    function getMerkleHashes(steps) {
+        return steps.map(function (step) {
             return step.toString('hex');
         });
     }
 
-    function getTransactionBuffers(txs){
-        var txHashes = txs.map(function(tx){
+    function getTransactionBuffers(txs) {
+        var txHashes = txs.map(function (tx) {
             if (tx.txid !== undefined) {
                 return util.uint256BufferFromHash(tx.txid);
             }
@@ -31,7 +31,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         return [null].concat(txHashes);
     }
 
-    function getVoteData(){
+    function getVoteData() {
         if (!rpcData.masternode_payments) return new Buffer([]);
 
         return Buffer.concat(
@@ -61,9 +61,9 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
 
     this.prevHashReversed = util.reverseByteOrder(new Buffer(rpcData.previousblockhash, 'hex')).toString('hex');
     if (rpcData.finalsaplingroothash) {
-    this.finalsaplingroothashReversed = util.reverseByteOrder(new Buffer(rpcData.finalsaplingroothash, 'hex')).toString('hex');
+        this.finalsaplingroothashReversed = util.reverseByteOrder(new Buffer(rpcData.finalsaplingroothash, 'hex')).toString('hex');
     }
-    this.transactionData = Buffer.concat(rpcData.transactions.map(function(tx){
+    this.transactionData = Buffer.concat(rpcData.transactions.map(function (tx) {
         return new Buffer(tx.data, 'hex');
     }));
     this.merkleTree = new merkleTree(getTransactionBuffers(rpcData.transactions));
@@ -78,7 +78,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         network
     );
 
-    this.serializeCoinbase = function(extraNonce1, extraNonce2){
+    this.serializeCoinbase = function (extraNonce1, extraNonce2) {
         return Buffer.concat([
             this.generationTransaction[0],
             extraNonce1,
@@ -89,7 +89,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
 
 
     //https://en.bitcoin.it/wiki/Protocol_specification#Block_Headers
-    this.serializeHeader = function(merkleRoot, nTime, nonce){
+    this.serializeHeader = function (merkleRoot, nTime, nonce) {
 
         var headerSize;
         if (rpcData.version == 5) {
@@ -113,7 +113,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         return header;
     };
 
-    this.serializeBlock = function(header, coinbase){
+    this.serializeBlock = function (header, coinbase) {
         return Buffer.concat([
             header,
 
@@ -128,17 +128,17 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         ]);
     };
 
-    this.registerSubmit = function(extraNonce1, extraNonce2, nTime, nonce){
+    this.registerSubmit = function (extraNonce1, extraNonce2, nTime, nonce) {
         var submission = extraNonce1 + extraNonce2 + nTime + nonce;
-        if (submits.indexOf(submission) === -1){
+        if (submits.indexOf(submission) === -1) {
             submits.push(submission);
             return true;
         }
         return false;
     };
 
-    this.getJobParams = function(){
-        if (!this.jobParams){
+    this.getJobParams = function () {
+        if (!this.jobParams) {
             this.jobParams = [
                 this.jobId,
                 this.prevHashReversed,
