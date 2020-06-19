@@ -41,8 +41,6 @@ var pool = module.exports = function pool(options, authorizeFn) {
     this.start = function () {
         SetupVarDiff();
         SetupApi();
-        SetupDaemonInterface(function () {
-            DetectCoinData(function () {
         if (options.blockIdentifier)
             util.setBlockIdentifier(options.blockIdentifier)
         util.setupKotoConsensusParams(options);
@@ -62,7 +60,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 });
             });
         });
-    };
+    }
 
 
 
