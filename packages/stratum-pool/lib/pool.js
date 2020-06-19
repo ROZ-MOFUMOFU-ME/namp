@@ -20,6 +20,9 @@ var pool = module.exports = function pool(options, authorizeFn) {
     var _this = this;
     var blockPollingIntervalId;
 
+    if (!(options.address)) {
+        _this.newAddressOnNewBlock = true;
+    }
 
     var emitLog = function (text) { _this.emit('log', 'debug', text); };
     var emitWarningLog = function (text) { _this.emit('log', 'warning', text); };
@@ -38,6 +41,8 @@ var pool = module.exports = function pool(options, authorizeFn) {
     this.start = function () {
         SetupVarDiff();
         SetupApi();
+        SetupDaemonInterface(function () {
+            DetectCoinData(function () {
         if (options.blockIdentifier)
             util.setBlockIdentifier(options.blockIdentifier)
         util.setupKotoConsensusParams(options);
@@ -238,6 +243,16 @@ var pool = module.exports = function pool(options, authorizeFn) {
             rpcArgs = [{ 'mode': 'submit', 'data': blockHex }];
         }
 
+        if (_this.newAddressOnNewBlock) {
+            _this.daemon.cmd('getnewaddress', [], function (results) {
+
+                options.poolAddressScript = (function () {
+                    return util.addressToScript(options.network, results[0].response);
+                })();
+
+                options.address = results[0].response;
+            });
+        }
 
         _this.daemon.cmd(rpcCommand,
             rpcArgs,
@@ -357,6 +372,12 @@ var pool = module.exports = function pool(options, authorizeFn) {
         });
 
         _this.daemon.once('online', function () {
+            if (options.address == false) {
+                _this.daemon.cmd('getnewaddress', [], function (results) {
+                    options.address = results[0].response;
+                    finishedCallback();
+                })
+            }
             finishedCallback();
 
         }).on('connectionFailed', function (error) {
