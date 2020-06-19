@@ -168,7 +168,7 @@ var JobManager = module.exports = function JobManager(options) {
             _this.extraNoncePlaceholder,
             options.coin.reward,
             options.coin.txMessages,
-            options.recipients,
+            //options.recipients,
             getKotoFoundersReward(rpcData, options.recipients),
             options.network
         );
@@ -205,7 +205,7 @@ var JobManager = module.exports = function JobManager(options) {
             _this.extraNoncePlaceholder,
             options.coin.reward,
             options.coin.txMessages,
-            options.recipients,
+            //options.recipients,
             getKotoFoundersReward(rpcData, options.recipients),
             options.network
         );

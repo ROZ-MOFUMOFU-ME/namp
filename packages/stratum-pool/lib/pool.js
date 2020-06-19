@@ -287,7 +287,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 percent: percent / 100
             };
             try {
-                if (options.coin.name === 'koto') {
+                if (options.coin.name === 'koto' || options.coin.name === 'koto_testnet') {
                     rObj.script = util.kotoAddressToScript(r);
                 } else if (r.length === 40) {
                     rObj.script = util.miningKeyToScript(r);
@@ -445,7 +445,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
             options.network = (options.testnet ? options.coin.testnet : options.coin.mainnet);
 
             options.poolAddressScript = (function () {
-                if (options.coin.name === 'koto') {
+                if (options.coin.name === 'koto' || options.coin.name === 'koto_testnet') {
                     return util.kotoAddressToScript(rpcResults.validateaddress.address);
                 } else {
                     switch (options.coin.reward) {
