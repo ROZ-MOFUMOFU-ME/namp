@@ -427,7 +427,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
             options.poolAddressScript = (function () {
                 if (options.coin.name === 'koto') {
-                    return util.kotoAddressToScript(options.network, rpcResults.validateaddress.address);
+                    return util.kotoAddressToScript(rpcResults.validateaddress.address);
                 } else {
                     switch (options.coin.reward) {
                         case 'POS':
