@@ -274,10 +274,13 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 percent: percent / 100
             };
             try {
-                if (r.length >= 34)
+                if (options.coin.name === 'koto') {
+                    rObj.script = util.kotoAddressToScript(r);
+                } else if (r.length >= 34) {
                     rObj.script = util.miningKeyToScript(r);
-                else
+                } else {
                     rObj.script = util.addressToScript(options.network, r);
+                }
                 recipients.push(rObj);
                 options.feePercent += percent;
             }
@@ -423,11 +426,15 @@ var pool = module.exports = function pool(options, authorizeFn) {
             options.network = (options.testnet ? options.coin.testnet : options.coin.mainnet);
 
             options.poolAddressScript = (function () {
-                switch (options.coin.reward) {
-                    case 'POS':
-                        return util.pubkeyToScript(rpcResults.validateaddress.pubkey);
-                    case 'POW':
-                        return util.addressToScript(options.network, rpcResults.validateaddress.address);
+                if (options.coin.name === 'koto') {
+                    return util.kotoAddressToScript(options.network, rpcResults.validateaddress.address);
+                } else {
+                    switch (options.coin.reward) {
+                        case 'POS':
+                            return util.pubkeyToScript(rpcResults.validateaddress.pubkey);
+                        case 'POW':
+                            return util.addressToScript(options.network, rpcResults.validateaddress.address);
+                    }
                 }
             })();
 
