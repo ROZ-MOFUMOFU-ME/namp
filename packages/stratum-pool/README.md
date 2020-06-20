@@ -1,5 +1,6 @@
 High performance Stratum poolserver in Node.js. One instance of this software can startup and manage multiple coin
 pools, each with their own daemon and stratum port :)
+[![Build Status](https://travis-ci.org/ROZ-MOFUMOFU-ME/node-stratum-pool.svg?branch=main)](https://travis-ci.org/ROZ-MOFUMOFU-ME/node-stratum-pool)
 
 #### Notice
 This is a module for Node.js that will do nothing on its own. Unless you're a Node.js developer who would like to
