@@ -1,7 +1,7 @@
 High performance Stratum poolserver in Node.js. One instance of this software can startup and manage multiple coin
 pools, each with their own daemon and stratum port :)
 
-[![Build Status](https://travis-ci.org/ROZ-MOFUMOFU-ME/node-stratum-pool.svg?branch=main)](https://travis-ci.org/ROZ-MOFUMOFU-ME/node-stratum-pool)
+
 
 #### Notice
 This is a module for Node.js that will do nothing on its own. Unless you're a Node.js developer who would like to
@@ -12,9 +12,7 @@ etc.. The portal also has an [MPOS](https://github.com/MPOS/php-mpos) compatibil
 a drop-in-replacement for [python-stratum-mining](https://github.com/Crypto-Expert/stratum-mining).
 
 
-[![Build Status](https://travis-ci.org/zone117x/node-stratum-pool.png?branch=master)](https://travis-ci.org/zone117x/node-stratum-pool)
-
-[![NPM](https://nodei.co/npm/stratum-pool.png?downloads=true&stars=true)](https://nodei.co/npm/stratum-pool/)
+[![Build Status](https://travis-ci.org/ROZ-MOFUMOFU-ME/node-stratum-pool.svg?branch=main)](https://travis-ci.org/ROZ-MOFUMOFU-ME/node-stratum-pool)
 
 #### Why
 This server was built to be more efficient and easier to setup, maintain and scale than existing stratum poolservers
