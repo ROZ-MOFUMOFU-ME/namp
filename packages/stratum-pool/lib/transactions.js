@@ -3,10 +3,13 @@ var util = require('./util.js');
 
 /*
 function Transaction(params){
+
     var version = params.version || 1,
         inputs = params.inputs || [],
         outputs = params.outputs || [],
         lockTime = params.lockTime || 0;
+
+
     this.toBuffer = function(){
         return Buffer.concat([
             binpack.packUInt32(version, 'little'),
@@ -17,14 +20,20 @@ function Transaction(params){
             binpack.packUInt32(lockTime, 'little')
         ]);
     };
+
     this.inputs = inputs;
     this.outputs = outputs;
+
 }
+
 function TransactionInput(params){
+
     var prevOutHash = params.prevOutHash || 0,
         prevOutIndex = params.prevOutIndex,
         sigScript = params.sigScript,
         sequence = params.sequence || 0;
+
+
     this.toBuffer = function(){
         sigScriptBuffer = sigScript.toBuffer();
         console.log('scriptSig length ' + sigScriptBuffer.length);
@@ -37,9 +46,12 @@ function TransactionInput(params){
         ]);
     };
 }
+
 function TransactionOutput(params){
+
     var value = params.value,
         pkScriptBuffer = params.pkScriptBuffer;
+
     this.toBuffer = function(){
         return Buffer.concat([
             binpack.packInt64(value, 'little'),
@@ -48,11 +60,15 @@ function TransactionOutput(params){
         ]);
     };
 }
+
 function ScriptSig(params){
+
     var height = params.height,
         flags = params.flags,
         extraNoncePlaceholder = params.extraNoncePlaceholder;
+
     this.toBuffer = function(){
+
         return Buffer.concat([
             util.serializeNumber(height),
             new Buffer(flags, 'hex'),
@@ -63,7 +79,10 @@ function ScriptSig(params){
         ]);
     }
 };
+
+
 var Generation = exports.Generation = function Generation(rpcData, publicKey, extraNoncePlaceholder){
+
     var tx = new Transaction({
         inputs: [new TransactionInput({
             prevOutIndex : Math.pow(2, 32) - 1,
@@ -78,12 +97,15 @@ var Generation = exports.Generation = function Generation(rpcData, publicKey, ex
             pkScriptBuffer : publicKey
         })]
     });
+
     var txBuffer = tx.toBuffer();
     var epIndex  = buffertools.indexOf(txBuffer, extraNoncePlaceholder);
     var p1       = txBuffer.slice(0, epIndex);
     var p2       = txBuffer.slice(epIndex + extraNoncePlaceholder.length);
+
     this.transaction = tx;
     this.coinbase = [p1, p2];
+
 };
 */
 
@@ -121,17 +143,18 @@ var generateOutputTransactions = function (poolRecipient, recipients, rpcData, n
         }
         var posReward = 94 + nScript*2;
         reward = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(posReward, posReward + 16)), 16);
+        //console.log("reward from coinbasetxn.data => " + reward);
         */
         //console.log("reward from coinbasetxn, height => " + reward);
     }
+
     var rewardToPool = reward;
 
     var txOutputBuffers = [];
 
 
-
-    /* Dash 12.1 */
-    if (rpcData.masternode && rpcData.superblock) {
+    /* Dash 0.12.1/0.13 */
+    if (rpcData.masternode) {
         if (rpcData.masternode.payee) {
             var payeeReward = 0;
 
@@ -139,21 +162,28 @@ var generateOutputTransactions = function (poolRecipient, recipients, rpcData, n
             reward -= payeeReward;
             rewardToPool -= payeeReward;
 
-            var payeeScript = util.addressToScript(network, rpcData.masternode.payee);
+            var payeeScript = util.addressToScript(network,rpcData.masternode.payee);
             txOutputBuffers.push(Buffer.concat([
                 util.packInt64LE(payeeReward),
                 util.varIntBuffer(payeeScript.length),
                 payeeScript
             ]));
-        } else if (rpcData.superblock.length > 0) {
-            for (var i in rpcData.superblock) {
+        } else if (rpcData.masternode.length > 0) {
+            for (var i = 0; i < rpcData.masternode.length; i++) {
                 var payeeReward = 0;
 
-                payeeReward = rpcData.superblock[i].amount;
+                payeeReward = rpcData.masternode[i].amount;
                 reward -= payeeReward;
                 rewardToPool -= payeeReward;
 
-                var payeeScript = util.addressToScript(network, rpcData.superblock[i].payee);
+                var payeeScript;
+
+                if (rpcData.masternode[i].script) {
+                    payeeScript = new Buffer(rpcData.masternode[i].script, 'hex');
+                } else {
+                    payeeScript = util.addressToScript(rpcData.masternode[i].payee);
+                }
+
                 txOutputBuffers.push(Buffer.concat([
                     util.packInt64LE(payeeReward),
                     util.varIntBuffer(payeeScript.length),
@@ -162,6 +192,31 @@ var generateOutputTransactions = function (poolRecipient, recipients, rpcData, n
             }
         }
     }
+
+    if (rpcData.superblock && rpcData.superblock.length > 0) {
+        for (var i = 0; i < rpcData.superblock.length; i++) {
+            var payeeReward = 0;
+
+            payeeReward = rpcData.superblock[i].amount;
+            reward -= payeeReward;
+            rewardToPool -= payeeReward;
+
+            var payeeScript;
+
+            if (rpcData.superblock[i].script) {
+                payeeScript = new Buffer(rpcData.superblock[i].script, 'hex');
+            } else {
+                payeeScript = util.addressToScript(rpcData.superblock[i].payee);
+            }
+
+            txOutputBuffers.push(Buffer.concat([
+                util.packInt64LE(payeeReward),
+                util.varIntBuffer(payeeScript.length),
+                payeeScript
+            ]));
+        }
+    }
+    /* End Dash 0.12.1/0.13 */
 
     if (rpcData.payee) {
         var payeeReward = 0;
@@ -237,7 +292,17 @@ exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, 
     if (rpcData.coinbasetxn && rpcData.coinbasetxn.data) {
         txVersion = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(0, 8)), 16); // tx version is first 4byte of coinbasetxn.data
     }
+    var txType = 0;
+    var txExtraPayload;
     var txLockTime = 0;
+
+    if (rpcData.coinbase_payload && rpcData.coinbase_payload.length > 0) {
+        txVersion = 3;
+        txType = 5;
+        txExtraPayload = new Buffer(rpcData.coinbase_payload, 'hex');
+    }
+
+    txVersion = txVersion + (txType << 16);
 
     var txInPrevOutHash = "";
     var txInPrevOutIndex = Math.pow(2, 32) - 1;
@@ -255,7 +320,7 @@ exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, 
 
     var scriptSigPart1 = Buffer.concat([
         util.serializeNumber(rpcData.height),
-        new Buffer([]),
+        //new Buffer(rpcData.coinbaseaux.flags, 'hex'),
         util.serializeNumber(Date.now() / 1000 | 0),
         new Buffer([extraNoncePlaceholder.length])
     ]);
@@ -296,24 +361,40 @@ exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, 
     var vShieldedOutput = (txVersion & 0x7fffffff) >= 4 ? new Buffer([0]) : new Buffer([]);
     var nJoinSplit = (txVersion & 0x7fffffff) >= 2 ? new Buffer([0]) : new Buffer([]);
 
-    var p2 = Buffer.concat([
-        scriptSigPart2,
-        util.packUInt32LE(txInSequence),
-        //end transaction input
+    if (txExtraPayload !== undefined) {
+        var p2 = Buffer.concat([
+            scriptSigPart2,
+            util.packUInt32LE(txInSequence),
+            //end transaction input
 
-        //transaction output
-        outputTransactions,
-        //end transaction ouput
+            //transaction output
+            outputTransactions,
+            //end transaction ouput
 
-        util.packUInt32LE(txLockTime),
-        nExpiryHeight,
-        valueBalance,
-        vShieldedSpend,
-        vShieldedOutput,
-        nJoinSplit,
-        txComment
-    ]);
+            util.packUInt32LE(txLockTime),
+            txComment,
+            util.varIntBuffer(txExtraPayload.length),
+            txExtraPayload
+        ]);
+    } else {
+       var p2 = Buffer.concat([
+            scriptSigPart2,
+            util.packUInt32LE(txInSequence),
+            //end transaction input
 
+            //transaction output
+            outputTransactions,
+            //end transaction ouput
+
+            util.packUInt32LE(txLockTime),
+            nExpiryHeight,
+            valueBalance,
+            vShieldedSpend,
+            vShieldedOutput,
+            nJoinSplit,
+            txComment
+        ]);
+    };
     return [p1, p2];
 
 };
