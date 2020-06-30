@@ -10,18 +10,18 @@
 #include <string.h>
 
 static __inline uint32_t
-be32dec(const void *pp)
+be32dec(const void* pp)
 {
-	const uint8_t *p = (uint8_t const *)pp;
+	const uint8_t* p = (uint8_t const*)pp;
 
 	return ((uint32_t)(p[3]) + ((uint32_t)(p[2]) << 8) +
-	    ((uint32_t)(p[1]) << 16) + ((uint32_t)(p[0]) << 24));
+		((uint32_t)(p[1]) << 16) + ((uint32_t)(p[0]) << 24));
 }
 
 static __inline void
-be32enc(void *pp, uint32_t x)
+be32enc(void* pp, uint32_t x)
 {
-	uint8_t * p = (uint8_t *)pp;
+	uint8_t* p = (uint8_t*)pp;
 
 	p[3] = x & 0xff;
 	p[2] = (x >> 8) & 0xff;
@@ -30,18 +30,18 @@ be32enc(void *pp, uint32_t x)
 }
 
 static __inline uint32_t
-le32dec(const void *pp)
+le32dec(const void* pp)
 {
-	const uint8_t *p = (uint8_t const *)pp;
+	const uint8_t* p = (uint8_t const*)pp;
 
 	return ((uint32_t)(p[0]) + ((uint32_t)(p[1]) << 8) +
-	    ((uint32_t)(p[2]) << 16) + ((uint32_t)(p[3]) << 24));
+		((uint32_t)(p[2]) << 16) + ((uint32_t)(p[3]) << 24));
 }
 
 static __inline void
-le32enc(void *pp, uint32_t x)
+le32enc(void* pp, uint32_t x)
 {
-	uint8_t * p = (uint8_t *)pp;
+	uint8_t* p = (uint8_t*)pp;
 
 	p[0] = x & 0xff;
 	p[1] = (x >> 8) & 0xff;
@@ -66,7 +66,7 @@ typedef struct HMAC_SHA256Context {
  * (unsigned char) in big-endian form.  Assumes len is a multiple of 4.
  */
 static void
-be32enc_vect(unsigned char *dst, const uint32_t *src, size_t len)
+be32enc_vect(unsigned char* dst, const uint32_t* src, size_t len)
 {
 	size_t i;
 
@@ -79,7 +79,7 @@ be32enc_vect(unsigned char *dst, const uint32_t *src, size_t len)
  * len/4 vector of (uint32_t).  Assumes len is a multiple of 4.
  */
 static void
-be32dec_vect(uint32_t *dst, const unsigned char *src, size_t len)
+be32dec_vect(uint32_t* dst, const unsigned char* src, size_t len)
 {
 	size_t i;
 
@@ -117,7 +117,7 @@ be32dec_vect(uint32_t *dst, const unsigned char *src, size_t len)
  * the 512-bit input block to produce a new state.
  */
 static void
-SHA256_Transform(uint32_t * state, const unsigned char block[64])
+SHA256_Transform(uint32_t* state, const unsigned char block[64])
 {
 	uint32_t W[64];
 	uint32_t S[8];
@@ -217,7 +217,7 @@ static unsigned char PAD[64] = {
 
 /* SHA-256 initialization.  Begins a SHA-256 operation. */
 static void
-SHA256_Init(SHA256_CTX * ctx)
+SHA256_Init(SHA256_CTX* ctx)
 {
 
 	/* Zero bits processed so far */
@@ -236,11 +236,11 @@ SHA256_Init(SHA256_CTX * ctx)
 
 /* Add bytes into the hash */
 static void
-SHA256_Update(SHA256_CTX * ctx, const void *in, size_t len)
+SHA256_Update(SHA256_CTX* ctx, const void* in, size_t len)
 {
 	uint32_t bitlen[2];
 	uint32_t r;
-	const unsigned char *src = in;
+	const unsigned char* src = in;
 
 	/* Number of bytes left in the buffer from previous updates */
 	r = (ctx->count[1] >> 3) & 0x3f;
@@ -279,7 +279,7 @@ SHA256_Update(SHA256_CTX * ctx, const void *in, size_t len)
 
 /* Add padding and terminating bit-count. */
 static void
-SHA256_Pad(SHA256_CTX * ctx)
+SHA256_Pad(SHA256_CTX* ctx)
 {
 	unsigned char len[8];
 	uint32_t r, plen;
@@ -304,7 +304,7 @@ SHA256_Pad(SHA256_CTX * ctx)
  * and clears the context state.
  */
 static void
-SHA256_Final(unsigned char digest[32], SHA256_CTX * ctx)
+SHA256_Final(unsigned char digest[32], SHA256_CTX* ctx)
 {
 
 	/* Add padding */
@@ -314,18 +314,18 @@ SHA256_Final(unsigned char digest[32], SHA256_CTX * ctx)
 	be32enc_vect(digest, ctx->state, 32);
 
 	/* Clear the context state */
-	memset((void *)ctx, 0, sizeof(*ctx));
+	memset((void*)ctx, 0, sizeof(*ctx));
 }
 
 /* Initialize an HMAC-SHA256 operation with the given key. */
 static void
-HMAC_SHA256_Init(HMAC_SHA256_CTX * ctx, const void * _K, size_t Klen)
+HMAC_SHA256_Init(HMAC_SHA256_CTX* ctx, const void* _K, size_t Klen)
 {
 	unsigned char pad[64];
 	unsigned char khash[32];
-	const unsigned char * K = _K;
+	const unsigned char* K = _K;
 	size_t i;
-	
+
 	/* If Klen > 64, the key is really SHA256(K). */
 	if (Klen > 64) {
 		SHA256_Init(&ctx->ictx);
@@ -349,14 +349,14 @@ HMAC_SHA256_Init(HMAC_SHA256_CTX * ctx, const void * _K, size_t Klen)
 		pad[i] ^= K[i];
 	SHA256_Update(&ctx->octx, pad, 64);
 
-	
+
 	/* Clean the stack. */
 	memset(khash, 0, 32);
 }
 
 /* Add bytes to the HMAC-SHA256 operation. */
 static void
-HMAC_SHA256_Update(HMAC_SHA256_CTX * ctx, const void *in, size_t len)
+HMAC_SHA256_Update(HMAC_SHA256_CTX* ctx, const void* in, size_t len)
 {
 	/* Feed data to the inner SHA256 operation. */
 	SHA256_Update(&ctx->ictx, in, len);
@@ -364,7 +364,7 @@ HMAC_SHA256_Update(HMAC_SHA256_CTX * ctx, const void *in, size_t len)
 
 /* Finish an HMAC-SHA256 operation. */
 static void
-HMAC_SHA256_Final(unsigned char digest[32], HMAC_SHA256_CTX * ctx)
+HMAC_SHA256_Final(unsigned char digest[32], HMAC_SHA256_CTX* ctx)
 {
 	unsigned char ihash[32];
 
@@ -387,8 +387,8 @@ HMAC_SHA256_Final(unsigned char digest[32], HMAC_SHA256_CTX * ctx)
  * write the output to buf.  The value dkLen must be at most 32 * (2^32 - 1).
  */
 static void
-PBKDF2_SHA256(const uint8_t * passwd, size_t passwdlen, const uint8_t * salt,
-    size_t saltlen, uint64_t c, uint8_t * buf, size_t dkLen)
+PBKDF2_SHA256(const uint8_t* passwd, size_t passwdlen, const uint8_t* salt,
+	size_t saltlen, uint64_t c, uint8_t* buf, size_t dkLen)
 {
 	HMAC_SHA256_CTX PShctx, hctx;
 	size_t i;
