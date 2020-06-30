@@ -4,42 +4,68 @@
             "target_name": "multihashing",
             "sources": [
                 "multihashing.cc",
-                "scryptjane.c",
-                "scryptn.c",
-                "yespower/yespower-opt.c",
-                "yespower/yespower.c",
-                "keccak.c",
-                "lbry.c",
-                "skein.c",
-                "x11.c",
-                "lyra2re.c",
-                "lyra2.c",
-                "Sponge.c",
-                "quark.c",
+                "allium.c",
                 "bcrypt.c",
-                "groestl.c",
                 "blake.c",
-                "fugue.c",
-                "qubit.c",
-                "hefty1.c",
-                "shavite3.c",
+                "blake2s.c",
+                "boolberry.cc",
+                "c11.c",
                 "cryptonight.c",
                 "cryptonight_fast.c",
-                "x13.c",
-                "boolberry.cc",
+                "fresh.c",
+                "fugue.c",
+                "gost.c",
+                "groestl.c",
+                "hefty1.c",
+                "hsr14.c",
+                "keccak.c",
+                "lbry.c",
+                "Lyra2.c",
+                "Lyra2RE.c",
+                "Lyra2REV2.c",
+                "Lyra2REV3.c",
+                "Lyra2Z.c",
+                "lyra2z16m330.c",
+                "lyra2z330.c",
+                "m7.c",
+                "magimath.c",
+                "minotaur.c",
+                "neoscrypt.c",
                 "nist5.c",
+                "odo.cc",
+                "phi1612.c",
+                "quark.c",
+                "qubit.c",
+                "scryptjane.c",
+                "scryptn.c",
                 "sha1.c",
                 "sha256d.c",
+                "shavite3.c",
+                "skein.c",
+                "skunk.c",
+                "sm3.c",
+                "Sponge.c",
+                "tribus.c",
+                "whirlpoolx.c",
+                "x11.c",
+                "x13.c",
                 "x15.c",
-                "x16rv2.c",
-                "fresh.c",
+                "x16r.c",
+                "x17.c",
+                "xevan.c",
+                "zr5.c",
+                "sha3/aes_helper.c",
+                "sha3/hamsi.c",
+                "sha3/KeccakP-800-reference.c",
+                "sha3/sph_haval.c",
                 "sha3/sph_hefty1.c",
                 "sha3/sph_fugue.c",
-                "sha3/aes_helper.c",
                 "sha3/sph_blake.c",
+                "sha3/sph_blake2s.c",
                 "sha3/sph_bmw.c",
                 "sha3/sph_cubehash.c",
                 "sha3/sph_echo.c",
+                "sha3/sph_gost.c",
                 "sha3/sph_groestl.c",
                 "sha3/sph_jh.c",
                 "sha3/sph_keccak.c",
@@ -53,21 +79,56 @@
                 "sha3/sph_sha2.c",
                 "sha3/sph_sha2big.c",
                 "sha3/sph_tiger.c",
-                "sha3/hamsi.c",
-                "crypto/oaes_lib.c",
-                "crypto/c_keccak.c",
-                "crypto/c_groestl.c",
+                "sph/sph_cubehash.h", 
+                "sph/sph_echo.h",
+                "sph/sph_fungue.h",
+                "sph/sph_gost.h",
+                "sph/sph_jh.h",
+                "sph/sph_skein.h",
+                "crypto/aesb.c",
                 "crypto/c_blake256.c",
+                "crypto/c_groestl.c",
                 "crypto/c_jh.c",
+                "crypto/c_keccak.c",
                 "crypto/c_skein.c",
                 "crypto/hash.c",
-                "crypto/aesb.c",
+                "crypto/oaes_lib.c",
+                "crypto/odocrypt.cpp",
                 "crypto/wild_keccak.cpp",
-                "neoscrypt.c",
+                "yespower/yespower.c",
+                "yespower/yespower-opt.c"
             ],
+            'conditions': [
+                ['OS=="linux"',
+                  {
+                    'link_settings': {
+                      'libraries': [
+                        '-lgmp'
+                      ]
+                    }
+                  }
+                ],
+                ['OS=="mac"',
+                  {
+                    'link_settings': {
+                      'libraries': [
+                        '-lgmp'
+                      ]
+                    }
+                  }
+                ],
+                ['OS=="win"',
+                  {
+                    'link_settings': {
+                      'libraries': [
+                        '-lgmp.lib'
+                      ],
+                    }
+                  }
+                ]
+              ],
             "include_dirs": [
-                "crypto",
-  "<!(node -e \"require('nan')\")"
+                "crypto"
             ],
             "cflags_cc": [
                 "-std=c++0x"

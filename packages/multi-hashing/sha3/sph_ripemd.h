@@ -271,3 +271,4 @@ void sph_ripemd160_close(void *cc, void *dst);
 void sph_ripemd160_comp(const sph_u32 msg[16], sph_u32 val[5]);
 
 #endif
+

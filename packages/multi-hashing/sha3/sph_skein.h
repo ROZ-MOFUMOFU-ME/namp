@@ -8,7 +8,7 @@
  * Skein-224, Skein-256, Skein-384 and Skein-512 what the Skein
  * specification defines as Skein-512-224, Skein-512-256, Skein-512-384
  * and Skein-512-512, respectively.
- *
+ * 
  * ==========================(LICENSE BEGIN)============================
  *
  * Copyright (c) 2007-2010  Projet RNRT SAPHIR

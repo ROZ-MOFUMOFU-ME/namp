@@ -1,7 +1,6 @@
 {
     "name": "multi-hashing",
     "version": "0.0.9",
-    "license": "SEE LICENSE IN <filename>",
     "main": "multihashing",
     "author": {
         "name": "Matthew Little",
@@ -19,7 +18,6 @@
         "scrypt",
         "scryptjane",
         "script-n",
-        "yescrypt",
         "x11",
         "quark",
         "keccak_hash",
@@ -30,6 +28,7 @@
         "shavite",
         "fugue",
         "sha1",
+        "yescrypt",
         "yespower",
         "lyra2re2"
     ]

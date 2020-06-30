@@ -1,6 +1,6 @@
 /* $Id: skein.c 254 2011-06-07 19:38:58Z tp $ */
 /*
- * Skein implementation.
+ * Skein implementation. 
  *
  * ==========================(LICENSE BEGIN)============================
  *
