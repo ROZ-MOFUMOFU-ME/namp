@@ -292,7 +292,7 @@ exports.kotoAddressToScript = function (addr) {
 
 exports.getReadableHashRateString = function (hashrate) {
     var i = -1;
-    var byteUnits = [' KH', ' MH', ' GH', ' TH', ' PH'];
+    var byteUnits = [' KHash', ' MHash', ' GHash', ' THash', ' PHash'];
     do {
         hashrate = hashrate / 1024;
         i++;
