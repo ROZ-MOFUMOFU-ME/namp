@@ -237,11 +237,9 @@ DECLARE_NO_INPUT_LENGTH_CALLBACK(phi1612, phi1612_hash, 32);
 DECLARE_NO_INPUT_LENGTH_CALLBACK(tribus, tribus_hash, 32);
 DECLARE_NO_INPUT_LENGTH_CALLBACK(yespower, yespower_hash, 32);
 DECLARE_NO_INPUT_LENGTH_CALLBACK(yespower_0_5_R8, yespower_0_5_R8_hash, 32);
-DECLARE_NO_INPUT_LENGTH_CALLBACK(yespower_0_5_R8G, yespower_0_5_R8G_hash, 32);
 DECLARE_NO_INPUT_LENGTH_CALLBACK(yespower_0_5_R16, yespower_0_5_R16_hash, 32);
 DECLARE_NO_INPUT_LENGTH_CALLBACK(yespower_0_5_R24, yespower_0_5_R24_hash, 32);
 DECLARE_NO_INPUT_LENGTH_CALLBACK(yespower_0_5_R32, yespower_0_5_R32_hash, 32);
-DECLARE_NO_INPUT_LENGTH_CALLBACK(yespower_sugar, yespower_sugar_hash, 32);
 DECLARE_NO_INPUT_LENGTH_CALLBACK(yespower_ltncg, yespower_ltncg_hash, 32);
 
 DECLARE_FUNC(scrypt) {
@@ -591,6 +589,57 @@ DECLARE_FUNC(odo) {
     uint32_t input_len = Buffer::Length(target);
 
     odo_hash(input, output, input_len, keyValue);
+
+    SET_BUFFER_RETURN(output, 32);
+}
+
+DECLARE_FUNC(yespower_0_5_R8G) {
+    DECLARE_SCOPE;
+
+    if (args.Length() < 1)
+        RETURN_EXCEPT("You must provide one argument.");
+
+#if NODE_MAJOR_VERSION >= 12
+    Local<Object> target = args[0]->ToObject(isolate);
+#else
+    Local<Object> target = args[0]->ToObject();
+#endif
+
+    if (!Buffer::HasInstance(target))
+        RETURN_EXCEPT("Argument should be a buffer object.");
+
+
+    char* input = Buffer::Data(target);
+    uint32_t input_len = Buffer::Length(target);
+    char output[32];
+
+
+    yespower_0_5_R8G_hash(input, input_len, output);
+
+    SET_BUFFER_RETURN(output, 32);
+}
+
+DECLARE_FUNC(yespower_sugar) {
+    DECLARE_SCOPE;
+
+    if (args.Length() < 1)
+        RETURN_EXCEPT("You must provide one argument.");
+
+#if NODE_MAJOR_VERSION >= 12
+    Local<Object> target = args[0]->ToObject(isolate);
+#else
+    Local<Object> target = args[0]->ToObject();
+#endif
+
+    if (!Buffer::HasInstance(target))
+        RETURN_EXCEPT("Argument should be a buffer object.");
+
+
+    char* input = Buffer::Data(target);
+    uint32_t input_len = Buffer::Length(target);
+    char output[32];
+
+    yespower_sugar_hash(input, output, input_len);
 
     SET_BUFFER_RETURN(output, 32);
 }
