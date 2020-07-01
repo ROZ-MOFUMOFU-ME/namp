@@ -1,21 +1,119 @@
 version: 2.1
-orbs:
-  node: circleci/node@2.0.2
+
 jobs:
-  build-and-test:
-    executor:
-      name: node/default
+  install_deps:
+    docker:
+      - image: circleci/node@2.0.2
     steps:
       - checkout
-      - node/with-cache:
-          steps:
-            - run: npm install
-            - run: npm test
+      - restore_cache:
+          keys:
+            - v1-npm-{{ .Branch }}-{{ checksum "package-lock.json" }}
+            - v1-npm-{{ .Branch }}-
+            - v1-npm-
+      - run: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-npm-{{ .Branch }}-{{ checksum "package-lock.json" }}
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - node_modules
+
+  "node-8":
+    docker:
+      - image: circleci/node:8
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run: npm test
+      - run: npm run build
+      
+   "node-9":
+    docker:
+      - image: circleci/node:9
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run: npm test
+      - run: npm run build
+      - persist_to_workspace
+          root: ./
+          paths:
+            - lib/
+            - node_modules
+
+  "node-10":
+    docker:
+      - image: circleci/node:10
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run: npm test
+      - run: npm run build
+
+  "node-11":
+    docker:
+      - image: circleci/node:11
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run: npm test
+      - run: npm run build
+
+  "node-12":
+    docker:
+      - image: circleci/node:12
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run: npm test
+      - run: npm run build
+      - persist_to_workspace
+          root: ./
+          paths:
+            - lib/
+            - node_modules
+
+  deploy:
+    docker:
+      - image: circleci/node:12
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run: npm run deploy
+
 workflows:
-  all-tests:
+  version: 2
+  matrix:
     jobs:
-      - build-and-test:
-          matrix:
-            parameters:
-              os: [linux]
-              node-version: ["7.10.1", "8.17.0", "9.11.2", "10.21.0", "11.15.0", "12.18.2", "13.14.0"]
+      - install_deps
+      - "node-8":
+          requires:
+            - install_deps
+      - "node-9:
+          requires:
+            - install_deps
+      - "node-10":
+          requires:
+            - install_deps
+       - "node-11:
+          requires:
+            - install_deps
+      - "node-12":
+          requires:
+            - install_deps
+      - deploy:
+          requires:
+            - "node-8"
+            - "node-9"
+            - "node-10"
+            - "node-11"
+            - "node-12"
