@@ -3,6 +3,11 @@ orbs: # declare what orbs we are going to use
 
 version: 2.1 # using 2.1 provides access to orbs and other features
 
+executors:
+  default:
+    docker:
+      - image: circleci/node:12.18.2-stretch
+
 jobs:
   build:
     steps:
