@@ -12,7 +12,7 @@ etc.. The portal also has an [MPOS](https://github.com/MPOS/php-mpos) compatibil
 a drop-in-replacement for [python-stratum-mining](https://github.com/Crypto-Expert/stratum-mining).
 
 
-[![Build Status](https://travis-ci.org/ROZ-MOFUMOFU-ME/node-stratum-pool.svg?branch=main)](https://travis-ci.org/ROZ-MOFUMOFU-ME/node-stratum-pool)
+[![Build Status](https://travis-ci.com/ROZ-MOFUMOFU-ME/node-stratum-pool.svg?branch=main)](https://travis-ci.com/ROZ-MOFUMOFU-ME/node-stratum-pool)
 
 #### Why
 This server was built to be more efficient and easier to setup, maintain and scale than existing stratum poolservers
