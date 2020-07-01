@@ -34,6 +34,7 @@
         "base58-native": "^0.1.4",
         "bignum": "^0.13.0",
         "bitcoinjs-lib": "*",
+        "gmp": "*"
         "multi-hashing": "git://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing.git"
     },
     "engines": {
