@@ -8,6 +8,7 @@ node-multi-hashing
 ===============
 
 [![Build Status](https://travis-ci.org/ROZ-MOFUMOFU-ME/node-multi-hashing.svg?branch=main)](https://travis-ci.org/ROZ-MOFUMOFU-ME/node-multi-hashing)
+[![CircleCI](https://circleci.com/gh/ROZ-MOFUMOFU-ME/node-multi-hashing/tree/main.svg?style=svg)](https://circleci.com/gh/ROZ-MOFUMOFU-ME/node-multi-hashing/tree/main)
 
 Cryptocurrency hashing functions for node.js.
 
