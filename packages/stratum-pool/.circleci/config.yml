@@ -1,119 +1,16 @@
-version: 2.1
+orbs: # declare what orbs we are going to use
+  node: circleci/node@2.0.2 # the node orb provides common node-related configuration 
 
-jobs:
-  install_deps:
-    docker:
-      - image: circleci/node@2.0.2
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-npm-{{ .Branch }}-{{ checksum "package-lock.json" }}
-            - v1-npm-{{ .Branch }}-
-            - v1-npm-
-      - run: npm install
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-npm-{{ .Branch }}-{{ checksum "package-lock.json" }}
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - node_modules
-
-  "node-8":
-    docker:
-      - image: circleci/node:8
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run: npm test
-      - run: npm run build
-      
-   "node-9":
-    docker:
-      - image: circleci/node:9
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run: npm test
-      - run: npm run build
-      - persist_to_workspace
-          root: ./
-          paths:
-            - lib/
-            - node_modules
-
-  "node-10":
-    docker:
-      - image: circleci/node:10
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run: npm test
-      - run: npm run build
-
-  "node-11":
-    docker:
-      - image: circleci/node:11
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run: npm test
-      - run: npm run build
-
-  "node-12":
-    docker:
-      - image: circleci/node:12
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run: npm test
-      - run: npm run build
-      - persist_to_workspace
-          root: ./
-          paths:
-            - lib/
-            - node_modules
-
-  deploy:
-    docker:
-      - image: circleci/node:12
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run: npm run deploy
+version: 2.1 # using 2.1 provides access to orbs and other features
 
 workflows:
-  version: 2
-  matrix:
+  matrix-tests:
     jobs:
-      - install_deps
-      - "node-8":
-          requires:
-            - install_deps
-      - "node-9:
-          requires:
-            - install_deps
-      - "node-10":
-          requires:
-            - install_deps
-       - "node-11:
-          requires:
-            - install_deps
-      - "node-12":
-          requires:
-            - install_deps
-      - deploy:
-          requires:
-            - "node-8"
-            - "node-9"
-            - "node-10"
-            - "node-11"
-            - "node-12"
+      - node/test:
+          version: 13.14.0
+      - node/test:
+          version: 12.18.2
+      - node/test:
+          version: 11.15.0
+      - node/test:
+          version: 10.21.0
