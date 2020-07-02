@@ -152,8 +152,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
         var generateProgress = function () {
 
-            var cmd = options.coin.hasGetInfo ? 'getinfo' : 'getblockchaininfo';
-            _this.daemon.cmd(cmd, [], function (results) {
+            this.daemon.cmd(options.coin.hasGetInfo ? 'getinfo' : 'getblockchaininfo', [], function (results) {
                 var blockCount = results.sort(function (a, b) {
                     return b.response.blocks - a.response.blocks;
                 })[0].response.blocks;
@@ -395,11 +394,15 @@ var pool = module.exports = function pool(options, authorizeFn) {
         var batchRpcCalls = [
             ['validateaddress', [options.address]],
             ['getdifficulty', []],
-            ['getblockchaininfo', []],
-            ['getnetworkinfo', []],
             ['getmininginfo', []],
             ['submitblock', []]
         ];
+
+        if (options.coin.hasGetInfo) {
+            batchRpcCalls.push(['getinfo', []]);
+        } else {
+            batchRpcCalls.push(['getblockchaininfo', []], ['getnetworkinfo', []]);
+        }
 
         _this.daemon.batchCmd(batchRpcCalls, function (error, results) {
             if (error || !results) {
@@ -440,7 +443,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 return;
             }
 
-            options.testnet = (rpcResults.getblockchaininfo.chain === 'test') ? true : false;
+            options.testnet = (options.coin.getInfo ? rpcResults.getinfo.testnet : (rpcResults.getmininginfo.chain == 'test' ? true : false));
 
             options.network = (options.testnet ? options.coin.testnet : options.coin.mainnet);
 
@@ -457,14 +460,20 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 }
             })();
 
-            options.protocolVersion = rpcResults.getnetworkinfo.protocolversion;
+            options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
+
+            options.testnet = options.coin.hasGetInfo ? rpcResults.getinfo.testnet : rpcResults.getblockchaininfo.chain === "test";
+            options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
+            var tempDifficulty = options.coin.hasGetInfo ? rpcResults.getinfo.difficulty : rpcResults.getblockchaininfo.difficulty;
+            if (typeof (tempDifficulty) == 'object') {
+                tempDifficulty = tempDifficulty['proof-of-work'];
+            }
 
             options.initStats = {
-                connections: rpcResults.getnetworkinfo.connections,
-                difficulty: rpcResults.getblockchaininfo.difficulty * algos[options.coin.algorithm].multiplier,
+                connections: (options.coin.hasGetInfo ? rpcResults.getinfo.connections : rpcResults.getnetworkinfo.connections),
+                difficulty: tempDifficulty * algos[options.coin.algorithm].multiplier,
                 networkHashRate: rpcResults.getmininginfo.networkhashps
-            };
-
+            }
 
             if (rpcResults.submitblock.message === 'Method not found') {
                 options.hasSubmitMethod = false;

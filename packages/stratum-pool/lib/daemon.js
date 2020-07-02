@@ -42,7 +42,7 @@ function DaemonInterface(daemons, logger) {
     }
 
     function isOnline(callback) {
-        cmd('getnetworkinfo', [], function (results) {
+        cmd('ISONLINEIMPL', [], function (results) {
             var allOnline = results.every(function (result) {
                 return !results.error;
             });
@@ -164,6 +164,15 @@ function DaemonInterface(daemons, logger) {
                 eachCallback();
                 itemFinished = function () { };
             };
+
+            var effectiveMethod = method;
+            if (method === 'ISONLINEIMPL') {
+                effectiveMethod = method = 'getnetworkinfo';
+            }
+
+            if (method === 'getnetworkinfo' && instance.noNetworkInfo) {
+                effectiveMethod = 'getinfo';
+            }
 
             var requestJson = JSON.stringify({
                 method: method,
