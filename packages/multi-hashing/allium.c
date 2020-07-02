@@ -22,7 +22,6 @@
 static char* format_hash(char* buf, uint8_t *hash)
 {
 	int len = 0;
-	int i;
 	for (int i=0; i < 32; i += 4) {
 		len += sprintf(buf+len, "%02x%02x%02x%02x ",
 			hash[i], hash[i+1], hash[i+2], hash[i+3]);
