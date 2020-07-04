@@ -152,7 +152,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
         var generateProgress = function () {
 
-            this.daemon.cmd(options.coin.hasGetInfo ? 'getinfo' : 'getblockchaininfo', [], function (results) {
+            _this.daemon.cmd(options.coin.hasGetInfo ? 'getinfo' : 'getblockchaininfo', [], function (results) {
                 var blockCount = results.sort(function (a, b) {
                     return b.response.blocks - a.response.blocks;
                 })[0].response.blocks;
