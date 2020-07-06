@@ -62,7 +62,12 @@ var pool = module.exports = function pool(options, authorizeFn) {
         });
     }
 
-
+    function GetBlockTemplateParameters() {
+        if (options.coin.passAlgorithm) {
+            return [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }, options.coin.passAlgorithm === true ? options.coin.algorithm : options.coin.passAlgorithm];
+        }
+        return [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }];
+    }
 
     function GetFirstJob(finishedCallback) {
 
@@ -112,7 +117,8 @@ var pool = module.exports = function pool(options, authorizeFn) {
             'Network Difficulty:\t' + options.initStats.difficulty,
             'Network Hash Rate:\t' + util.getReadableHashRateString(options.initStats.networkHashRate),
             'Stratum Port(s):\t' + _this.options.initStats.stratumPorts.join(', '),
-            'Pool Fee Percent:\t' + _this.options.feePercent + '%'
+            'Pool Fee Percent:\t' + _this.options.feePercent + '%',
+            'ASICBoost Enabled:\t' + (options.coin.version_mask ? 'true' : 'false')
         ];
 
         if (typeof options.blockRefreshInterval === "number" && options.blockRefreshInterval > 0)
@@ -125,7 +131,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
     function OnBlockchainSynced(syncedCallback) {
 
         var checkSynced = function (displayNotSynced) {
-            _this.daemon.cmd('getblocktemplate', [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }], function (results) {
+            _this.daemon.cmd('getblocktemplate', GetBlockTemplateParameters(), function (results) {
                 var synced = results.every(function (r) {
                     return !r.error || r.error.code !== -10;
                 });
@@ -291,9 +297,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 } else if (r.length === 40) {
                     rObj.script = util.miningKeyToScript(r);
                 } else {
-                    rObj.script = util.addressToScript({
-                        address: r
-                    });
+                    rObj.script = util.addressToScript(options.network, r);
                 }
                 recipients.push(rObj);
                 options.feePercent += percent;
@@ -455,9 +459,9 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 } else {
                     switch (options.coin.reward) {
                         case 'POS':
-                            return util.pubkeyToScript(rpcResults.validateaddress);
+                            return util.pubkeyToScript(rpcResults.validateaddress.pubkey);
                         case 'POW':
-                            return util.addressToScript(options.network, rpcResults.validateaddress);
+                            return util.addressToScript(options.network, rpcResults.validateaddress.address);
                     }
                 }
             })();
@@ -470,11 +474,11 @@ var pool = module.exports = function pool(options, authorizeFn) {
             if (typeof (tempDifficulty) == 'object') {
                 tempDifficulty = tempDifficulty['proof-of-work'];
             }
-
+            var multiAlgoDifficultyKey = 'difficulty_' + (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm);
             options.initStats = {
                 connections: (options.coin.hasGetInfo ? rpcResults.getinfo.connections : rpcResults.getnetworkinfo.connections),
-                difficulty: tempDifficulty * algos[options.coin.algorithm].multiplier,
-                networkHashRate: rpcResults.getmininginfo.networkhashps
+                difficulty: (typeof rpcResults.getmininginfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getmininginfo[multiAlgoDifficultyKey] : rpcResults.getmininginfo.difficulty) * algos[options.coin.algorithm].multiplier,
+                networkHashRate: rpcResults.getnetworkhashps
             }
 
             if (rpcResults.submitblock.message === 'Method not found') {
@@ -547,7 +551,8 @@ var pool = module.exports = function pool(options, authorizeFn) {
                     params.nonce,
                     client.remoteAddress,
                     client.socket.localPort,
-                    params.name
+                    params.name,
+                    params.versionMask
                 );
 
                 resultCallback(result.error, result.result ? true : null);
@@ -611,7 +616,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
     function GetBlockTemplate(callback) {
         _this.daemon.cmd('getblocktemplate',
-            [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }],
+            GetBlockTemplateParameters(),
             function (result) {
                 if (result.error) {
                     emitErrorLog('getblocktemplate call failed for daemon instance ' +

@@ -3,7 +3,6 @@ var bchaddr = require('bchaddrjs');
 var base58 = require('base58-native');
 var bignum = require('bignum');
 var bitcoin = require('bitcoinjs-lib');
-var ccAddr = require('cryptocurrency-addr');
 
 
 exports.addressFromEx = function (exAddress, ripdm160Key) {
@@ -241,8 +240,7 @@ exports.range = function (start, stop, step) {
 /*
  For POS coins - used to format wallet address for use in generation transaction's output
  */
-exports.pubkeyToScript = function (params) {
-    var key = params.pubkey;
+exports.pubkeyToScript = function (key) {
     if (key.length !== 66) {
         console.error('Invalid pubkey: ' + key);
         throw new Error();
@@ -265,6 +263,10 @@ For POW coins - used to format wallet address for use in generation transaction'
  */
 exports.addressToScript = function (network, addr) {
 
+    if (addr.indexOf('bitcoincash:') === 0) {
+        addr = bchaddr.toLegacyAddress(addr);
+    }
+
     if (typeof network !== 'undefined' && network !== null) {
         return bitcoin.address.toOutputScript(addr, network);
     } else {
@@ -273,21 +275,28 @@ exports.addressToScript = function (network, addr) {
 
 };
 
-exports.addressToScript = function (params) {
-    var addr = params.address;
+exports.kotoAddressToScript = function (addr) {
 
-    try {
-        if (addr.indexOf('bitcoincash:q') === 0 || addr.indexOf('q') === 0) {
-            return ccAddr.addressToScript(bchaddr.toLegacyAddress(addr), false, false);
-        }
-    } catch (e) { }
+    var decoded = base58.decode(addr);
 
-    return ccAddr.addressToScript(addr, params.isscript === true, params.iswitness === true);
+    if (decoded.length != 25 && decoded.length != 26) {
+        console.error('invalid address length for ' + addr);
+        throw new Error();
+    }
+
+    if (!decoded) {
+        console.error('base58 decode failed for ' + addr);
+        throw new Error();
+    }
+
+    var pubkey = decoded.slice(decoded.length - 24, -4);
+
+    return Buffer.concat([Buffer.from([0x76, 0xa9, 0x14]), pubkey, Buffer.from([0x88, 0xac])]);
 };
 
 exports.getReadableHashRateString = function (hashrate) {
     var i = -1;
-    var byteUnits = [' KHash', ' MHash', ' GHash', ' THash', ' PHash'];
+    var byteUnits = [' KHash', ' MHash', ' GHash', ' THash', ' PHash', ' EHash', ' ZHash', ' YHash'];
     do {
         hashrate = hashrate / 1024;
         i++;
