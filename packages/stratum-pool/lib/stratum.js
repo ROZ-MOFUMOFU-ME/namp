@@ -307,29 +307,33 @@ var StratumClient = function(options){
         return true;
     };
 
-    this.sendMiningJob = function(jobParams){
+    this.sendMiningJob = function (jobParams, odoKey) {
 
         var lastActivityAgo = Date.now() - _this.lastActivity;
-        if (lastActivityAgo > options.connectionTimeout * 1000){
+        if (lastActivityAgo > options.connectionTimeout * 1000) {
             _this.emit('socketTimeout', 'last submitted a share was ' + (lastActivityAgo / 1000 | 0) + ' seconds ago');
             _this.socket.destroy();
             return;
         }
-
-        if (pendingDifficulty !== null){
+        if (pendingDifficulty !== null) {
             var result = _this.sendDifficulty(pendingDifficulty);
             pendingDifficulty = null;
             if (result) {
                 _this.emit('difficultyChanged', _this.difficulty);
             }
         }
-        sendJson({
-            id    : null,
-            method: "mining.notify",
-            params: jobParams
-        });
-
+            var json = {
+                id: null,
+                method: "mining.notify",
+                params: jobParams
     };
+
+    if (odoKey !== null) {
+        json.odokey = odokey;
+    }
+
+    sendJson(json);
+};
 
     this.manuallyAuthClient = function (username, password) {
         handleAuthorize({id: 1, params: [username, password]}, false /*do not reply to miner*/);
@@ -414,10 +418,10 @@ var StratumServer = exports.Server = function StratumServer(options, authorizeFn
     };
 
 
-    this.broadcastMiningJobs = function(jobParams){
+    this.broadcastMiningJobs = function (jobParams, odoKey){
         for (var clientId in stratumClients) {
             var client = stratumClients[clientId];
-            client.sendMiningJob(jobParams);
+            client.sendMiningJob(jobParams, odoKey);
         }
         /* Some miners will consider the pool dead if it doesn't receive a job for around a minute.
            So every time we broadcast jobs, set a timeout to rebroadcast in X seconds unless cleared. */

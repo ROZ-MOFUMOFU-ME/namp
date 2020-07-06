@@ -321,14 +321,14 @@ var pool = module.exports = function pool(options, authorizeFn) {
         _this.jobManager.on('newBlock', function (blockTemplate) {
             //Check if stratumServer has been initialized yet
             if (_this.stratumServer) {
-                _this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams());
+                _this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams(), blockTemplate.getOdoKey());
             }
         }).on('updatedBlock', function (blockTemplate) {
             //Check if stratumServer has been initialized yet
             if (_this.stratumServer) {
                 var job = blockTemplate.getJobParams();
                 job[8] = false;
-                _this.stratumServer.broadcastMiningJobs(job);
+                _this.stratumServer.broadcastMiningJobs(job, blockTemplate.getOdoKey());
             }
         }).on('share', function (shareData, blockHex) {
             var isValidShare = !shareData.error;
@@ -507,7 +507,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
         _this.stratumServer.on('started', function () {
             options.initStats.stratumPorts = Object.keys(options.ports);
-            _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams());
+            _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
             finishedCallback();
 
         }).on('broadcastTimeout', function () {
@@ -711,7 +711,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
         miners.forEach(function (clientObj) {
             _this.stratumServer.manuallyAddStratumClient(clientObj);
         });
-        _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams());
+        _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
 
     };
 
@@ -732,16 +732,6 @@ var pool = module.exports = function pool(options, authorizeFn) {
             /* We request to set the newDiff @ the next difficulty retarget
              (which should happen when a new job comes in - AKA BLOCK) */
             client.enqueueNextDifficulty(newDiff);
-
-            /*if (options.varDiff.mode === 'fast'){
-                 //Send new difficulty, then force miner to use new diff by resending the
-                 //current job parameters but with the "clean jobs" flag set to false
-                 //so the miner doesn't restart work and submit duplicate shares
-                client.sendDifficulty(newDiff);
-                var job = _this.jobManager.currentJob.getJobParams();
-                job[8] = false;
-                client.sendMiningJob(job);
-            }*/
 
         });
     };
