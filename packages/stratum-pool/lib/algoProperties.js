@@ -112,6 +112,7 @@ var algos = module.exports = global.algos = {
         }
     },
     x16r: {
+        multiplier: Math.pow(2, 8),
         hash: function () {
             return function () {
                 return multiHashing.x16r.apply(this, arguments);
@@ -221,6 +222,14 @@ var algos = module.exports = global.algos = {
         hash: function () {
             return function () {
                 return multiHashing.lyra2rev2.apply(this, arguments);
+            }
+        }
+    },
+    lyra2v3: {
+        multiplier: Math.pow(2, 8),
+        hash: function () {
+            return function () {
+                return multiHashing.lyra2rev3.apply(this, arguments);
             }
         }
     },
