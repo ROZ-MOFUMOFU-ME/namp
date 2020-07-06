@@ -6,16 +6,6 @@ var diff1 = global.diff1 = 0x00000000ffff000000000000000000000000000000000000000
 
 var algos = module.exports = global.algos = {
 
-    sha256d: {
-        //Uncomment diff if you want to use hardcoded truncated diff
-        //diff: '00000000ffff0000000000000000000000000000000000000000000000000000',
-        hash: function () {
-            return function () {
-                return multiHashing.sha256d.apply(this, arguments);
-            }
-        }
-    },
-
     sha256: {
         //Uncomment diff if you want to use hardcoded truncated diff
         //diff: '00000000ffff0000000000000000000000000000000000000000000000000000',
@@ -25,12 +15,34 @@ var algos = module.exports = global.algos = {
             }
         }
     },
+    sha256d: {
+        //Uncomment diff if you want to use hardcoded truncated diff
+        //diff: '00000000ffff0000000000000000000000000000000000000000000000000000',
+        hash: function () {
+            return function () {
+                return multiHashing.sha256d.apply(this, arguments);
+            }
+        }
+    },
     'scrypt': {
         //Uncomment diff if you want to use hardcoded truncated diff
         //diff: '0000ffff00000000000000000000000000000000000000000000000000000000',
         multiplier: Math.pow(2, 16),
         hash: function (coinConfig) {
             var nValue = coinConfig.nValue || 1024;
+            var rValue = coinConfig.rValue || 1;
+            return function (data) {
+                return multiHashing.scrypt(data, nValue, rValue);
+            }
+        }
+    },
+    'scrypt-og': {
+        //Aiden settings
+        //Uncomment diff if you want to use hardcoded truncated diff
+        //diff: '0000ffff00000000000000000000000000000000000000000000000000000000',
+        multiplier: Math.pow(2, 16),
+        hash: function (coinConfig) {
+            var nValue = coinConfig.nValue || 64;
             var rValue = coinConfig.rValue || 1;
             return function (data) {
                 return multiHashing.scrypt(data, nValue, rValue);
@@ -68,6 +80,197 @@ var algos = module.exports = global.algos = {
 
             return function (data) {
                 return multiHashing.scryptn(data, nFactor);
+            }
+        }
+    },
+    sha1: {
+        hash: function () {
+            return function () {
+                return multiHashing.sha1.apply(this, arguments);
+            }
+        }
+    },
+    x11: {
+        hash: function () {
+            return function () {
+                return multiHashing.x11.apply(this, arguments);
+            }
+        }
+    },
+    x13: {
+        hash: function () {
+            return function () {
+                return multiHashing.x13.apply(this, arguments);
+            }
+        }
+    },
+    x15: {
+        hash: function () {
+            return function () {
+                return multiHashing.x15.apply(this, arguments);
+            }
+        }
+    },
+    x16r: {
+        hash: function () {
+            return function () {
+                return multiHashing.x16r.apply(this, arguments);
+            }
+        }
+    },
+    nist5: {
+        hash: function () {
+            return function () {
+                return multiHashing.nist5.apply(this, arguments);
+            }
+        }
+    },
+    quark: {
+        hash: function () {
+            return function () {
+                return multiHashing.quark.apply(this, arguments);
+            }
+        }
+    },
+    keccak: {
+        multiplier: Math.pow(2, 8),
+        hash: function (coinConfig) {
+            if (coinConfig.normalHashing === true) {
+                return function (data, nTimeInt) {
+                    return multiHashing.keccak(multiHashing.keccak(Buffer.concat([data, new Buffer(nTimeInt.toString(16), 'hex')])));
+                };
+            }
+            else {
+                return function () {
+                    return multiHashing.keccak.apply(this, arguments);
+                }
+            }
+        }
+    },
+    allium: {
+        multiplier: Math.pow(2, 8),
+        hash: function () {
+            return function () {
+                return multiHashing.allium.apply(this, arguments);
+            }
+        }
+    },
+    blake: {
+        multiplier: Math.pow(2, 8),
+        hash: function () {
+            return function () {
+                return multiHashing.blake.apply(this, arguments);
+            }
+        }
+    },
+    skein: {
+        hash: function () {
+            return function () {
+                return multiHashing.skein.apply(this, arguments);
+            }
+        }
+    },
+    groestl: {
+        multiplier: Math.pow(2, 8),
+        hash: function () {
+            return function () {
+                return multiHashing.groestl.apply(this, arguments);
+            }
+        }
+    },
+    fugue: {
+        multiplier: Math.pow(2, 8),
+        hash: function () {
+            return function () {
+                return multiHashing.fugue.apply(this, arguments);
+            }
+        }
+    },
+    shavite3: {
+        hash: function () {
+            return function () {
+                return multiHashing.shavite3.apply(this, arguments);
+            }
+        }
+    },
+    hefty1: {
+        hash: function () {
+            return function () {
+                return multiHashing.hefty1.apply(this, arguments);
+            }
+        }
+    },
+    neoscrypt: {
+        multiplier: Math.pow(2, 5),
+        hash: function () {
+            return function () {
+                return multiHashing.neoscrypt.apply(this, arguments);
+            }
+        }
+    },
+    lyra2: {
+        multiplier: Math.pow(2, 8),
+        hash: function () {
+            return function () {
+                return multiHashing.lyra2re.apply(this, arguments);
+            }
+        }
+    },
+    lyra2v2: {
+        multiplier: Math.pow(2, 8),
+        hash: function () {
+            return function () {
+                return multiHashing.lyra2rev2.apply(this, arguments);
+            }
+        }
+    },
+    lyra2re: {
+        multiplier: Math.pow(2, 7),
+        hash: function () {
+            return function () {
+                return multiHashing.lyra2re.apply(this, arguments);
+            }
+        }
+    },
+    lyra2re2: {
+        multiplier: Math.pow(2, 8),
+        hash: function () {
+            return function () {
+                return multiHashing.lyra2re2.apply(this, arguments);
+            }
+        }
+    },
+    lyra2rev2: {
+        multiplier: Math.pow(2, 8),
+        hash: function () {
+            return function () {
+                return multiHashing.lyra2rev2.apply(this, arguments);
+            }
+        }
+    },
+    lyra2z: {
+        multiplier: Math.pow(2, 8),
+        hash: function () {
+            return function () {
+                return multiHashing.lyra2z.apply(this, arguments);
+            }
+        }
+    },
+    qubit: {
+        hash: function () {
+            return function () {
+                return multiHashing.qubit.apply(this, arguments);
+            }
+        }
+    },
+    odo: {
+        hash: function (coinConfig) {
+            var odoKey = function (nTime) {
+                return nTime - nTime % coinConfig.shapechangeInterval;
+            };
+
+            return function (data, nTime) {
+                return multiHashing.odo(data, odoKey(nTime));
             }
         }
     },
@@ -143,155 +346,6 @@ var algos = module.exports = global.algos = {
                 return multiHashing.yespower_ltncg(data, nValue, rValue);
             }
         }
-    },
-    c11: {
-        hash: function () {
-            return function () {
-                return multiHashing.c11.apply(this, arguments);
-            }
-        }
-    },
-    x11: {
-        hash: function () {
-            return function () {
-                return multiHashing.x11.apply(this, arguments);
-            }
-        }
-    },
-    x13: {
-        hash: function () {
-            return function () {
-                return multiHashing.x13.apply(this, arguments);
-            }
-        }
-    },
-    x15: {
-        hash: function () {
-            return function () {
-                return multiHashing.x15.apply(this, arguments);
-            }
-        }
-    },
-    lyra2re: {
-        multiplier: Math.pow(2, 7),
-        hash: function () {
-            return function () {
-                return multiHashing.lyra2re.apply(this, arguments);
-            }
-        }
-    },
-    lyra2re2: {
-        multiplier: Math.pow(2, 8),
-        hash: function () {
-            return function () {
-                return multiHashing.lyra2re2.apply(this, arguments);
-            }
-        }
-    },
-    lyra2rev2: {
-        multiplier: Math.pow(2, 8),
-        hash: function () {
-            return function () {
-                return multiHashing.lyra2rev2.apply(this, arguments);
-            }
-        }
-    },
-    lyra2z: {
-        multiplier: Math.pow(2, 8),
-        hash: function () {
-            return function () {
-                return multiHashing.lyra2z.apply(this, arguments);
-            }
-        }
-    },
-    nist5: {
-        hash: function () {
-            return function () {
-                return multiHashing.nist5.apply(this, arguments);
-            }
-        }
-    },
-    quark: {
-        hash: function () {
-            return function () {
-                return multiHashing.quark.apply(this, arguments);
-            }
-        }
-    },
-    keccak: {
-        multiplier: Math.pow(2, 8),
-        hash: function (coinConfig) {
-            if (coinConfig.normalHashing === true) {
-                return function (data, nTimeInt) {
-                    return multiHashing.keccak(multiHashing.keccak(Buffer.concat([data, new Buffer(nTimeInt.toString(16), 'hex')])));
-                };
-            }
-            else {
-                return function () {
-                    return multiHashing.keccak.apply(this, arguments);
-                }
-            }
-        }
-    },
-    blake: {
-        multiplier: Math.pow(2, 8),
-        hash: function () {
-            return function () {
-                return multiHashing.blake.apply(this, arguments);
-            }
-        }
-    },
-    neoscrypt: {
-        multiplier: Math.pow(2, 5),
-        hash: function () {
-            return function () {
-                return multiHashing.neoscrypt.apply(this, arguments);
-            }
-        }
-    },
-    skein: {
-        hash: function () {
-            return function () {
-                return multiHashing.skein.apply(this, arguments);
-            }
-        }
-    },
-    groestl: {
-        multiplier: Math.pow(2, 8),
-        hash: function () {
-            return function () {
-                return multiHashing.groestl.apply(this, arguments);
-            }
-        }
-    },
-    fugue: {
-        multiplier: Math.pow(2, 8),
-        hash: function () {
-            return function () {
-                return multiHashing.fugue.apply(this, arguments);
-            }
-        }
-    },
-    shavite3: {
-        hash: function () {
-            return function () {
-                return multiHashing.shavite3.apply(this, arguments);
-            }
-        }
-    },
-    hefty1: {
-        hash: function () {
-            return function () {
-                return multiHashing.hefty1.apply(this, arguments);
-            }
-        }
-    },
-    qubit: {
-        hash: function () {
-            return function () {
-                return multiHashing.qubit.apply(this, arguments);
-            }
-        }
     }
 };
 
@@ -299,19 +353,4 @@ var algos = module.exports = global.algos = {
 for (var algo in algos) {
     if (!algos[algo].multiplier)
         algos[algo].multiplier = 1;
-
-    /*if (algos[algo].diff){
-        algos[algo].maxDiff = bignum(algos[algo].diff, 16);
-    }
-    else if (algos[algo].shift){
-        algos[algo].nonTruncatedDiff = util.shiftMax256Right(algos[algo].shift);
-        algos[algo].bits = util.bufferToCompactBits(algos[algo].nonTruncatedDiff);
-        algos[algo].maxDiff = bignum.fromBuffer(util.convertBitsToBuff(algos[algo].bits));
-    }
-    else if (algos[algo].multiplier){
-        algos[algo].maxDiff = diff1.mul(Math.pow(2, 32) / algos[algo].multiplier);
-    }
-    else{
-        algos[algo].maxDiff = diff1;
-    }*/
 }
