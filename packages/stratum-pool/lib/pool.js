@@ -319,14 +319,14 @@ var pool = module.exports = function pool(options, authorizeFn) {
         _this.jobManager.on('newBlock', function (blockTemplate) {
             //Check if stratumServer has been initialized yet
             if (_this.stratumServer) {
-                _this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams());
+                _this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams()), blockTemplate.getOdoKey();
             }
         }).on('updatedBlock', function (blockTemplate) {
             //Check if stratumServer has been initialized yet
             if (_this.stratumServer) {
                 var job = blockTemplate.getJobParams();
                 job[8] = false;
-                _this.stratumServer.broadcastMiningJobs(job);
+                _this.stratumServer.broadcastMiningJobs(job, blockTemplate.getOdoKey());
             }
         }).on('share', function (shareData, blockHex) {
             var isValidShare = !shareData.error;
@@ -504,7 +504,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
         _this.stratumServer.on('started', function () {
             options.initStats.stratumPorts = Object.keys(options.ports);
-            _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams());
+            _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
             finishedCallback();
 
         }).on('broadcastTimeout', function () {
@@ -538,7 +538,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                     this.sendDifficulty(8);
                 }
 
-                this.sendMiningJob(_this.jobManager.currentJob.getJobParams());
+                this.sendMiningJob(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
 
             }).on('submit', function (params, resultCallback) {
                 var result = _this.jobManager.processShare(
@@ -704,7 +704,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
         miners.forEach(function (clientObj) {
             _this.stratumServer.manuallyAddStratumClient(clientObj);
         });
-        _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams());
+        _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
 
     };
 
