@@ -65,8 +65,13 @@ var pool = module.exports = function pool(options, authorizeFn) {
     function GetBlockTemplateParameters() {
         if (options.coin.passAlgorithm) {
             return [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }, options.coin.passAlgorithm === true ? options.coin.algorithm : options.coin.passAlgorithm];
+            return [{ "mode": "template", "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }, options.coin.passAlgorithm === true ? options.coin.algorithm : options.coin.passAlgorithm];
+        } else if (options.coin.passAlgorithmKey) {
+            return [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"], "algo": options.coin.passAlgorithmKey === true ? options.coin.algorithm : options.coin.passAlgorithmKey }];
+            return [{ "mode": "template", "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"], "algo": options.coin.passAlgorithmKey === true ? options.coin.algorithm : options.coin.passAlgorithmKey }];
         }
         return [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }];
+        return [{ "mode": "template", "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }];
     }
 
     function GetFirstJob(finishedCallback) {
@@ -466,7 +471,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 }
             })();
 
-            options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
+            options.networkVersion = options.coin.hasGetInfo ? rpcResults.getinfo.networkVersion : rpcResults.getnetworkinfo.networkVersion;
 
             options.testnet = options.coin.hasGetInfo ? rpcResults.getinfo.testnet : rpcResults.getblockchaininfo.chain === "test";
             options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
@@ -478,7 +483,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
             options.initStats = {
                 connections: (options.coin.hasGetInfo ? rpcResults.getinfo.connections : rpcResults.getnetworkinfo.connections),
                 difficulty: (typeof rpcResults.getmininginfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getmininginfo[multiAlgoDifficultyKey] : rpcResults.getmininginfo.difficulty) * algos[options.coin.algorithm].multiplier,
-                networkHashRate: rpcResults.getnetworkhashps
+                networkHashRate: options.coin.getAllNetworkHashPS ? rpcResults.getallnetworkhashps[options.coin.passAlgorithmKey ? (options.coin.passAlgorithmKey !== true ? options.coin.passAlgorithmKey : options.coin.algorithm) : (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm)] : rpcResults.getnetworkhashps
             }
 
             if (rpcResults.submitblock.message === 'Method not found') {
