@@ -1,5 +1,5 @@
 var crypto = require('crypto');
-
+var bchaddr = require('bchaddrjs');
 var base58 = require('base58-native');
 var bignum = require('bignum');
 var bitcoin = require('bitcoinjs-lib');
@@ -262,7 +262,9 @@ exports.miningKeyToScript = function (key) {
 For POW coins - used to format wallet address for use in generation transaction's output
  */
 exports.addressToScript = function (network, addr) {
-
+    if (addr.indexOf('bitcoincash:') === 0) {
+        addr = bchaddr.toLegacyAddress(addr);
+    }
     if (typeof network !== 'undefined' && network !== null) {
         return bitcoin.address.toOutputScript(addr, network);
     } else {
