@@ -409,7 +409,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
         if (options.coin.hasGetInfo) {
             batchRpcCalls.push(['getinfo', []]);
         } else {
-            batchRpcCalls.push(['getblockchaininfo', []], ['getnetworkinfo', []]);
+            batchRpcCalls.push(['getblockchaininfo', []], ['getnetworkinfo', []], ['getnetworkhashps', []]);
         }
 
         _this.daemon.batchCmd(batchRpcCalls, function (error, results) {
@@ -477,10 +477,11 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 tempDifficulty = tempDifficulty['proof-of-work'];
             }
 
+            var multiAlgoDifficultyKey = 'difficulty_' + (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm);
             options.initStats = {
                 connections: (options.coin.hasGetInfo ? rpcResults.getinfo.connections : rpcResults.getnetworkinfo.connections),
-                difficulty: tempDifficulty * algos[options.coin.algorithm].multiplier,
-                networkHashRate: rpcResults.getmininginfo.networkhashps
+                difficulty: (typeof rpcResults.getmininginfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getmininginfo[multiAlgoDifficultyKey] : rpcResults.getmininginfo.difficulty) * algos[options.coin.algorithm].multiplier,
+                networkHashRate: rpcResults.getnetworkhashps
             }
 
             if (rpcResults.submitblock.message === 'Method not found') {
