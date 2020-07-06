@@ -89,7 +89,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
 
 
     //https://en.bitcoin.it/wiki/Protocol_specification#Block_Headers
-    this.serializeHeader = function (merkleRoot, nTime, nonce) {
+    this.serializeHeader = function (merkleRoot, nTime, nonce, versionMask) {
 
         var headerSize;
         if (rpcData.version == 5) {
@@ -108,7 +108,11 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         header.write(nTime, position += 4, 4, 'hex');
         header.write(merkleRoot, position += 4, 32, 'hex');
         header.write(rpcData.previousblockhash, position += 32, 32, 'hex');
-        header.writeUInt32BE(rpcData.version, position + 32);
+        if (versionMask) {
+            header.writeUInt32BE(rpcData.version | versionMask, position + 32);
+        } else {
+            header.writeUInt32BE(rpcData.version, position + 32);
+        }
         var header = util.reverseBuffer(header);
         return header;
     };

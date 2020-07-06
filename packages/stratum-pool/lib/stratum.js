@@ -3,6 +3,7 @@ var events = require('events');
 
 var util = require('./util.js');
 
+var isValidHexRegex = /^[0-9A-Fa-f]+$/;
 
 var SubscriptionCounter = function(){
     var count = 0;
@@ -66,6 +67,9 @@ var StratumClient = function(options){
                 break;
             case 'mining.authorize':
                 handleAuthorize(message, true /*reply to socket*/);
+                break;
+            case 'mining.configure':
+                handleConfigure(message);
                 break;
             case 'mining.submit':
                 _this.lastActivity = Date.now();
@@ -156,14 +160,29 @@ var StratumClient = function(options){
             considerBan(false);
             return;
         }
-        _this.emit('submit',
-            {
-                name        : message.params[0],
-                jobId       : message.params[1],
-                extraNonce2 : message.params[2],
-                nTime       : message.params[3].toLowerCase(),
-                nonce       : message.params[4].toLowerCase()
-            },
+        var params = {
+            name: message.params[0],
+            jobId: message.params[1],
+            extraNonce2: message.params[2],
+            nTime: message.params[3].toLowerCase(),
+            nonce: message.params[4].toLowerCase()
+        };
+
+        if (options.coin.version_mask && isValidHexRegex.test(options.coin.version_mask) && message.params.length > 5 && isValidHexRegex.test(message.params[5])) {
+            var versionMask = parseInt(message.params[5], 16);
+            if (versionMask && ((~parseInt(options.coin.version_mask, 16)) & versionMask) !== 0) {
+                sendJson({
+                    id: message.id,
+                    result: null,
+                    error: [6, "invalid version mask", null]
+                });
+                considerBan(false);
+                return;
+            }
+            params.versionMask = versionMask;
+        }
+
+        _this.emit('submit', params,
             function(error, result){
                 if (!considerBan(result)){
                     sendJson({
@@ -174,7 +193,21 @@ var StratumClient = function(options){
                 }
             }
         );
-        
+    }
+
+    function handleConfigure(message) {
+        if (options.coin.version_mask && isValidHexRegex.test(options.coin.version_mask)) {
+            sendJson({
+                id: message.id,
+                result: {
+                    'version-rolling': true,
+                    'version-rolling.mask': options.coin.version_mask
+                },
+                error: null
+            });
+        } else {
+            _this.emit('unknownStratumMethod', message);
+        } 
     }
 
     function sendJson(){
@@ -362,7 +395,8 @@ var StratumServer = exports.Server = function StratumServer(options, authorizeFn
                 socket: socket,
                 banning: options.banning,
                 connectionTimeout: options.connectionTimeout,
-                tcpProxyProtocol: options.tcpProxyProtocol
+                tcpProxyProtocol: options.tcpProxyProtocol,
+                coin: options.coin
             }
         );
 
