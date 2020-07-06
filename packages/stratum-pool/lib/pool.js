@@ -62,14 +62,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
         });
     }
 
-    function GetBlockTemplateParameters() {
-        if (options.coin.passAlgorithm) {
-            return [{ "mode": "template", "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }, options.coin.passAlgorithm === true ? options.coin.algorithm : options.coin.passAlgorithm];
-    } else if (options.coin.passAlgorithmKey) {
-            return [{ "mode": "template", "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"], "algo": options.coin.passAlgorithmKey === true ? options.coin.algorithm : options.coin.passAlgorithmKey }];
-        }
-        return [{ "mode": "template", "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }];
-    }
+
 
     function GetFirstJob(finishedCallback) {
 
@@ -119,8 +112,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
             'Network Difficulty:\t' + options.initStats.difficulty,
             'Network Hash Rate:\t' + util.getReadableHashRateString(options.initStats.networkHashRate),
             'Stratum Port(s):\t' + _this.options.initStats.stratumPorts.join(', '),
-            'Pool Fee Percent:\t' + _this.options.feePercent + '%',
-            'ASICBoost Enabled:\t' + (options.coin.version_mask ? 'true' : 'false')
+            'Pool Fee Percent:\t' + _this.options.feePercent + '%'
         ];
 
         if (typeof options.blockRefreshInterval === "number" && options.blockRefreshInterval > 0)
@@ -133,7 +125,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
     function OnBlockchainSynced(syncedCallback) {
 
         var checkSynced = function (displayNotSynced) {
-            _this.daemon.cmd('getblocktemplate', GetBlockTemplateParameters(), function (results) {
+            _this.daemon.cmd('getblocktemplate', [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }], function (results) {
                 var synced = results.every(function (r) {
                     return !r.error || r.error.code !== -10;
                 });
@@ -299,9 +291,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 } else if (r.length === 40) {
                     rObj.script = util.miningKeyToScript(r);
                 } else {
-                    rObj.script = util.addressToScript({
-                        address: r
-                    });
+                    rObj.script = util.addressToScript(options.network, r);
                 }
                 recipients.push(rObj);
                 options.feePercent += percent;
@@ -323,14 +313,14 @@ var pool = module.exports = function pool(options, authorizeFn) {
         _this.jobManager.on('newBlock', function (blockTemplate) {
             //Check if stratumServer has been initialized yet
             if (_this.stratumServer) {
-                _this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams(), blockTemplate.getOdoKey());
+                _this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams());
             }
         }).on('updatedBlock', function (blockTemplate) {
             //Check if stratumServer has been initialized yet
             if (_this.stratumServer) {
                 var job = blockTemplate.getJobParams();
                 job[8] = false;
-                _this.stratumServer.broadcastMiningJobs(job, blockTemplate.getOdoKey());
+                _this.stratumServer.broadcastMiningJobs(job);
             }
         }).on('share', function (shareData, blockHex) {
             var isValidShare = !shareData.error;
@@ -411,7 +401,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
         if (options.coin.hasGetInfo) {
             batchRpcCalls.push(['getinfo', []]);
         } else {
-            batchRpcCalls.push(['getblockchaininfo', []], ['getnetworkinfo', []], ['getnetworkhashps', []]);
+            batchRpcCalls.push(['getblockchaininfo', []], ['getnetworkinfo', []]);
         }
 
         _this.daemon.batchCmd(batchRpcCalls, function (error, results) {
@@ -463,27 +453,26 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 } else {
                     switch (options.coin.reward) {
                         case 'POS':
-                            return util.pubkeyToScript(rpcResults.validateaddress);
+                            return util.pubkeyToScript(rpcResults.validateaddress.pubkey);
                         case 'POW':
-                            return util.addressToScript(options.network, rpcResults.validateaddress);
+                            return util.addressToScript(options.network, rpcResults.validateaddress.address);
                     }
                 }
             })();
 
             options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
 
-            options.testnet = (options.coin.getInfo ? rpcResults.getinfo.testnet : (rpcResults.getmininginfo.chain == 'test' ? true : false));
+            options.testnet = options.coin.hasGetInfo ? rpcResults.getinfo.testnet : rpcResults.getblockchaininfo.chain === "test";
             options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
             var tempDifficulty = options.coin.hasGetInfo ? rpcResults.getinfo.difficulty : rpcResults.getblockchaininfo.difficulty;
             if (typeof (tempDifficulty) == 'object') {
                 tempDifficulty = tempDifficulty['proof-of-work'];
             }
 
-            var multiAlgoDifficultyKey = 'difficulty_' + (options.coin.passAlgorithmKey ? (options.coin.passAlgorithmKey !== true ? options.coin.passAlgorithmKey : options.coin.algorithm) : (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm));
             options.initStats = {
                 connections: (options.coin.hasGetInfo ? rpcResults.getinfo.connections : rpcResults.getnetworkinfo.connections),
-                difficulty: (options.coin.getInfo ? (typeof rpcResults.getinfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getinfo[multiAlgoDifficultyKey] : rpcResults.getinfo.difficulty) : (typeof rpcResults.getmininginfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getmininginfo[multiAlgoDifficultyKey] : rpcResults.getmininginfo.difficulty)) * algos[options.coin.algorithm].multiplier,
-                networkHashRate: options.coingetAllNetworkHashPS ? rpcResults.getallnetworkhashps[options.coin.passAlgorithmKey ? (options.coin.passAlgorithmKey !== true ? options.coin.passAlgorithmKey : options.coin.algorithm) : (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm)] : rpcResults.getnetworkhashps
+                difficulty: tempDifficulty * algos[options.coin.algorithm].multiplier,
+                networkHashRate: rpcResults.getmininginfo.networkhashps
             }
 
             if (rpcResults.submitblock.message === 'Method not found') {
@@ -509,7 +498,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
         _this.stratumServer.on('started', function () {
             options.initStats.stratumPorts = Object.keys(options.ports);
-            _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
+            _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams());
             finishedCallback();
 
         }).on('broadcastTimeout', function () {
@@ -517,7 +506,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
             GetBlockTemplate(function (error, rpcData, processedBlock) {
                 if (error || processedBlock) return;
-                _this.jobManager.updateCurrentJob(rpcData);Y
+                _this.jobManager.updateCurrentJob(rpcData);
             });
 
         }).on('client.connected', function (client) {
@@ -556,13 +545,8 @@ var pool = module.exports = function pool(options, authorizeFn) {
                     params.nonce,
                     client.remoteAddress,
                     client.socket.localPort,
-                    params.name,
-                    params.versionMask
+                    params.name
                 );
-
-                if (params.versionMask) {
-                    emitWarningLog('Version Mask detected from ' + client.getLabel());
-                }
 
                 resultCallback(result.error, result.result ? true : null);
 
@@ -625,7 +609,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
     function GetBlockTemplate(callback) {
         _this.daemon.cmd('getblocktemplate',
-            GetBlockTemplateParameters(),
+            [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }],
             function (result) {
                 if (result.error) {
                     emitErrorLog('getblocktemplate call failed for daemon instance ' +
@@ -713,7 +697,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
         miners.forEach(function (clientObj) {
             _this.stratumServer.manuallyAddStratumClient(clientObj);
         });
-        _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
+        _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams());
 
     };
 
@@ -734,6 +718,16 @@ var pool = module.exports = function pool(options, authorizeFn) {
             /* We request to set the newDiff @ the next difficulty retarget
              (which should happen when a new job comes in - AKA BLOCK) */
             client.enqueueNextDifficulty(newDiff);
+
+            /*if (options.varDiff.mode === 'fast'){
+                 //Send new difficulty, then force miner to use new diff by resending the
+                 //current job parameters but with the "clean jobs" flag set to false
+                 //so the miner doesn't restart work and submit duplicate shares
+                client.sendDifficulty(newDiff);
+                var job = _this.jobManager.currentJob.getJobParams();
+                job[8] = false;
+                client.sendMiningJob(job);
+            }*/
 
         });
     };
