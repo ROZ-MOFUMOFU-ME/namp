@@ -1,8 +1,8 @@
 var crypto = require('crypto');
+var bitcoin = require('bitcoinjs-lib');
 var bchaddr = require('bchaddrjs');
 var base58 = require('base58-native');
 var bignum = require('bignum');
-var bitcoin = require('bitcoinjs-lib');
 var ccAddr = require('cryptocurrency-addr');
 
 
