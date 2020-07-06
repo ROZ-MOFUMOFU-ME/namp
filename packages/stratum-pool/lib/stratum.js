@@ -329,7 +329,7 @@ var StratumClient = function(options){
     };
 
     if (odoKey !== null) {
-        json.odokey = odokey;
+        json.odokey = odoKey;
     }
 
     sendJson(json);
