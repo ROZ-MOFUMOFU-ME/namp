@@ -472,145 +472,18 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
             options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
 
-            options.testnet = (options.getInfo ? rpcResults.getinfo.testnet : (rpcResults.getmininginfo.chain == 'test' ? true : false));
+            options.testnet = (options.coin.getInfo ? rpcResults.getinfo.testnet : (rpcResults.getmininginfo.chain == 'test' ? true : false));
             options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
             var tempDifficulty = options.coin.hasGetInfo ? rpcResults.getinfo.difficulty : rpcResults.getblockchaininfo.difficulty;
             if (typeof (tempDifficulty) == 'object') {
                 tempDifficulty = tempDifficulty['proof-of-work'];
             }
 
-            var multiAlgoDifficultyKey = 'difficulty_' + (options.coin.passAlgorithmKey ? (options.coin.passAlgorithmKey !== true ? options.coin.passAlgorithmKey : options.coin.algorithm) : (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm));            options.initStats = {
+            var multiAlgoDifficultyKey = 'difficulty_' + (options.coin.passAlgorithmKey ? (options.coin.passAlgorithmKey !== true ? options.coin.passAlgorithmKey : options.coin.algorithm) : (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm));
+            options.initStats = {
                 connections: (options.coin.hasGetInfo ? rpcResults.getinfo.connections : rpcResults.getnetworkinfo.connections),
-                difficulty: (options.getInfo ? (typeof rpcResults.getinfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getinfo[multiAlgoDifficultyKey] : rpcResults.getinfo.difficulty) : (typeof rpcResults.getmininginfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getmininginfo[multiAlgoDifficultyKey] : rpcResults.getmininginfo.difficulty)) * algos[options.coin.algorithm].multiplier,
-                networkHashRate: options.getAllNetworkHashPS ? rpcResults.getallnetworkhashps[options.coin.passAlgorithmKey ? (options.coin.passAlgorithmKey !== true ? options.coin.passAlgorithmKey : options.coin.algorithm) : (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm)] : rpcResults.getnetworkhashps
-            };
-
-
-            if (rpcResults.submitblock.message === 'Method not found') {
-                options.hasSubmitMethod = false;
-            }
-            else if (rpcResults.submitblock.code === -1) {
-                options.hasSubmitMethod = true;
-            }
-            else {
-                emitErrorLog('Could not detect block submission RPC method, ' + JSON.stringify(results));
-                return;
-            }
-            finishedCallback();
-        });
-    }
-    function StartStratumServer(finishedCallback) {
-        _this.stratumServer = new stratum.Server(options, authorizeFn);
-        _this.stratumServer.on('started', function () {
-            options.initStats.stratumPorts = Object.keys(options.ports);
-            _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
-            finishedCallback();
-        }).on('broadcastTimeout', function () {
-            emitLog('No new blocks for ' + options.jobRebroadcastTimeout + ' seconds - updating transactions & rebroadcasting work');
-            GetBlockTemplate(function (error, rpcData, processedBlock) {
-                if (error || processedBlock) return;
-                _this.jobManager.updateCurrentJob(rpcData);
-            });
-        }).on('client.connected', function (client) {
-            if (typeof (_this.varDiff[client.socket.localPort]) !== 'undefined') {
-                _this.varDiff[client.socket.localPort].manageClient(client);
-            }
-            client.on('difficultyChanged', function (diff) {
-                _this.emit('difficultyUpdate', client.workerName, diff);
-            }).on('subscription', function (params, resultCallback) {
-                var extraNonce = _this.jobManager.extraNonceCounter.next();
-                var extraNonce2Size = _this.jobManager.extraNonce2Size;
-                resultCallback(null,
-                    extraNonce,
-                    extraNonce2Size
-                );
-                if (typeof (options.ports[client.socket.localPort]) !== 'undefined' && options.ports[client.socket.localPort].diff) {
-                    this.sendDifficulty(options.ports[client.socket.localPort].diff);
-                } else {
-                    this.sendDifficulty(8);
-                }
-
-                this.sendMiningJob(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
-
-            }).on('submit', function (params, resultCallback) {
-                var result = _this.jobManager.processShare(
-                    params.jobId,
-                    client.previousDifficulty,
-                    client.difficulty,
-                    client.extraNonce1,
-                    params.extraNonce2,
-                    params.nTime,
-                    params.nonce,
-                    client.remoteAddress,
-                    client.socket.localPort,
-                    params.name,
-                    params.versionMask
-                );
-                if (params.versionMask) {
-                    emitWarningLog('Version Mask detected from ' + client.getLabel());
-                }
-                resultCallback(result.error, result.result ? true : null);
-            }).on('malformedMessage', function (message) {
-                emitWarningLog('Malformed message from ' + client.getLabel() + ': ' + message);
-            }).on('socketError', function (err) {
-                emitWarningLog('Socket error from ' + client.getLabel() + ': ' + JSON.stringify(err));
-            }).on('socketTimeout', function (reason) {
-                emitWarningLog('Connected timed out for ' + client.getLabel() + ': ' + reason)
-            }).on('socketDisconnect', function () {
-                //emitLog('Socket disconnected from ' + client.getLabel());
-            }).on('kickedBannedIP', function (remainingBanTime) {
-                emitLog('Rejected incoming connection from ' + client.remoteAddress + ' banned for ' + remainingBanTime + ' more seconds');
-            }).on('forgaveBannedIP', function () {
-                emitLog('Forgave banned IP ' + client.remoteAddress);
-            }).on('unknownStratumMethod', function (fullMessage) {
-                emitLog('Unknown stratum method from ' + client.getLabel() + ': ' + fullMessage.method);
-            }).on('socketFlooded', function () {
-                emitWarningLog('Detected socket flooding from ' + client.getLabel());
-            }).on('tcpProxyError', function (data) {
-                emitErrorLog('Client IP detection failed, tcpProxyProtocol is enabled yet did not receive proxy protocol message, instead got data: ' + data);
-            }).on('bootedBannedWorker', function () {
-                emitWarningLog('Booted worker ' + client.getLabel() + ' who was connected from an IP address that was just banned');
-            }).on('triggerBan', function (reason) {
-                emitWarningLog('Banned triggered for ' + client.getLabel() + ': ' + reason);
-                _this.emit('banIP', client.remoteAddress, client.workerName);
-            });
-        });
-    }
-    function SetupBlockPolling() {
-        if (typeof options.blockRefreshInterval !== "number" || options.blockRefreshInterval <= 0) {
-            emitLog('Block template polling has been disabled');
-            return;
-        }
-        var pollingInterval = options.blockRefreshInterval;
-        blockPollingIntervalId = setInterval(function () {
-            GetBlockTemplate(function (error, result, foundNewBlock) {
-                if (foundNewBlock)
-                    emitLog('Block notification via RPC polling');
-            });
-        }, pollingInterval);
-    }
-    function GetBlockTemplate(callback) {
-        _this.daemon.cmd('getblocktemplate',
-            GetBlockTemplateParameters(),
-            function (result) {
-                if (result.error) {
-                    console.log("GetBlockTemplate()", result);
-                    emitErrorLog('getblocktemplate call failed for daemon instance ' +
-                        result.instance.index + ' with error ' + JSON.stringify(result.error));
-                    callback(result.error);
-                } else {
-                    var processedNewBlock = _this.jobManager.processTemplate(result.response);
-                    callback(null, result.response, processedNewBlock);
-                    callback = function () { };
-                }
-            }, true
-        );
-    }
-    function CheckBlockAccepted(blockHash, callback) {
-        //setTimeout(function(){
-        _this.daemon.cmd('getblock',
-            [blockHash],
-
+                difficulty: (options.coin.getInfo ? (typeof rpcResults.getinfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getinfo[multiAlgoDifficultyKey] : rpcResults.getinfo.difficulty) : (typeof rpcResults.getmininginfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getmininginfo[multiAlgoDifficultyKey] : rpcResults.getmininginfo.difficulty)) * algos[options.coin.algorithm].multiplier,
+                networkHashRate: options.coingetAllNetworkHashPS ? rpcResults.getallnetworkhashps[options.coin.passAlgorithmKey ? (options.coin.passAlgorithmKey !== true ? options.coin.passAlgorithmKey : options.coin.algorithm) : (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm)] : rpcResults.getnetworkhashps
             }
 
             if (rpcResults.submitblock.message === 'Method not found') {
@@ -644,7 +517,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
             GetBlockTemplate(function (error, rpcData, processedBlock) {
                 if (error || processedBlock) return;
-                _this.jobManager.updateCurrentJob(rpcData);
+                _this.jobManager.updateCurrentJob(rpcData);Y
             });
 
         }).on('client.connected', function (client) {
