@@ -404,16 +404,23 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
         var batchRpcCalls = [
             ['validateaddress', [options.address]],
-            ['getdifficulty', []],
-            ['getmininginfo', []],
-            ['submitblock', []]
+            ['getdifficulty', []]
         ];
 
-        if (options.coin.hasGetInfo) {
-            batchRpcCalls.push(['getinfo', []]);
+        if (options.coin.noNetworkInfo) {
+            if (!options.coin.getInfo) {
+                batchRpcCalls.push(['getinfo', []]);
+            }
         } else {
-            batchRpcCalls.push(['getblockchaininfo', []], ['getnetworkinfo', []]);
+            batchRpcCalls.push(['getnetworkinfo', []]);
         }
+
+        batchRpcCalls.push(
+            [options.coin.getInfo ? 'getinfo' : 'getmininginfo', []],
+            [options.coin.noGetnetworkhashps ? 'getmininginfo' : options.coin.getAllNetworkHashPS ? 'getallnetworkhashps' : options.coin.getNetworkGHPS ? 'getnetworkghps' : options.coin.getNetworkGHPS ? 'getnetworkghps' : 'getnetworkhashps', []],
+            ['submitblock', []]
+
+        );
 
         _this.daemon.batchCmd(batchRpcCalls, function (error, results) {
             if (error || !results) {
@@ -432,6 +439,10 @@ var pool = module.exports = function pool(options, authorizeFn) {
                     emitErrorLog('Could not start pool, error with init RPC ' + rpcCall + ' - ' + JSON.stringify(r.error));
                     return;
                 }
+            }
+
+            if (options.coin.noNetworkInfo) {
+                rpcResults.getnetworkinfo = rpcResults.getinfo
             }
 
             if (!rpcResults.validateaddress.isvalid) {
@@ -454,7 +465,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 return;
             }
 
-            options.testnet = (options.coin.getInfo ? rpcResults.getinfo.testnet : (rpcResults.getmininginfo.chain == 'test' ? true : false));
+            options.testnet = (options.coin.hasGetInfo ? rpcResults.getinfo.testnet : (rpcResults.getmininginfo.chain == 'test' ? true : false));
 
             options.network = (options.testnet ? options.coin.testnet : options.coin.mainnet);
 
@@ -471,20 +482,15 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 }
             })();
 
-            options.networkVersion = options.coin.hasGetInfo ? rpcResults.getinfo.networkVersion : rpcResults.getnetworkinfo.networkVersion;
-
-            options.testnet = options.coin.hasGetInfo ? rpcResults.getinfo.testnet : rpcResults.getblockchaininfo.chain === "test";
             options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
-            var tempDifficulty = options.coin.hasGetInfo ? rpcResults.getinfo.difficulty : rpcResults.getblockchaininfo.difficulty;
-            if (typeof (tempDifficulty) == 'object') {
-                tempDifficulty = tempDifficulty['proof-of-work'];
-            }
+
+
             var multiAlgoDifficultyKey = 'difficulty_' + (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm);
             options.initStats = {
-                connections: (options.coin.hasGetInfo ? rpcResults.getinfo.connections : rpcResults.getnetworkinfo.connections),
-                difficulty: (typeof rpcResults.getmininginfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getmininginfo[multiAlgoDifficultyKey] : rpcResults.getmininginfo.difficulty) * algos[options.coin.algorithm].multiplier,
-                networkHashRate: options.coin.getAllNetworkHashPS ? rpcResults.getallnetworkhashps[options.coin.passAlgorithmKey ? (options.coin.passAlgorithmKey !== true ? options.coin.passAlgorithmKey : options.coin.algorithm) : (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm)] : rpcResults.getnetworkhashps
-            }
+                connections: rpcResults.getnetworkinfo.connections,
+                difficulty: (options.coin.getInfo ? (typeof rpcResults.getinfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getinfo[multiAlgoDifficultyKey] : rpcResults.getinfo.difficulty) : (typeof rpcResults.getmininginfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getmininginfo[multiAlgoDifficultyKey] : rpcResults.getmininginfo.difficulty)) * algos[options.coin.algorithm].multiplier,
+                networkHashRate: options.coin.noGetnetworkhashps ? rpcResults.getmininginfo.networkhashps : [options.coin.getAllNetworkHashPS ? rpcResults.getallnetworkhashps[options.coin.passAlgorithmKey ? (options.coin.passAlgorithmKey !== true ? options.coin.passAlgorithmKey : options.coin.algorithm) : (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm)] : options.coin.getNetworkGHPS ? (rpcResults.getnetworkghps * Math.pow(1024, 3)) : rpcResults.getnetworkhashps]
+            };
 
             if (rpcResults.submitblock.message === 'Method not found') {
                 options.hasSubmitMethod = false;
