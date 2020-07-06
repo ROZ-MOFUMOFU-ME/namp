@@ -3,6 +3,7 @@ var bchaddr = require('bchaddrjs');
 var base58 = require('base58-native');
 var bignum = require('bignum');
 var bitcoin = require('bitcoinjs-lib');
+var ccAddr = require('cryptocurrency-addr');
 
 
 exports.addressFromEx = function (exAddress, ripdm160Key) {
@@ -240,7 +241,8 @@ exports.range = function (start, stop, step) {
 /*
  For POS coins - used to format wallet address for use in generation transaction's output
  */
-exports.pubkeyToScript = function (key) {
+exports.pubkeyToScript = function (params) {
+    var key = params.pubkey;
     if (key.length !== 66) {
         console.error('Invalid pubkey: ' + key);
         throw new Error();
@@ -273,23 +275,16 @@ exports.addressToScript = function (network, addr) {
 
 };
 
-exports.kotoAddressToScript = function (addr) {
+exports.kotoAddressToScript = function (params) {
+    var addr = params.address;
 
-    var decoded = base58.decode(addr);
+    try {
+        if (addr.indexOf('bitcoincash:q') === 0 || addr.indexOf('q') === 0) {
+            return ccAddr.addressToScript(bchaddr.toLegacyAddress(addr), false, false);
+        }
+    } catch (e) { }
 
-    if (decoded.length != 25 && decoded.length != 26) {
-        console.error('invalid address length for ' + addr);
-        throw new Error();
-    }
-
-    if (!decoded) {
-        console.error('base58 decode failed for ' + addr);
-        throw new Error();
-    }
-
-    var pubkey = decoded.slice(decoded.length - 24, -4);
-
-    return Buffer.concat([Buffer.from([0x76, 0xa9, 0x14]), pubkey, Buffer.from([0x88, 0xac])]);
+    return ccAddr.addressToScript(addr, params.isscript === true, params.iswitness === true);
 };
 
 exports.getReadableHashRateString = function (hashrate) {

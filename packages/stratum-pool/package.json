@@ -35,6 +35,7 @@
         "bchaddrjs": "^0.3.0",
         "bignum": "^0.13.0",
         "bitcoinjs-lib": "*",
+        "cryptocurrency-addr": "git://github.com/Invader444/node-cryptocurrency-addr.git",
         "multi-hashing": "git://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing.git"
     },
     "engines": {

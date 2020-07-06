@@ -162,7 +162,9 @@ var generateOutputTransactions = function (poolRecipient, recipients, rpcData, n
             reward -= payeeReward;
             rewardToPool -= payeeReward;
 
-            var payeeScript = util.addressToScript(network,rpcData.masternode.payee);
+            var payeeScript = util.addressToScript({
+                address: rpcData.masternode.payee
+            });
             txOutputBuffers.push(Buffer.concat([
                 util.packInt64LE(payeeReward),
                 util.varIntBuffer(payeeScript.length),
@@ -206,7 +208,9 @@ var generateOutputTransactions = function (poolRecipient, recipients, rpcData, n
             if (rpcData.superblock[i].script) {
                 payeeScript = new Buffer(rpcData.superblock[i].script, 'hex');
             } else {
-                payeeScript = util.addressToScript(rpcData.superblock[i].payee);
+                var payeeScript = util.addressToScript({
+                    address: rpcData.superblock[i].payee
+                });
             }
 
             txOutputBuffers.push(Buffer.concat([
@@ -230,7 +234,9 @@ var generateOutputTransactions = function (poolRecipient, recipients, rpcData, n
         reward -= payeeReward;
         rewardToPool -= payeeReward;
 
-        var payeeScript = util.addressToScript(network, rpcData.payee);
+        var payeeScript = util.addressToScript({
+            address: rpcData.payee
+        });
         txOutputBuffers.push(Buffer.concat([
             util.packInt64LE(payeeReward),
             util.varIntBuffer(payeeScript.length),

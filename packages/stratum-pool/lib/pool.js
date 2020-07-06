@@ -297,7 +297,9 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 } else if (r.length === 40) {
                     rObj.script = util.miningKeyToScript(r);
                 } else {
-                    rObj.script = util.addressToScript(options.network, r);
+                    rObj.script = util.addressToScript({
+                        address: r
+                    });
                 }
                 recipients.push(rObj);
                 options.feePercent += percent;
@@ -459,9 +461,9 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 } else {
                     switch (options.coin.reward) {
                         case 'POS':
-                            return util.pubkeyToScript(rpcResults.validateaddress.pubkey);
+                            return util.pubkeyToScript(rpcResults.validateaddress);
                         case 'POW':
-                            return util.addressToScript(options.network, rpcResults.validateaddress.address);
+                            return util.addressToScript(options.network, rpcResults.validateaddress);
                     }
                 }
             })();
