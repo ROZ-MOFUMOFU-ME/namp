@@ -1,6 +1,6 @@
 var util = require('./util.js');
 
-var generateOutputTransactions = function (poolRecipient, recipients, rpcData, network) {
+var generateOutputTransactions = function (poolRecipient, recipients, rpcData, network, poolOptions) {
 
     var reward = rpcData.coinbasevalue;
     if (!reward) {
@@ -167,7 +167,7 @@ var generateOutputTransactions = function (poolRecipient, recipients, rpcData, n
 };
 
 
-exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, reward, txMessages, recipients, network) {
+exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, reward, txMessages, recipients, network, poolOptions) {
 
     var txInputsCount = 1;
     var txOutputsCount = 1;
@@ -235,7 +235,7 @@ exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, 
      */
 
 
-    var outputTransactions = generateOutputTransactions(publicKey, recipients, rpcData, network);
+    var outputTransactions = generateOutputTransactions(publicKey, recipients, rpcData, network, poolOptions);
 
     // for Koto transaction v2/v3/v4 format
     var nExpiryHeight = (txVersion & 0x7fffffff) >= 3 ? util.packUInt32LE(0) : new Buffer([]);

@@ -13,7 +13,7 @@ var util = require('./util.js');
     throw err;
 });*/
 
-var pool = module.exports = function pool(options, authorizeFn) {
+var pool = module.exports = function pool(options, authorizeFn, logger) {
 
     this.options = options;
 
@@ -163,7 +163,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
         var generateProgress = function () {
 
-            _this.daemon.cmd(options.coin.hasGetInfo ? 'getinfo' : 'getblockchaininfo', [], function (results) {
+            _this.daemon.cmd(options.coin.getInfo ? 'getinfo' : 'getblockchaininfo', [], function (results) {
                 var blockCount = results.sort(function (a, b) {
                     return b.response.blocks - a.response.blocks;
                 })[0].response.blocks;
@@ -324,7 +324,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
         _this.jobManager.on('newBlock', function (blockTemplate) {
             //Check if stratumServer has been initialized yet
             if (_this.stratumServer) {
-                _this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams()), blockTemplate.getOdoKey();
+                _this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams(), blockTemplate.getOdoKey());
             }
         }).on('updatedBlock', function (blockTemplate) {
             //Check if stratumServer has been initialized yet
@@ -465,7 +465,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 return;
             }
 
-            options.testnet = (options.coin.hasGetInfo ? rpcResults.getinfo.testnet : (rpcResults.getmininginfo.chain == 'test' ? true : false));
+            options.testnet = (options.coin.getInfo ? rpcResults.getinfo.testnet : (rpcResults.getmininginfo.chain == 'test' ? true : false));
 
             options.network = (options.testnet ? options.coin.testnet : options.coin.mainnet);
 
@@ -482,13 +482,12 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 }
             })();
 
-            options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
-
+            options.protocolVersion = options.coin.getInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
 
             var multiAlgoDifficultyKey = 'difficulty_' + (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm);
             options.initStats = {
                 connections: rpcResults.getnetworkinfo.connections,
-                difficulty: (options.coin.getInfo ? (typeof rpcResults.getinfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getinfo[multiAlgoDifficultyKey] : rpcResults.getinfo.difficulty) : (typeof rpcResults.getmininginfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getmininginfo[multiAlgoDifficultyKey] : rpcResults.getmininginfo.difficulty)) * algos[options.coin.algorithm].multiplier,
+                difficulty: (options.coin.getInfo ? (typeof rpcResults.getinfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getinfo[multiAlgoDifficultyKey] : (typeof (rpcResults.getinfo.difficulty) == 'object') ? rpcResults.getinfo.difficulty['proof-of-work'] : rpcResults.getinfo.difficulty) : (typeof rpcResults.getmininginfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getmininginfo[multiAlgoDifficultyKey] : (typeof (rpcResults.getmininginfo.difficulty) == 'object') ? rpcResults.getmininginfo.difficulty['proof-of-work'] : rpcResults.getmininginfo.difficulty)) * algos[options.coin.algorithm].multiplier,
                 networkHashRate: options.coin.noGetnetworkhashps ? rpcResults.getmininginfo.networkhashps : [options.coin.getAllNetworkHashPS ? rpcResults.getallnetworkhashps[options.coin.passAlgorithmKey ? (options.coin.passAlgorithmKey !== true ? options.coin.passAlgorithmKey : options.coin.algorithm) : (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm)] : options.coin.getNetworkGHPS ? (rpcResults.getnetworkghps * Math.pow(1024, 3)) : rpcResults.getnetworkhashps]
             };
 
@@ -515,7 +514,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
         _this.stratumServer.on('started', function () {
             options.initStats.stratumPorts = Object.keys(options.ports);
-            _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
+            _this.stratumServer.broadcastMiningJobs( _this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
             finishedCallback();
 
         }).on('broadcastTimeout', function () {
@@ -552,7 +551,6 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 this.sendMiningJob(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
 
             }).on('submit', function (params, resultCallback) {
-                emitLog('mining.submit event, params = %s', JSON.stringify(params));
                 var result = _this.jobManager.processShare(
                     params.jobId,
                     client.previousDifficulty,
@@ -566,7 +564,6 @@ var pool = module.exports = function pool(options, authorizeFn) {
                     params.name,
                     params.versionMask
                 );
-                emitLog('result from jobManager process share = %s', JSON.stringify(result));
                 resultCallback(result.error, result.result ? true : null);
 
             }).on('malformedMessage', function (message) {
@@ -579,7 +576,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 emitWarningLog('Connected timed out for ' + client.getLabel() + ': ' + reason)
 
             }).on('socketDisconnect', function () {
-                //emitLog('Socket disconnected from ' + client.getLabel());
+                emitLog('Socket disconnected from ' + client.getLabel());
 
             }).on('kickedBannedIP', function (remainingBanTime) {
                 emitLog('Rejected incoming connection from ' + client.remoteAddress + ' banned for ' + remainingBanTime + ' more seconds');
