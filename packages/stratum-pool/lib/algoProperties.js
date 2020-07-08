@@ -362,6 +362,15 @@ var algos = module.exports = global.algos = {
                 return multiHashing.yespower_ltncg(data, nValue, rValue);
             }
         }
+    },
+    'vipstar': {
+        multiplier: 65536,
+        diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
+        hash: function () {
+            return function () {
+                return multiHashing.vipstar.apply(this, arguments);
+            }
+        }
     }
 };
 

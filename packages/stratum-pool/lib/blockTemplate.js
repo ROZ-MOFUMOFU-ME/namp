@@ -89,11 +89,13 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
 
 
     //https://en.bitcoin.it/wiki/Protocol_specification#Block_Headers
-    this.serializeHeader = function (merkleRoot, nTime, nonce, versionMask) {
+    this.serializeHeader = function (merkleRoot, nTime, nonce) {
 
         var headerSize;
         if (rpcData.version == 5) {
             headerSize = 112;
+        } else if (rpcData.hashstateroot && rpcData.hashutxoroot) {
+            headerSize = 144;
         } else {
             headerSize = 80;
         }
@@ -103,16 +105,20 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
             header.write(rpcData.finalsaplingroothash, position, 32, 'hex');
             position += 32;
         }
+        if (rpcData.hashutxoroot) {
+            header.write(rpcData.hashutxoroot, position, 32, 'hex');
+            position += 32;
+        }
+        if (rpcData.hashstateroot) {
+            header.write(rpcData.hashstateroot, position, 32, 'hex');
+            position += 32;
+        }
         header.write(nonce, position, 4, 'hex');
         header.write(rpcData.bits, position += 4, 4, 'hex');
         header.write(nTime, position += 4, 4, 'hex');
         header.write(merkleRoot, position += 4, 32, 'hex');
         header.write(rpcData.previousblockhash, position += 32, 32, 'hex');
-        if (versionMask) {
-            header.writeUInt32BE(rpcData.version | versionMask, position + 32);
-        } else {
-            header.writeUInt32BE(rpcData.version, position + 32);
-        }
+        header.writeUInt32BE(rpcData.version, position + 32);
         var header = util.reverseBuffer(header);
         return header;
     };
@@ -141,13 +147,6 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         return false;
     };
 
-    this.getOdoKey = function () {
-        if (this.rpcData && this.rpcData.odokey !== undefined) {
-            return this.rpcData.odokey;
-        }
-        return null;
-    };
-
     this.getJobParams = function () {
         if (!this.jobParams) {
             this.jobParams = [
@@ -163,6 +162,12 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
             ];
             if (this.finalsaplingroothashReversed) {
                 this.jobParams.push(this.finalsaplingroothashReversed);
+            }
+            if (this.hashstateroot) {
+                this.jobParams.push(this.hashstateroot);
+            }
+            if (this.hashutxoroot) {
+                this.jobParams.push(this.hashutxoroot);
             }
         }
         return this.jobParams;
