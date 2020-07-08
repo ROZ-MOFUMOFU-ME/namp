@@ -552,6 +552,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 this.sendMiningJob(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
 
             }).on('submit', function (params, resultCallback) {
+                emitLog('mining.submit event, params = %s', JSON.stringify(params));
                 var result = _this.jobManager.processShare(
                     params.jobId,
                     client.previousDifficulty,
@@ -565,7 +566,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                     params.name,
                     params.versionMask
                 );
-
+                emitLog('result from jobManager process share = %s', JSON.stringify(result));
                 resultCallback(result.error, result.result ? true : null);
 
             }).on('malformedMessage', function (message) {

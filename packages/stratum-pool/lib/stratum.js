@@ -35,6 +35,8 @@ var StratumClient = function(options){
 
     var _this = this;
 
+    var emitLog = function (text) { _this.emit('log', 'debug', text); };
+
     this.lastActivity = Date.now();
 
     this.shares = {valid: 0, invalid: 0};
@@ -63,16 +65,38 @@ var StratumClient = function(options){
     function handleMessage(message){
         switch(message.method){
             case 'mining.subscribe':
+                emitLog('mining.subscribe message from  miners');
                 handleSubscribe(message);
                 break;
             case 'mining.authorize':
+                emitLog('mining.authorize message from  miner');
                 handleAuthorize(message, true /*reply to socket*/);
                 break;
+            case 'mining.get_multiplier':
+                emitLog('mining.get_multiplier message from  miner');
+                _this.emit('log', algos[options.coin.algorithm].multiplier);
+                sendJson({
+                    id: null,
+                    result: [algos[options.coin.algorithm].multiplier],
+                    method: "mining.get_multiplier"
+                });
+                break;
+            case 'ping':
+                emitLog('ping message from  miner');
+                _this.lastActivity = Date.now();
+                sendJson({
+                    id: null,
+                    result: [],
+                    method: "pong"
+                });
+                break;
             case 'mining.configure':
+                emitLog('mining.configure message from  miner');
                 handleConfigure(message);
                 break;
             case 'mining.submit':
                 _this.lastActivity = Date.now();
+                emitLog('mining.submit message from  miner');
                 handleSubmit(message);
                 break;
             case 'mining.get_transactions':
@@ -81,6 +105,7 @@ var StratumClient = function(options){
                     result : [],
                     error  : true
                 });
+                emitLog('mining.get_transactionsfrom  miner, message = %s');
                 break;
             default:
                 _this.emit('unknownStratumMethod', message);

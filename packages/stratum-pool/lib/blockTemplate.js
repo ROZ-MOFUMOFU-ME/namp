@@ -14,6 +14,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
     //private members
 
     var submits = [];
+    var emitLog = function (text) { _this.emit('log', 'debug', text); };
 
     function getMerkleHashes(steps) {
         return steps.map(function (step) {
@@ -94,31 +95,39 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         var headerSize;
         if (rpcData.version == 5) {
             headerSize = 112;
+            emitLog('Allocating 112 bytes of buffer');
         } else if (rpcData.hashstateroot && rpcData.hashutxoroot) {
             headerSize = 144;
+            emitLog('Allocating 144 bytes of buffer');
         } else {
             headerSize = 80;
+            emitLog('Allocating 80 bytes of buffer');
         }
         var header = new Buffer(headerSize);
         var position = 0;
+        emitLog('Position is 0');
         if (rpcData.version == 5) {
-            header.write(rpcData.finalsaplingroothash, position, 32, 'hex');
-            position += 32;
+            header.write(rpcData.finalsaplingroothash += 32, 32, 'hex');
+            emitLog('Wrote rpcData.finalsaplingroothash=%s at position %s, %s length [HEX]', nonce, position, length);
         }
         if (rpcData.hashutxoroot) {
-            header.write(rpcData.hashutxoroot, position, 32, 'hex');
-            position += 32;
+            header.write(rpcData.hashutxoroot += 32, 32, 'hex');
         }
         if (rpcData.hashstateroot) {
-            header.write(rpcData.hashstateroot, position, 32, 'hex');
-            position += 32;
+            header.write(rpcData.hashstateroot += 32, 32, 'hex');
         }
         header.write(nonce, position, 4, 'hex');
+        emitLog('Wrote nonce=%s at position %s, %s length [HEX]', nonce, position, length);
         header.write(rpcData.bits, position += 4, 4, 'hex');
+        emitLog('Wrote rpcData.bits=%s at position %s, %s length [HEX]', rpcData.bits, position, length);
         header.write(nTime, position += 4, 4, 'hex');
+        emitLog('Wrote nTime=%s at position %s, %s length [HEX]', nTime, position, length);
         header.write(merkleRoot, position += 4, 32, 'hex');
+        emitLog('Wrote merkleRoot=%s at position %s, %s length [HEX]', merkleRoot, position, length);
         header.write(rpcData.previousblockhash, position += 32, 32, 'hex');
+        emitLog('Wrote rpcData.previousblockhash=%s at position %s, %s length [HEX]', rpcData.previousblockhash, position, length);
         header.writeUInt32BE(rpcData.version, position + 32);
+        emitLog('Wrote with big endian rpcData.version=%s at position %s %s length [HEX]', rpcData.version, position, length);
         var header = util.reverseBuffer(header);
         return header;
     };

@@ -364,7 +364,7 @@ var algos = module.exports = global.algos = {
         }
     },
     'vipstar': {
-        multiplier: 65536,
+        multiplier: Math.pow(2, 8),
         diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
         hash: function () {
             return function () {
