@@ -9,7 +9,7 @@ var util = require('./util.js');
  * The BlockTemplate class holds a single job.
  * and provides several methods to validate and submit it to the daemon coin
 **/
-var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, poolAddressScript, extraNoncePlaceholder, reward, txMessages, recipients, network, poolOptions) {
+var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, poolAddressScript, extraNoncePlaceholder, reward, txMessages, recipients, network) {
 
     //private members
 
@@ -57,7 +57,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
 
 
 
-    this.prevHashReversed = util.reverseBuffer(new Buffer(rpcData.previousblockhash, 'hex')).toString('hex');
+    this.prevHashReversed = util.reverseByteOrder(new Buffer(rpcData.previousblockhash, 'hex')).toString('hex');
     if (rpcData.finalsaplingroothash) {
         this.finalsaplingroothashReversed = util.reverseByteOrder(new Buffer(rpcData.finalsaplingroothash, 'hex')).toString('hex');
     }
@@ -79,8 +79,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         reward,
         txMessages,
         recipients,
-        network,
-        poolOptions
+        network
     );
 
     this.serializeCoinbase = function (extraNonce1, extraNonce2) {
@@ -186,13 +185,9 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
             if (this.finalsaplingroothashReversed) {
                 this.jobParams.push(this.finalsaplingroothashReversed);
             }
-            if (this.hashstaterootReversed) {
-                this.jobParams.push(this.hashstaterootReversed);
-            }
-            if (this.hashutxorootReversed) {
-                this.jobParams.push(this.hashutxorootReversed);
-            }
             if (this.hashstaterootReversed && this.hashutxorootReversed) {
+                this.jobParams.push(this.hashstaterootReversed);
+                this.jobParams.push(this.hashutxorootReversed);
                 this.jobParams.push(String.fromCharCode('0x0000000000000000000000000000000000000000000000000000000000000000ffffffff00'), 'ascii' );
             }
         }
