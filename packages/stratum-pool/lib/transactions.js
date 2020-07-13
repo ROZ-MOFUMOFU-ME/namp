@@ -185,8 +185,9 @@ exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, 
         txExtraPayload = new Buffer(rpcData.coinbase_payload, 'hex');
     }
 
-    txVersion = txVersion + (txType << 16);
-
+    if (!(rpcData.coinbasetxn && rpcData.coinbasetxn.data)) {
+        txVersion = txVersion + (txType << 16);
+    }
     var txInPrevOutHash = "";
     var txInPrevOutIndex = Math.pow(2, 32) - 1;
     var txInSequence = 0;
@@ -260,7 +261,7 @@ exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, 
             txExtraPayload
         ]);
     } else {
-       var p2 = Buffer.concat([
+        var p2 = Buffer.concat([
             scriptSigPart2,
             util.packUInt32LE(txInSequence),
             //end transaction input

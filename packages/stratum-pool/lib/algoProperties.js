@@ -368,7 +368,7 @@ var algos = module.exports = global.algos = {
         diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
         hash: function () {
             return function () {
-                return multiHashing.vipstar.apply(this, arguments);
+                return multiHashing.sha256d.apply(this, arguments);
             }
         }
     }

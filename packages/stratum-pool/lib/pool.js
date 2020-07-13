@@ -13,7 +13,7 @@ var util = require('./util.js');
     throw err;
 });*/
 
-var pool = module.exports = function pool(options, authorizeFn, logger) {
+var pool = module.exports = function pool(options, authorizeFn) {
 
     this.options = options;
 
