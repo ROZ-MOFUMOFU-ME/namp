@@ -124,8 +124,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         }
         if (rpcData.hashstateroot && rpcData.hashutxoroot) {
             header.write(String.fromCharCode('0x0000000000000000000000000000000000000000000000000000000000000000ffffffff00'), position, 37, 'ascii');
-            position += 37;
-            header.write(rpcData.hashutxoroot, position += 32, 32, 'hex');
+            header.write(rpcData.hashutxoroot, position += 37, 32, 'hex');
             header.write(rpcData.hashstateroot, position += 32, 32, 'hex');
         }
         header.write(nonce, position, 4, 'hex');
