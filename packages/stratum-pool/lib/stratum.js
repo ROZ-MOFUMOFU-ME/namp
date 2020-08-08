@@ -3,6 +3,7 @@ var events = require('events');
 
 var util = require('./util.js');
 
+var isValidHexRegex = /^[0-9A-Fa-f]+$/;
 
 var SubscriptionCounter = function(){
     var count = 0;
@@ -34,6 +35,8 @@ var StratumClient = function(options){
 
     var _this = this;
 
+    var emitLog = function (text) { _this.emit('log', 'debug', text); };
+
     this.lastActivity = Date.now();
 
     this.shares = {valid: 0, invalid: 0};
@@ -62,13 +65,38 @@ var StratumClient = function(options){
     function handleMessage(message){
         switch(message.method){
             case 'mining.subscribe':
+                emitLog('mining.subscribe message from  miners');
                 handleSubscribe(message);
                 break;
             case 'mining.authorize':
+                emitLog('mining.authorize message from  miner');
                 handleAuthorize(message, true /*reply to socket*/);
+                break;
+            case 'mining.get_multiplier':
+                emitLog('mining.get_multiplier message from  miner');
+                _this.emit('log', algos[options.coin.algorithm].multiplier);
+                sendJson({
+                    id: null,
+                    result: [algos[options.coin.algorithm].multiplier],
+                    method: "mining.get_multiplier"
+                });
+                break;
+            case 'ping':
+                emitLog('ping message from  miner');
+                _this.lastActivity = Date.now();
+                sendJson({
+                    id: null,
+                    result: [],
+                    method: "pong"
+                });
+                break;
+            case 'mining.configure':
+                emitLog('mining.configure message from  miner');
+                handleConfigure(message);
                 break;
             case 'mining.submit':
                 _this.lastActivity = Date.now();
+                emitLog('mining.submit message from  miner');
                 handleSubmit(message);
                 break;
             case 'mining.get_transactions':
@@ -77,6 +105,7 @@ var StratumClient = function(options){
                     result : [],
                     error  : true
                 });
+                emitLog('mining.get_transactionsfrom  miner, message = %s');
                 break;
             default:
                 _this.emit('unknownStratumMethod', message);
@@ -156,14 +185,29 @@ var StratumClient = function(options){
             considerBan(false);
             return;
         }
-        _this.emit('submit',
-            {
-                name        : message.params[0],
-                jobId       : message.params[1],
-                extraNonce2 : message.params[2],
-                nTime       : message.params[3].toLowerCase(),
-                nonce       : message.params[4].toLowerCase()
-            },
+        var params = {
+            name: message.params[0],
+            jobId: message.params[1],
+            extraNonce2: message.params[2],
+            nTime: message.params[3].toLowerCase(),
+            nonce: message.params[4].toLowerCase()
+        };
+
+        if (options.coin.version_mask && isValidHexRegex.test(options.coin.version_mask) && message.params.length > 5 && isValidHexRegex.test(message.params[5])) {
+            var versionMask = parseInt(message.params[5], 16);
+            if (versionMask && ((~parseInt(options.coin.version_mask, 16)) & versionMask) !== 0) {
+                sendJson({
+                    id: message.id,
+                    result: null,
+                    error: [6, "invalid version mask", null]
+                });
+                considerBan(false);
+                return;
+            }
+            params.versionMask = versionMask;
+        }
+
+        _this.emit('submit', params,
             function(error, result){
                 if (!considerBan(result)){
                     sendJson({
@@ -174,7 +218,21 @@ var StratumClient = function(options){
                 }
             }
         );
-        
+    }
+
+    function handleConfigure(message) {
+        if (options.coin.version_mask && isValidHexRegex.test(options.coin.version_mask)) {
+            sendJson({
+                id: message.id,
+                result: {
+                    'version-rolling': true,
+                    'version-rolling.mask': options.coin.version_mask
+                },
+                error: null
+            });
+        } else {
+            _this.emit('unknownStratumMethod', message);
+        } 
     }
 
     function sendJson(){
@@ -274,29 +332,33 @@ var StratumClient = function(options){
         return true;
     };
 
-    this.sendMiningJob = function(jobParams){
+    this.sendMiningJob = function (jobParams, odoKey) {
 
         var lastActivityAgo = Date.now() - _this.lastActivity;
-        if (lastActivityAgo > options.connectionTimeout * 1000){
+        if (lastActivityAgo > options.connectionTimeout * 1000) {
             _this.emit('socketTimeout', 'last submitted a share was ' + (lastActivityAgo / 1000 | 0) + ' seconds ago');
             _this.socket.destroy();
             return;
         }
-
-        if (pendingDifficulty !== null){
+        if (pendingDifficulty !== null) {
             var result = _this.sendDifficulty(pendingDifficulty);
             pendingDifficulty = null;
             if (result) {
                 _this.emit('difficultyChanged', _this.difficulty);
             }
         }
-        sendJson({
-            id    : null,
-            method: "mining.notify",
-            params: jobParams
-        });
-
+            var json = {
+                id: null,
+                method: "mining.notify",
+                params: jobParams
     };
+
+    if (odoKey !== null) {
+        json.odokey = odoKey;
+    }
+
+    sendJson(json);
+};
 
     this.manuallyAuthClient = function (username, password) {
         handleAuthorize({id: 1, params: [username, password]}, false /*do not reply to miner*/);
@@ -362,7 +424,8 @@ var StratumServer = exports.Server = function StratumServer(options, authorizeFn
                 socket: socket,
                 banning: options.banning,
                 connectionTimeout: options.connectionTimeout,
-                tcpProxyProtocol: options.tcpProxyProtocol
+                tcpProxyProtocol: options.tcpProxyProtocol,
+                coin: options.coin
             }
         );
 
@@ -380,10 +443,10 @@ var StratumServer = exports.Server = function StratumServer(options, authorizeFn
     };
 
 
-    this.broadcastMiningJobs = function(jobParams){
+    this.broadcastMiningJobs = function (jobParams, odoKey){
         for (var clientId in stratumClients) {
             var client = stratumClients[clientId];
-            client.sendMiningJob(jobParams);
+            client.sendMiningJob(jobParams, odoKey);
         }
         /* Some miners will consider the pool dead if it doesn't receive a job for around a minute.
            So every time we broadcast jobs, set a timeout to rebroadcast in X seconds unless cleared. */

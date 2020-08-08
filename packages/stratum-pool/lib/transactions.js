@@ -1,129 +1,6 @@
 var util = require('./util.js');
 
-
-/*
-function Transaction(params){
-
-    var version = params.version || 1,
-        inputs = params.inputs || [],
-        outputs = params.outputs || [],
-        lockTime = params.lockTime || 0;
-
-
-    this.toBuffer = function(){
-        return Buffer.concat([
-            binpack.packUInt32(version, 'little'),
-            util.varIntBuffer(inputs.length),
-            Buffer.concat(inputs.map(function(i){ return i.toBuffer() })),
-            util.varIntBuffer(outputs.length),
-            Buffer.concat(outputs.map(function(o){ return o.toBuffer() })),
-            binpack.packUInt32(lockTime, 'little')
-        ]);
-    };
-
-    this.inputs = inputs;
-    this.outputs = outputs;
-
-}
-
-function TransactionInput(params){
-
-    var prevOutHash = params.prevOutHash || 0,
-        prevOutIndex = params.prevOutIndex,
-        sigScript = params.sigScript,
-        sequence = params.sequence || 0;
-
-
-    this.toBuffer = function(){
-        sigScriptBuffer = sigScript.toBuffer();
-        console.log('scriptSig length ' + sigScriptBuffer.length);
-        return Buffer.concat([
-            util.uint256BufferFromHash(prevOutHash),
-            binpack.packUInt32(prevOutIndex, 'little'),
-            util.varIntBuffer(sigScriptBuffer.length),
-            sigScriptBuffer,
-            binpack.packUInt32(sequence)
-        ]);
-    };
-}
-
-function TransactionOutput(params){
-
-    var value = params.value,
-        pkScriptBuffer = params.pkScriptBuffer;
-
-    this.toBuffer = function(){
-        return Buffer.concat([
-            binpack.packInt64(value, 'little'),
-            util.varIntBuffer(pkScriptBuffer.length),
-            pkScriptBuffer
-        ]);
-    };
-}
-
-function ScriptSig(params){
-
-    var height = params.height,
-        flags = params.flags,
-        extraNoncePlaceholder = params.extraNoncePlaceholder;
-
-    this.toBuffer = function(){
-
-        return Buffer.concat([
-            util.serializeNumber(height),
-            new Buffer(flags, 'hex'),
-            util.serializeNumber(Date.now() / 1000 | 0),
-            new Buffer([extraNoncePlaceholder.length]),
-            extraNoncePlaceholder,
-            util.serializeString('/nodeStratum/')
-        ]);
-    }
-};
-
-
-var Generation = exports.Generation = function Generation(rpcData, publicKey, extraNoncePlaceholder){
-
-    var tx = new Transaction({
-        inputs: [new TransactionInput({
-            prevOutIndex : Math.pow(2, 32) - 1,
-            sigScript    : new ScriptSig({
-                height                : rpcData.height,
-                flags                 : rpcData.coinbaseaux.flags,
-                extraNoncePlaceholder : extraNoncePlaceholder
-            })
-        })],
-        outputs: [new TransactionOutput({
-            value          : rpcData.coinbasevalue,
-            pkScriptBuffer : publicKey
-        })]
-    });
-
-    var txBuffer = tx.toBuffer();
-    var epIndex  = buffertools.indexOf(txBuffer, extraNoncePlaceholder);
-    var p1       = txBuffer.slice(0, epIndex);
-    var p2       = txBuffer.slice(epIndex + extraNoncePlaceholder.length);
-
-    this.transaction = tx;
-    this.coinbase = [p1, p2];
-
-};
-*/
-
-
-/*
-     ^^^^ The above code was a bit slow. The below code is uglier but optimized.
- */
-
-
-
-/*
-This function creates the generation transaction that accepts the reward for
-successfully mining a new block.
-For some (probably outdated and incorrect) documentation about whats kinda going on here,
-see: https://en.bitcoin.it/wiki/Protocol_specification#tx
- */
-
-var generateOutputTransactions = function (poolRecipient, recipients, rpcData, network) {
+var generateOutputTransactions = function (poolRecipient, recipients, rpcData, network, poolOptions) {
 
     var reward = rpcData.coinbasevalue;
     if (!reward) {
@@ -162,7 +39,9 @@ var generateOutputTransactions = function (poolRecipient, recipients, rpcData, n
             reward -= payeeReward;
             rewardToPool -= payeeReward;
 
-            var payeeScript = util.addressToScript(network,rpcData.masternode.payee);
+            var payeeScript = util.addressToScript({
+                address: rpcData.masternode.payee
+            });
             txOutputBuffers.push(Buffer.concat([
                 util.packInt64LE(payeeReward),
                 util.varIntBuffer(payeeScript.length),
@@ -206,7 +85,9 @@ var generateOutputTransactions = function (poolRecipient, recipients, rpcData, n
             if (rpcData.superblock[i].script) {
                 payeeScript = new Buffer(rpcData.superblock[i].script, 'hex');
             } else {
-                payeeScript = util.addressToScript(rpcData.superblock[i].payee);
+                var payeeScript = util.addressToScript({
+                    address: rpcData.superblock[i].payee
+                });
             }
 
             txOutputBuffers.push(Buffer.concat([
@@ -230,7 +111,9 @@ var generateOutputTransactions = function (poolRecipient, recipients, rpcData, n
         reward -= payeeReward;
         rewardToPool -= payeeReward;
 
-        var payeeScript = util.addressToScript(network, rpcData.payee);
+        var payeeScript = util.addressToScript({
+            address: rpcData.payee
+        });
         txOutputBuffers.push(Buffer.concat([
             util.packInt64LE(payeeReward),
             util.varIntBuffer(payeeScript.length),
@@ -284,7 +167,7 @@ var generateOutputTransactions = function (poolRecipient, recipients, rpcData, n
 };
 
 
-exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, reward, txMessages, recipients, network) {
+exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, reward, txMessages, recipients, network, poolOptions) {
 
     var txInputsCount = 1;
     var txOutputsCount = 1;
@@ -302,8 +185,9 @@ exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, 
         txExtraPayload = new Buffer(rpcData.coinbase_payload, 'hex');
     }
 
-    txVersion = txVersion + (txType << 16);
-
+    if (!(rpcData.coinbasetxn && rpcData.coinbasetxn.data)) {
+        txVersion = txVersion + (txType << 16);
+    }
     var txInPrevOutHash = "";
     var txInPrevOutIndex = Math.pow(2, 32) - 1;
     var txInSequence = 0;
@@ -352,7 +236,7 @@ exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, 
      */
 
 
-    var outputTransactions = generateOutputTransactions(publicKey, recipients, rpcData, network);
+    var outputTransactions = generateOutputTransactions(publicKey, recipients, rpcData, network, poolOptions);
 
     // for Koto transaction v2/v3/v4 format
     var nExpiryHeight = (txVersion & 0x7fffffff) >= 3 ? util.packUInt32LE(0) : new Buffer([]);
@@ -377,7 +261,7 @@ exports.CreateGeneration = function (rpcData, publicKey, extraNoncePlaceholder, 
             txExtraPayload
         ]);
     } else {
-       var p2 = Buffer.concat([
+        var p2 = Buffer.concat([
             scriptSigPart2,
             util.packUInt32LE(txInSequence),
             //end transaction input

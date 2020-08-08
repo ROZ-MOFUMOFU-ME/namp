@@ -30,10 +30,11 @@
         "url": "https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool.git"
     },
     "dependencies": {
-        "async": "^2.6.1",
+        "async": "^3.2.0",
         "base58-native": "^0.1.4",
-        "bignum": "^0.13.0",
-        "bitcoinjs-lib": "*",
+        "bchaddrjs": "^0.4.9",
+        "bignum": "^0.13.1",
+        "bitcoinjs-lib": "^5.1.10",
         "multi-hashing": "git://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing.git"
     },
     "engines": {

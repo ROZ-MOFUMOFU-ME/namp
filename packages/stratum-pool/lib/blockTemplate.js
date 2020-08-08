@@ -57,11 +57,15 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
 
 
 
-
-
     this.prevHashReversed = util.reverseByteOrder(new Buffer(rpcData.previousblockhash, 'hex')).toString('hex');
     if (rpcData.finalsaplingroothash) {
         this.finalsaplingroothashReversed = util.reverseByteOrder(new Buffer(rpcData.finalsaplingroothash, 'hex')).toString('hex');
+    }
+    if (rpcData.hashstateroot) {
+        this.hashstaterootReversed = util.reverseBuffer(new Buffer(rpcData.hashstateroot, 'hex')).toString('hex');
+    }
+    if (rpcData.hashutxoroot) {
+        this.hashutxorootReversed = util.reverseBuffer(new Buffer(rpcData.hashutxoroot, 'hex')).toString('hex');
     }
     this.transactionData = Buffer.concat(rpcData.transactions.map(function (tx) {
         return new Buffer(tx.data, 'hex');
@@ -94,15 +98,39 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         var headerSize;
         if (rpcData.version == 5) {
             headerSize = 112;
+        /*} else if (rpcData.hashstateroot && rpcData.hashutxoroot) {
+            headerSize = 181;
+        */
         } else {
             headerSize = 80;
         }
+
         var header = new Buffer(headerSize);
         var position = 0;
+
+        /*
+        console.log('headerSize:' + headerSize);
+        console.log('rpcData.finalsaplingroothash:' + rpcData.finalsaplingroothash);
+        console.log('rpcData.hashutxoroot: ' + rpcData.hashutxoroot);
+        console.log('rpcData.hashstateroot: ' + rpcData.hashstateroot);
+        console.log('nonce:' + nonce);
+        console.log('rpcData.bits: ' + rpcData.bits);
+        console.log('nTime: ' + nTime);
+        console.log('merkleRoot: ' + merkleRoot);
+        console.log('rpcData.previousblockhash: ' + rpcData.previousblockhash);
+        console.log('rpcData.version: ' + rpcData.version);
+        */
+
         if (rpcData.version == 5) {
             header.write(rpcData.finalsaplingroothash, position, 32, 'hex');
             position += 32;
         }
+        /*if (rpcData.hashstateroot && rpcData.hashutxoroot) {
+            header.write('0000000000000000000000000000000000000000000000000000000000000000ffffffff00', position, 37, 'hex');
+            header.write(rpcData.hashutxoroot, position += 37, 32, 'hex');
+            header.write(rpcData.hashstateroot, position += 32, 32, 'hex');
+        }
+        */
         header.write(nonce, position, 4, 'hex');
         header.write(rpcData.bits, position += 4, 4, 'hex');
         header.write(nTime, position += 4, 4, 'hex');
@@ -137,6 +165,13 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         return false;
     };
 
+    this.getOdoKey = function () {
+        if (this.rpcData && this.rpcData.odokey !== undefined) {
+            return this.rpcData.odokey;
+        }
+        return null;
+    };
+
     this.getJobParams = function () {
         if (!this.jobParams) {
             this.jobParams = [
@@ -153,6 +188,12 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
             if (this.finalsaplingroothashReversed) {
                 this.jobParams.push(this.finalsaplingroothashReversed);
             }
+            /*if (this.hashstaterootReversed && this.hashutxorootReversed) {
+                this.jobParams.push(this.hashstaterootReversed);
+                this.jobParams.push(this.hashutxorootReversed);
+                this.jobParams.push('0000000000000000000000000000000000000000000000000000000000000000ffffffff00');
+            }
+            */
         }
         return this.jobParams;
     };

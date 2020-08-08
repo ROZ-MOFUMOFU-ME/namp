@@ -62,7 +62,17 @@ var pool = module.exports = function pool(options, authorizeFn) {
         });
     }
 
-
+    function GetBlockTemplateParameters() {
+        if (options.coin.passAlgorithm) {
+            return [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }, options.coin.passAlgorithm === true ? options.coin.algorithm : options.coin.passAlgorithm];
+            return [{ "mode": "template", "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }, options.coin.passAlgorithm === true ? options.coin.algorithm : options.coin.passAlgorithm];
+        } else if (options.coin.passAlgorithmKey) {
+            return [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"], "algo": options.coin.passAlgorithmKey === true ? options.coin.algorithm : options.coin.passAlgorithmKey }];
+            return [{ "mode": "template", "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"], "algo": options.coin.passAlgorithmKey === true ? options.coin.algorithm : options.coin.passAlgorithmKey }];
+        }
+        return [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }];
+        return [{ "mode": "template", "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }];
+    }
 
     function GetFirstJob(finishedCallback) {
 
@@ -112,7 +122,8 @@ var pool = module.exports = function pool(options, authorizeFn) {
             'Network Difficulty:\t' + options.initStats.difficulty,
             'Network Hash Rate:\t' + util.getReadableHashRateString(options.initStats.networkHashRate),
             'Stratum Port(s):\t' + _this.options.initStats.stratumPorts.join(', '),
-            'Pool Fee Percent:\t' + _this.options.feePercent + '%'
+            'Pool Fee Percent:\t' + _this.options.feePercent + '%',
+            'ASICBoost Enabled:\t' + (options.coin.version_mask ? 'true' : 'false')
         ];
 
         if (typeof options.blockRefreshInterval === "number" && options.blockRefreshInterval > 0)
@@ -125,7 +136,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
     function OnBlockchainSynced(syncedCallback) {
 
         var checkSynced = function (displayNotSynced) {
-            _this.daemon.cmd('getblocktemplate', [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }], function (results) {
+            _this.daemon.cmd('getblocktemplate', GetBlockTemplateParameters(), function (results) {
                 var synced = results.every(function (r) {
                     return !r.error || r.error.code !== -10;
                 });
@@ -152,7 +163,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
         var generateProgress = function () {
 
-            _this.daemon.cmd(options.coin.hasGetInfo ? 'getinfo' : 'getblockchaininfo', [], function (results) {
+            _this.daemon.cmd(options.coin.getInfo ? 'getinfo' : 'getblockchaininfo', [], function (results) {
                 var blockCount = results.sort(function (a, b) {
                     return b.response.blocks - a.response.blocks;
                 })[0].response.blocks;
@@ -313,14 +324,14 @@ var pool = module.exports = function pool(options, authorizeFn) {
         _this.jobManager.on('newBlock', function (blockTemplate) {
             //Check if stratumServer has been initialized yet
             if (_this.stratumServer) {
-                _this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams());
+                _this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams(), blockTemplate.getOdoKey());
             }
         }).on('updatedBlock', function (blockTemplate) {
             //Check if stratumServer has been initialized yet
             if (_this.stratumServer) {
                 var job = blockTemplate.getJobParams();
                 job[8] = false;
-                _this.stratumServer.broadcastMiningJobs(job);
+                _this.stratumServer.broadcastMiningJobs(job, blockTemplate.getOdoKey());
             }
         }).on('share', function (shareData, blockHex) {
             var isValidShare = !shareData.error;
@@ -393,16 +404,23 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
         var batchRpcCalls = [
             ['validateaddress', [options.address]],
-            ['getdifficulty', []],
-            ['getmininginfo', []],
-            ['submitblock', []]
+            ['getdifficulty', []]
         ];
 
-        if (options.coin.hasGetInfo) {
-            batchRpcCalls.push(['getinfo', []]);
+        if (options.coin.noNetworkInfo) {
+            if (!options.coin.getInfo) {
+                batchRpcCalls.push(['getinfo', []]);
+            }
         } else {
-            batchRpcCalls.push(['getblockchaininfo', []], ['getnetworkinfo', []]);
+            batchRpcCalls.push(['getnetworkinfo', []]);
         }
+
+        batchRpcCalls.push(
+            [options.coin.getInfo ? 'getinfo' : 'getmininginfo', []],
+            [options.coin.noGetnetworkhashps ? 'getmininginfo' : options.coin.getAllNetworkHashPS ? 'getallnetworkhashps' : options.coin.getNetworkGHPS ? 'getnetworkghps' : options.coin.getNetworkGHPS ? 'getnetworkghps' : 'getnetworkhashps', []],
+            ['submitblock', []]
+
+        );
 
         _this.daemon.batchCmd(batchRpcCalls, function (error, results) {
             if (error || !results) {
@@ -421,6 +439,10 @@ var pool = module.exports = function pool(options, authorizeFn) {
                     emitErrorLog('Could not start pool, error with init RPC ' + rpcCall + ' - ' + JSON.stringify(r.error));
                     return;
                 }
+            }
+
+            if (options.coin.noNetworkInfo) {
+                rpcResults.getnetworkinfo = rpcResults.getinfo
             }
 
             if (!rpcResults.validateaddress.isvalid) {
@@ -460,20 +482,14 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 }
             })();
 
-            options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
+            options.protocolVersion = options.coin.getInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
 
-            options.testnet = options.coin.hasGetInfo ? rpcResults.getinfo.testnet : rpcResults.getblockchaininfo.chain === "test";
-            options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
-            var tempDifficulty = options.coin.hasGetInfo ? rpcResults.getinfo.difficulty : rpcResults.getblockchaininfo.difficulty;
-            if (typeof (tempDifficulty) == 'object') {
-                tempDifficulty = tempDifficulty['proof-of-work'];
-            }
-
+            var multiAlgoDifficultyKey = 'difficulty_' + (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm);
             options.initStats = {
-                connections: (options.coin.hasGetInfo ? rpcResults.getinfo.connections : rpcResults.getnetworkinfo.connections),
-                difficulty: tempDifficulty * algos[options.coin.algorithm].multiplier,
-                networkHashRate: rpcResults.getmininginfo.networkhashps
-            }
+                connections: rpcResults.getnetworkinfo.connections,
+                difficulty: (options.coin.getInfo ? (typeof rpcResults.getinfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getinfo[multiAlgoDifficultyKey] : (typeof (rpcResults.getinfo.difficulty) == 'object') ? rpcResults.getinfo.difficulty['proof-of-work'] : rpcResults.getinfo.difficulty) : (typeof rpcResults.getmininginfo[multiAlgoDifficultyKey] !== 'undefined' ? rpcResults.getmininginfo[multiAlgoDifficultyKey] : (typeof (rpcResults.getmininginfo.difficulty) == 'object') ? rpcResults.getmininginfo.difficulty['proof-of-work'] : rpcResults.getmininginfo.difficulty)) * algos[options.coin.algorithm].multiplier,
+                networkHashRate: options.coin.noGetnetworkhashps ? rpcResults.getmininginfo.networkhashps : [options.coin.getAllNetworkHashPS ? rpcResults.getallnetworkhashps[options.coin.passAlgorithmKey ? (options.coin.passAlgorithmKey !== true ? options.coin.passAlgorithmKey : options.coin.algorithm) : (options.coin.passAlgorithm && options.coin.passAlgorithm !== true ? options.coin.passAlgorithm : options.coin.algorithm)] : options.coin.getNetworkGHPS ? (rpcResults.getnetworkghps * Math.pow(1024, 3)) : rpcResults.getnetworkhashps]
+            };
 
             if (rpcResults.submitblock.message === 'Method not found') {
                 options.hasSubmitMethod = false;
@@ -498,7 +514,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
         _this.stratumServer.on('started', function () {
             options.initStats.stratumPorts = Object.keys(options.ports);
-            _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams());
+            _this.stratumServer.broadcastMiningJobs( _this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
             finishedCallback();
 
         }).on('broadcastTimeout', function () {
@@ -532,7 +548,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                     this.sendDifficulty(8);
                 }
 
-                this.sendMiningJob(_this.jobManager.currentJob.getJobParams());
+                this.sendMiningJob(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
 
             }).on('submit', function (params, resultCallback) {
                 var result = _this.jobManager.processShare(
@@ -545,9 +561,9 @@ var pool = module.exports = function pool(options, authorizeFn) {
                     params.nonce,
                     client.remoteAddress,
                     client.socket.localPort,
-                    params.name
+                    params.name,
+                    params.versionMask
                 );
-
                 resultCallback(result.error, result.result ? true : null);
 
             }).on('malformedMessage', function (message) {
@@ -560,7 +576,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
                 emitWarningLog('Connected timed out for ' + client.getLabel() + ': ' + reason)
 
             }).on('socketDisconnect', function () {
-                //emitLog('Socket disconnected from ' + client.getLabel());
+                emitLog('Socket disconnected from ' + client.getLabel());
 
             }).on('kickedBannedIP', function (remainingBanTime) {
                 emitLog('Rejected incoming connection from ' + client.remoteAddress + ' banned for ' + remainingBanTime + ' more seconds');
@@ -609,7 +625,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
 
     function GetBlockTemplate(callback) {
         _this.daemon.cmd('getblocktemplate',
-            [{ "capabilities": ["coinbasetxn", "workid", "coinbase/append"], "rules": ["segwit"] }],
+            GetBlockTemplateParameters(),
             function (result) {
                 if (result.error) {
                     emitErrorLog('getblocktemplate call failed for daemon instance ' +
@@ -697,7 +713,7 @@ var pool = module.exports = function pool(options, authorizeFn) {
         miners.forEach(function (clientObj) {
             _this.stratumServer.manuallyAddStratumClient(clientObj);
         });
-        _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams());
+        _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams(), _this.jobManager.currentJob.getOdoKey());
 
     };
 

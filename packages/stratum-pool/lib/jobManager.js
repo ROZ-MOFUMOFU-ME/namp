@@ -104,25 +104,10 @@ var JobManager = module.exports = function JobManager(options) {
                 }
             case 'scrypt-n':
             case 'sha1':
-                return function (d) {
-                    return util.reverseBuffer(util.sha256d(d));
-                };
             case 'yespowerSUGAR':
-                return function (d) {
-                    return util.reverseBuffer(util.sha256d(d));
-                };
             case 'yescryptR8G':
-                return function (d) {
-                    return util.reverseBuffer(util.sha256d(d));
-                };
             case 'lyra2re2':
-                return function (d) {
-                    return util.reverseBuffer(util.sha256d(d));
-                };
             case 'yespowerLTNCG':
-                return function (d) {
-                    return util.reverseBuffer(util.sha256d(d));
-                };
             case 'yescryptR16':
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
@@ -168,7 +153,6 @@ var JobManager = module.exports = function JobManager(options) {
             _this.extraNoncePlaceholder,
             options.coin.reward,
             options.coin.txMessages,
-            //options.recipients,
             getKotoFoundersReward(rpcData, options.recipients),
             options.network
         );
@@ -205,7 +189,6 @@ var JobManager = module.exports = function JobManager(options) {
             _this.extraNoncePlaceholder,
             options.coin.reward,
             options.coin.txMessages,
-            //options.recipients,
             getKotoFoundersReward(rpcData, options.recipients),
             options.network
         );
@@ -221,8 +204,9 @@ var JobManager = module.exports = function JobManager(options) {
 
     };
 
-    this.processShare = function (jobId, previousDifficulty, difficulty, extraNonce1, extraNonce2, nTime, nonce, ipAddress, port, workerName) {
+    this.processShare = function (jobId, previousDifficulty, difficulty, extraNonce1, extraNonce2, nTime, nonce, ipAddress, port, workerName, versionMask) {
         var shareError = function (error) {
+            
             _this.emit('share', {
                 job: jobId,
                 ip: ipAddress,
@@ -239,24 +223,19 @@ var JobManager = module.exports = function JobManager(options) {
             return shareError([20, 'incorrect size of extranonce2']);
 
         var job = this.validJobs[jobId];
-
         if (typeof job === 'undefined' || job.jobId != jobId) {
             return shareError([21, 'job not found']);
         }
-
         if (nTime.length !== 8) {
             return shareError([20, 'incorrect size of ntime']);
         }
-
         var nTimeInt = parseInt(nTime, 16);
         if (nTimeInt < job.rpcData.curtime || nTimeInt > submitTime + 7200) {
             return shareError([20, 'ntime out of range']);
         }
-
         if (nonce.length !== 8) {
             return shareError([20, 'incorrect size of nonce']);
         }
-
         if (!job.registerSubmit(extraNonce1, extraNonce2, nTime, nonce)) {
             return shareError([22, 'duplicate share']);
         }
@@ -270,7 +249,7 @@ var JobManager = module.exports = function JobManager(options) {
 
         var merkleRoot = util.reverseBuffer(job.merkleTree.withFirst(coinbaseHash)).toString('hex');
 
-        var headerBuffer = job.serializeHeader(merkleRoot, nTime, nonce);
+        var headerBuffer = job.serializeHeader(merkleRoot, nTime, nonce, versionMask);
         var headerHash = hashDigest(headerBuffer, nTimeInt);
         var headerBigNum = bignum.fromBuffer(headerHash, { endian: 'little', size: 32 });
 
@@ -281,6 +260,10 @@ var JobManager = module.exports = function JobManager(options) {
         var shareDiff = diff1 / headerBigNum.toNumber() * shareMultiplier;
 
         var blockDiffAdjusted = job.difficulty * shareMultiplier;
+
+        blockHexInvalid = job.serializeBlock(headerBuffer, coinbaseBuffer).toString('hex');
+
+        blockHashInvalid = blockHasher(headerBuffer, nTime).toString('hex');
 
         //Check if share is a block candidate (matched network difficulty)
         if (job.target.ge(headerBigNum)) {
