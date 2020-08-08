@@ -363,15 +363,14 @@ var algos = module.exports = global.algos = {
             }
         }
     },
-    'vipstar': {
-        multiplier: Math.pow(2, 8),
-        diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
+    /*'vipstar': {
         hash: function () {
             return function () {
                 return multiHashing.sha256d.apply(this, arguments);
             }
         }
     }
+    */
 };
 
 
