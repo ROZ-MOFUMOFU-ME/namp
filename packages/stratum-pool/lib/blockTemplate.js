@@ -96,7 +96,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
     this.serializeHeader = function (merkleRoot, nTime, nonce) {
 
         var headerSize;
-        if (rpcData.version == 5) {
+        if (rpcData.version == 5 && rpcData.finalsaplingroothash) {
             headerSize = 112;
         /*} else if (rpcData.hashstateroot && rpcData.hashutxoroot) {
             headerSize = 181;
@@ -121,7 +121,7 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         console.log('rpcData.version: ' + rpcData.version);
         */
 
-        if (rpcData.version == 5) {
+        if (rpcData.version == 5 && rpcData.finalsaplingroothash) {
             header.write(rpcData.finalsaplingroothash, position, 32, 'hex');
             position += 32;
         }
