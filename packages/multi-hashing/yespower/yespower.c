@@ -132,7 +132,7 @@ void yespower_ltncg_hash(const char* input, char* output)
 }
 
 // for YespowerR16 (Yenten)
-void yespower_hash(const char* input, char* output)
+void yespower_r16_hash(const char* input, char* output)
 {
     yespower_params_t params = {
             .version = YESPOWER_1_0,
