@@ -363,6 +363,14 @@ var algos = module.exports = global.algos = {
             }
         }
     },
+    'yespowerR16': {
+        multiplier: 65536,
+        hash: function () {
+            return function () {
+                return multiHashing.yespower_r16.apply(this, arguments);
+            }
+        }
+    }
     /*'vipstar': {
         hash: function () {
             return function () {
