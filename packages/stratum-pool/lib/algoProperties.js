@@ -126,6 +126,13 @@ var algos = module.exports = global.algos = {
             }
         }
     },
+    x25x: {
+        hash: function () {
+            return function () {
+                return multiHashing.x25x.apply(this, arguments);
+            }
+        }
+    },
     nist5: {
         hash: function () {
             return function () {
