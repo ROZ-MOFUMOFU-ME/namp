@@ -79,11 +79,22 @@
                 "sha3/sph_sha2.c",
                 "sha3/sph_sha2big.c",
                 "sha3/sph_tiger.c",
+                "sph/extra.c",
+                "sph/extra.h",
+                "sph/havel.c",
+                "sph/havel_helper.c",
+                "sph/lane.c",
+                "sph/lane.h",
+                "sph/md_helper.c",
+                "sph/panama.c"
+                "sph/SWIFFTX.c"
+                "sph/SWIFFTX.h"
                 "sph/sph_cubehash.h", 
                 "sph/sph_echo.h",
                 "sph/sph_fungue.h",
                 "sph/sph_gost.h",
                 "sph/sph_jh.h",
+                "sph/sph_panama.h",
                 "sph/sph_skein.h",
                 "crypto/aesb.c",
                 "crypto/c_blake256.c",

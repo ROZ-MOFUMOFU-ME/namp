@@ -47,6 +47,7 @@ extern "C" {
 #include "x15.h"
 #include "x16r.h"
 #include "x17.h"
+#include "x25x.h"
 #include "xevan.h"
 #include "yespower/yespower.h"
 }
@@ -223,6 +224,7 @@ DECLARE_CALLBACK(x15, x15_hash, 32);
 DECLARE_CALLBACK(x16r, x16r_hash, 32);
 DECLARE_CALLBACK(x16rv2, x16rv2_hash, 32);
 DECLARE_CALLBACK(x17, x17_hash, 32);
+DECLARE_CALLBACK(x17, x25x_hash, 32);
 DECLARE_CALLBACK(xevan, xevan_hash, 32);
 
 DECLARE_NO_INPUT_LENGTH_CALLBACK(allium, allium_hash, 32);
@@ -693,6 +695,7 @@ DECLARE_INIT(init) {
     NODE_SET_METHOD(exports, "x16r", x16r);
     NODE_SET_METHOD(exports, "x16rv2", x16rv2);
     NODE_SET_METHOD(exports, "x17", x17);
+    NODE_SET_METHOD(exports, "x25x", x25x);
     NODE_SET_METHOD(exports, "xevan", xevan);
     NODE_SET_METHOD(exports, "yespower", yespower);
     NODE_SET_METHOD(exports, "yespower_0_5_R8", yespower_0_5_R8);
