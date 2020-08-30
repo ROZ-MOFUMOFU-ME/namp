@@ -80,14 +80,13 @@
                 "sha3/sph_sha2.c",
                 "sha3/sph_sha2big.c",
                 "sha3/sph_tiger.c",
-                "sph/blake2s.h",
+                "sph/blake2s.c",
                 "sph/extra.c",
-                "sph/extra.h",
-                "sph/gost_streebog.h",
-                "sph/lane.h",
-                "sph/lyra2.h",
+                "sph/gost_streebog.c",
+                "sph/lane.c",
+                "sph/lyra2.c",
                 "sph/panama.c"
-                "sph/SWIFFTX.h"
+                "sph/SWIFFTX.c"
                 "sph/sph_blake.h",
                 "sph/sph_bmw.h",
                 "sph/sph_cubehash.h", 
