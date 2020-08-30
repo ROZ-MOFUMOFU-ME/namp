@@ -86,7 +86,6 @@
                 "sph/gost_streebog.h",
                 "sph/lane.h",
                 "sph/lyra2.h",
-                "sph/md_helper.c",
                 "sph/panama.c"
                 "sph/SWIFFTX.h"
                 "sph/sph_blake.h",
