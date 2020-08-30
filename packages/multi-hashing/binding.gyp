@@ -84,7 +84,6 @@
                 "sph/extra.c",
                 "sph/extra.h",
                 "sph/gost_streebog.h",
-                "sph/havel_helper.c",
                 "sph/lane.h",
                 "sph/lyra2.h",
                 "sph/md_helper.c",
