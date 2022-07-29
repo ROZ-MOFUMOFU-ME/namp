@@ -76,6 +76,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
     var getMarketStats = poolOptions.coin.getMarketStats === true;
     var requireShielding = poolOptions.coin.requireShielding === true;
     var fee = parseFloat(poolOptions.coin.txfee) || parseFloat(0.0004);
+    var maxUnshieldAmount = processingConfig.maxUnshieldAmount || 100.0;
+    logger.debug(logSystem, logComponent, "maxUnshieldAmount: " + maxUnshieldAmount);
 
     logger.debug(logSystem, logComponent, logComponent + ' requireShielding: ' + requireShielding);
     logger.debug(logSystem, logComponent, logComponent + ' minConf: ' + minConfShield);
@@ -193,7 +195,6 @@ function SetupForPool(logger, poolOptions, setupFinished){
     if (requireShielding === true) {
         async.parallel([validateAddress, validateTAddress, validateZAddress, getBalance], asyncComplete);
     } else {
-        //async.parallel([validateAddress, validateTAddress, getBalance], asyncComplete);
         async.parallel([validateAddress, getBalance], asyncComplete);
     }
 
@@ -224,7 +225,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                 if (displayBool === true) {
                     logger.special(logSystem, logComponent, addr+' balance of ' + tBalance);
                 }
-                callback(null, coinsToSatoshies(tBalance));
+                callback(null, coinsToSatoshies(tBalance), minConf);
             }
         });
     }
@@ -245,13 +246,13 @@ function SetupForPool(logger, poolOptions, setupFinished){
                 if (displayBool === true) {
                     logger.special(logSystem, logComponent, addr.substring(0,14) + '...' + addr.substring(addr.length - 14) + ' balance: '+(zBalance).toFixed(8));
                 }
-                callback(null, coinsToSatoshies(zBalance));
+                callback(null, coinsToSatoshies(zBalance), minConf);
             }
         });
     }
 
     //send t_address balance to z_address
-    function sendTToZ (callback, tBalance) {
+    function sendTToZ (callback, tBalance, minConf) {
         if (callback === true)
             return;
         if (tBalance === NaN) {
@@ -268,7 +269,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
         }
 
         var amount = satoshisToCoins(tBalance - txFee);
-        var params = [poolOptions.address, [{'address': poolOptions.zAddress, 'amount': amount}]];
+        var params = [poolOptions.address, [{'address': poolOptions.zAddress, 'amount': amount}], minConf, satoshisToCoins(txFee)];
         daemon.cmd('z_sendmany', params,
             function (result) {
                 //Check if payments failed because wallet doesn't have enough coins to pay for tx fees
@@ -290,7 +291,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
     }
 
     // send z_address balance to t_address
-    function sendZToT (callback, zBalance) {
+    function sendZToT (callback, zBalance, minConf) {
         if (callback === true)
             return;
         if (zBalance === NaN) {
@@ -308,10 +309,10 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
         var amount = satoshisToCoins(zBalance - txFee);
         // unshield no more than 100 KOTO at a time
-        if (amount > 100.0)
-            amount = 100.0;
+        if (amount > maxUnshieldAmount)
+            amount = maxUnshieldAmount;
 
-        var params = [poolOptions.zAddress, [{ 'address': poolOptions.tAddress, 'amount': amount }], minConf, satoshisToCoins(txFee)];
+        var params = [poolOptions.zAddress, [{'address': poolOptions.tAddress, 'amount': amount}], minConf, satoshisToCoins(txFee)];
         daemon.cmd('z_sendmany', params,
             function (result) {
                 //Check if payments failed because wallet doesn't have enough coins to pay for tx fees
@@ -1172,7 +1173,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     var rpccallTracking = 'sendmany "" '+JSON.stringify(addressAmounts);
                     //console.log(rpccallTracking);
 
-                    daemon.cmd('sendmany', ["", addressAmounts], function (result) {
+                    daemon.cmd('sendmany', ["", addressAmounts, minConfPayout], function (result) {
                         // check for failed payments, there are many reasons
                         if (result.error && result.error.code === -6) {
                             // check if it is because we don't have enough funds
