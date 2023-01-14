@@ -112,6 +112,17 @@ var JobManager = module.exports = function JobManager(options) {
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
                 };
+            case 'yespowerR16':
+                if (Date.now() / 1000 > 1675036800) {
+                    return function (d) {
+                        return util.reverseBuffer(util.sha256d(d));
+                    };
+                }
+                else {
+                    return function () {
+                        return util.reverseBuffer(hashDigest.apply(this, arguments));
+                    };
+                }
             default:
                 return function () {
                     return util.reverseBuffer(hashDigest.apply(this, arguments));
