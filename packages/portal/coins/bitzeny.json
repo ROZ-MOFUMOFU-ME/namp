@@ -4,6 +4,9 @@
     "algorithm": "yescryptR8",
     "peerMagic": "daa5bef9",
     "peerMagicTestnet": "59454e59",
+    "getInfo": false,
+    "noNetworkInfo": false,
+    "noGetnetworkhashps": true,
     "txfee": 0.0001,
     "blockTime": 90,
     "explorer": {
