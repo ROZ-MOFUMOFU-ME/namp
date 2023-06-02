@@ -4,6 +4,9 @@
     "algorithm": "lyra2re2",
     "peerMagic": "fbc0b6db",
     "peerMagicTestnet": "fbd2c8f",
+    "getInfo": false,
+    "noNetworkInfo": false,
+    "noGetnetworkhashps": true,
     "mainnet": {
         "bech32": "mona",
         "bip32": {
