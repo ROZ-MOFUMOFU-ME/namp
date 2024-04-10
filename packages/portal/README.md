@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.com/ROZ-MOFUMOFU-ME/zny-nomp.svg?branch=main)](https://travis-ci.org/ROZ-MOFUMOFU-ME/zny-nomp) 
 [![CircleCI](https://circleci.com/gh/ROZ-MOFUMOFU-ME/zny-nomp/tree/main.svg?style=svg)](https://circleci.com/gh/ROZ-MOFUMOFU-ME/zny-nomp/tree/main)
 
-This is a Yescrypt, YesPoWer, Lyra2REv2, sha256d and more algo mining pool based off of Node Open Mining Portal.
+This is a Yescrypt, YesPoWer, Lyra2REv2, sha256d, Quark, x11 and more algo mining pool based off of Node Open Mining Portal.
   
 #### Production Usage Notice
 This is beta software. All of the following are things that can change and break an existing ZNY-NOMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data. *Only tagged releases are considered stable.*
@@ -14,23 +14,15 @@ Usage of this software requires abilities with sysadmin, database admin, coin da
 
 
 ### Community
-Forum
-* join: https://bitzeny.tech/
 
-Wiki
-* https://bitzeny.wiki.fc2.com/
-
-Discord
-* https://discord.gg/xmWd3yy
+ZNY-NOMP official Discord Server
+* Join [https://discord.gg/xmWd3yy](https://discord.gg/zHUdQy2NzU)
 
 If your pool uses ZNY-NOMP let us know and we will list your website here.
 
 ### Some pools using ZNY-NOMP or node-stratum-pool module:
 
 * [mofumofu.me - BitZeny Mining Pool](https://zny.mofumofu.me/)
-* [人のプール](https://mining.zinntikumugai.xyz/)
-* [みんなのプール](https://www.minnano-pool.work/)
-* [semipool.net](https://zny.semipool.net/)
 
 Usage
 =====
@@ -343,12 +335,16 @@ Donations
   * NUKO: 0xa79bde46faab3c40632604728e9f2165b052581c
   * KOTO :k1FTuimwDJ8oo3x23cEBLxovxw5Cqq2U1HK
   * SUSU: SeXbMBaax7NgnTEFEMxin5ycXy9r9CDBot
-  * MONA: mona1qnur6ljkl5pe8w6ql8xfqw4aa38d5xa9q68dxll
+  * MONA: MLEqE3vi11j4ZguMjkvMn5rUtze6kXbAzQ
   * BELL: BCVicYRSqKKt1ynJKPrXHA46hUWLrbjR49
   * SUGAR: sugar1qtwqle9lrr753kxuzqqsh3hv28jl07e3mntx78n
   * VIPS: VFixsia2EstV4uEEigUXUrknDGsFeWyNhE
   * KUMA: KHjjZ5misqq45zwhj86WKqV8bzqcYExzyM
   * BTC: 3C8oCWjVs2sycQcK3ttiPRSKV4AKBhC7xT
+  * ETH: 0xc664a0416c23b1b13a18e86cb5fdd1007be375ae
+  * LTC: Lh96WZ7Rw9Wf4GDX2KXpzieneZFV5Xe5ou
+  * BCH: pzdsppue8uwc20x35psaqq8sgchkenr49c0qxzazxu
+  * ETC: 0xc664a0416c23b1b13a18e86cb5fdd1007be375ae
 
 Credits
 -------
