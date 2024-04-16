@@ -9,8 +9,7 @@
     "noNetworkInfo": true,
     "noGetnetworkhashps": true,
     "explorer": {
-        "txURL": "https://kumabook.electrum-mona.org/tx/",
-        "blockURL": "https://kumabook.electrum-mona.org/block/"
+        "txURL": "https://spbird.mydns.jp/myexplorer2/probeexplorer.php?timezone=2&probeno=2&coinno=144&searchcode=",
+        "blockURL": "https://spbird.mydns.jp/myexplorer2/probeexplorer.php?timezone=2&probeno=2&coinno=144&searchcode="
     }
 }
-
