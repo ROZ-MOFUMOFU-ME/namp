@@ -17,7 +17,7 @@
     },
     "blockTime": 5,
     "explorer": {
-        "txURL": "https://1explorer.sugarchain.org/tx/",
-        "blockURL": "https://1explorer.sugarchain.org/block/"
+        "txURL": "https://sugarchain.org/explorer/#/transaction/",
+        "blockURL": "https://sugarchain.org/explorer/#/block/"
     }
 }
