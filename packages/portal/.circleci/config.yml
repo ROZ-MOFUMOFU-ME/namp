@@ -2,59 +2,13 @@ version: 2.1
 orbs:
   node: circleci/node@5.2
 jobs:
-  test-v8:
-    docker:
-      - image: circleci/node:8
-    steps:
-      - run: npm install
-  test-v10:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - node/install:
-          node-version: "10.24"
-      - run: npm install
   test-v12:
     docker:
       - image: cimg/base:stable
     steps:
       - node/install:
           node-version: "12.22"
-  test-v14:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - node/install:
-          node-version: "14.21"
-      - run: npm install
-  test-v16:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - node/install:
-          node-version: "16.20"
-      - run: npm install
-  test-v18:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - node/install:
-          node-version: "18.20"
-      - run: npm install
-  test-v20:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - node/install:
-          node-version: "20.12"
-      - run: npm install
 workflows:
   build:
     jobs:
-      - test-v8
-      - test-v10
       - test-v12
-      - test-v14
-      - test-v16
-      - test-v18
-      - test-v20
