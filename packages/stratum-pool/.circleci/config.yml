@@ -1,45 +1,55 @@
-node-base: &node-base
-  steps:
-    - checkout
-    - restore_cache:
-        keys:
-          - v1-npm-deps-{{ checksum "package-lock.json" }}
-          - v1-npm-deps-
-    - run: npm install
-    - run: npm test
-    - save_cache:
-        key: v1-npm-deps-{{ checksum "package-lock.json" }}
-        paths:
-          - node_modules
-
 version: 2.1
+orbs:
+  node: circleci/node@5.2
 jobs:
-  test-v7:
+  test-v8:
     docker:
-      - image: circleci/node:7
-    <<: *node-base
-  test-v9:
-    docker:
-      - image: circleci/node:9
-    <<: *node-base
+      - image: circleci/node:8
+    steps:
+      - run: npm install
   test-v10:
     docker:
-      - image: circleci/node:10
-    <<: *node-base
+      - image: cimg/base:stable
+    steps:
+      - node/install:
+          node-version: "10.24"
   test-v12:
     docker:
-      - image: circleci/node:12
-    <<: *node-base
+      - image: cimg/base:stable
+    steps:
+      - node/install:
+          node-version: "12.22"
   test-v14:
     docker:
-      - image: circleci/node:14
-    <<: *node-base
+      - image: cimg/base:stable
+    steps:
+      - node/install:
+          node-version: "14.21"
+  test-v16:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - node/install:
+          node-version: "16.20"
+  test-v18:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - node/install:
+          node-version: "18.20"
+  test-v20:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - node/install:
+          node-version: "20.12"
 workflows:
-  version: 2
   build:
     jobs:
-      - test-v7
-      - test-v9
+      - test-v8
       - test-v10
       - test-v12
       - test-v14
+      - test-v16
+      - test-v18
+      - test-v20
