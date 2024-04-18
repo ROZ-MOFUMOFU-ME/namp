@@ -10,6 +10,10 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+      - name: Install gmp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgmp3-dev
 
     strategy:
       matrix:
@@ -18,7 +22,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
-      run: sudo apt install -y libgmp3-dev
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
