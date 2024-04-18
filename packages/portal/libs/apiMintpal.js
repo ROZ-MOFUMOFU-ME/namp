@@ -1,4 +1,4 @@
-var request = require('request');
+var request = require('axios');
 var nonce   = require('nonce');
 
 module.exports = function() {
