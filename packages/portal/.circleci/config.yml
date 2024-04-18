@@ -8,5 +8,5 @@ workflows:
             pkg-manager: npm 
             resource_class: large 
             test-results-for: other 
-            run-command: npm start 
+            run-command: start 
             version: '12.22' 
