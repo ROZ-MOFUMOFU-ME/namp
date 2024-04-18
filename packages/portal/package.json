@@ -57,6 +57,7 @@
     },
     "scripts": {
         "start": "node init.js",
+        "run": "npm start",
         "test": "npm install"
     }
 }
