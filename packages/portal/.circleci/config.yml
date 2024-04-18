@@ -4,74 +4,45 @@ orbs:
 jobs:
   test-v8:
     docker:
-      - image: cimg/base:node8
+      - image: circleci/node:8
     steps:
-      - node/install-packages:
-          with-cache: true 
-          pkg-manager: npm 
-          include-branch-in-cache-key: true 
-          check-cache: never 
-          cache-only-lockfile: true 
+      - run: npm install
   test-v10:
     docker:
-      - image: cimg/base:node10
+      - image: cimg/base:stable
     steps:
-      - node/install-packages:
-          with-cache: true 
-          pkg-manager: npm 
-          include-branch-in-cache-key: true 
-          check-cache: never 
-          cache-only-lockfile: true 
+      - node/install:
+          node-version: "10.24"
   test-v12:
     docker:
-      - image: cimg/base:node12
+      - image: cimg/base:stable
     steps:
-      - node/install-packages:
-          with-cache: true 
-          pkg-manager: npm 
-          include-branch-in-cache-key: true 
-          check-cache: never 
-          cache-only-lockfile: true 
+      - node/install:
+          node-version: "12.22"
   test-v14:
     docker:
-      - image: cimg/base:node14
+      - image: cimg/base:stable
     steps:
-      - node/install-packages:
-          with-cache: true 
-          pkg-manager: npm 
-          include-branch-in-cache-key: true 
-          check-cache: never 
-          cache-only-lockfile: true 
+      - node/install:
+          node-version: "14.21"
   test-v16:
     docker:
-      - image: cimg/base:node16
+      - image: cimg/base:stable
     steps:
-      - node/install-packages:
-          with-cache: true 
-          pkg-manager: npm 
-          include-branch-in-cache-key: true 
-          check-cache: never 
-          cache-only-lockfile: true
+      - node/install:
+          node-version: "16.20"
   test-v18:
     docker:
-      - image: cimg/base:node18
+      - image: cimg/base:stable
     steps:
-      - node/install-packages:
-          with-cache: true 
-          pkg-manager: npm 
-          include-branch-in-cache-key: true 
-          check-cache: never 
-          cache-only-lockfile: true
+      - node/install:
+          node-version: "18.20"
   test-v20:
     docker:
-      - image: cimg/base:node20
+      - image: cimg/base:stable
     steps:
-      - node/install-packages:
-          with-cache: true 
-          pkg-manager: npm 
-          include-branch-in-cache-key: true 
-          check-cache: never 
-          cache-only-lockfile: true    
+      - node/install:
+          node-version: "20.12"
 workflows:
   build:
     jobs:
