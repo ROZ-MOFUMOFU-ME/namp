@@ -9,6 +9,9 @@ jobs:
       - node/install:
           node-version: "12.22"
       - run: npm test
+
+resource_class: large
+
 workflows:
   build:
     jobs:
