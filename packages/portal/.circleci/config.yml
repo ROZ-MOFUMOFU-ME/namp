@@ -4,7 +4,9 @@ orbs:
 workflows:
     build:
       jobs:
-        - node/run:
+        - node/test:
             pkg-manager: npm 
             resource_class: large 
+            test-results-for: other 
+            run-command: npm start 
             version: '12.22' 
