@@ -30,7 +30,7 @@ Usage
 
 #### Requirements
 * Coin daemon(s) (find the coin's repo and build latest version from source)
-* [Node.js](http://nodejs.org/) v8.11+ ([follow these installation instructions](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager))
+* [Node.js](http://nodejs.org/) v12+ ([follow these installation instructions](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager))
 * [Redis](http://redis.io/) key-value store v2.6+ ([follow these instructions](http://redis.io/topics/quickstart))
 
 ##### Seriously
@@ -66,14 +66,11 @@ a good pool operator. For starters be sure to read:
 Clone the repository and run `npm update` for all the dependencies to be installed:
 
 ```bash
-sudo apt-get install build-essential libsodium-dev npm libboost-all-dev libgmp3-dev
-sudo apt install nodejs node-gyp libssl1.0-dev -y
-sudo apt install npm -y
+sudo apt-get install build-essential libsodium-dev libboost-all-dev libgmp3-dev node-gyp libssl-dev -y
+sudo apt install nodejs npm -y
 sudo npm install n -g
 sudo n v12
 sudo apt purge nodejs npm -y
-sudo ln -sf /usr/local/bin/node /usr/bin/node 
-sudo ln -sf /usr/local/bin/npm /usr/bin/npm 
 git clone https://github.com/ROZ-MOFUMOFU-ME/zny-nomp
 cd zny-nomp
 npm install
