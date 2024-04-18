@@ -56,6 +56,7 @@
         "node": ">=8.11"
     },
     "scripts": {
-        "start": "node init.js"
+        "start": "node init.js",
+        "test": "node init.js"
     }
 }
