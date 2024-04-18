@@ -1,41 +1,78 @@
-node-base: &node-base
-  steps:
-    - checkout
-    - restore_cache:
-        keys:
-          - v1-npm-deps-{{ checksum "package-lock.json" }}
-          - v1-npm-deps-
-    - run: npm install
-    - run: npm test
-    - save_cache:
-        key: v1-npm-deps-{{ checksum "package-lock.json" }}
-        paths:
-          - node_modules
-
 version: 2.1
+orbs:
+  node: circleci/node@5.2
 jobs:
   test-v8:
     docker:
-      - image: circleci/node:8
-    <<: *node-base
+      - image: cimg/base:node8
+    steps:
+      - node/install-packages:
+          with-cache: true 
+          pkg-manager: npm 
+          include-branch-in-cache-key: true 
+          check-cache: never 
+          cache-only-lockfile: true 
   test-v10:
     docker:
-      - image: circleci/node:10
-    <<: *node-base
+      - image: cimg/base:node10
+    steps:
+      - node/install-packages:
+          with-cache: true 
+          pkg-manager: npm 
+          include-branch-in-cache-key: true 
+          check-cache: never 
+          cache-only-lockfile: true 
   test-v12:
     docker:
-      - image: circleci/node:12
-    <<: *node-base
+      - image: cimg/base:node12
+    steps:
+      - node/install-packages:
+          with-cache: true 
+          pkg-manager: npm 
+          include-branch-in-cache-key: true 
+          check-cache: never 
+          cache-only-lockfile: true 
   test-v14:
     docker:
-      - image: circleci/node:14
-    <<: *node-base
+      - image: cimg/base:node14
+    steps:
+      - node/install-packages:
+          with-cache: true 
+          pkg-manager: npm 
+          include-branch-in-cache-key: true 
+          check-cache: never 
+          cache-only-lockfile: true 
   test-v16:
     docker:
-      - image: circleci/node:16
-    <<: *node-base
+      - image: cimg/base:node16
+    steps:
+      - node/install-packages:
+          with-cache: true 
+          pkg-manager: npm 
+          include-branch-in-cache-key: true 
+          check-cache: never 
+          cache-only-lockfile: true
+  test-v18:
+    docker:
+      - image: cimg/base:node18
+    steps:
+      - node/install-packages:
+          with-cache: true 
+          pkg-manager: npm 
+          include-branch-in-cache-key: true 
+          check-cache: never 
+          cache-only-lockfile: true
+  test-v20:
+    docker:
+      - image: cimg/base:node20
+    steps:
+      - node/install-packages:
+          with-cache: true 
+          pkg-manager: npm 
+          include-branch-in-cache-key: true 
+          check-cache: never 
+          cache-only-lockfile: true    
 workflows:
-  version: 2
   build:
     jobs:
       - test-v8
@@ -43,3 +80,5 @@ workflows:
       - test-v12
       - test-v14
       - test-v16
+      - test-v18
+      - test-v20
