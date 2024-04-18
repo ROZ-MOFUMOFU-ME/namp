@@ -8,7 +8,7 @@ jobs:
     steps:
       - node/install:
           node-version: "12.22"
-      - run: npm install
+      - run: npm test
 workflows:
   build:
     jobs:
