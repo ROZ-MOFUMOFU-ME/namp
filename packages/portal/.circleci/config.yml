@@ -1,18 +1,9 @@
 version: 2.1
 orbs:
-  node: circleci/node@5.2
-jobs:
-  test-v12:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - node/install:
-          node-version: "12.22"
-      - run: npm install
-
-resource_class: large
-
+  node: circleci/node@5.2.0
 workflows:
-  build:
-    jobs:
-      - test-v12
+    test-v12:
+      jobs:
+        - node/run:
+            resource_class: large 
+            pkg-manager: npm 
