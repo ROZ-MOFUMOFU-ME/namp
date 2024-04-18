@@ -53,7 +53,7 @@
         "stratum-pool": "git+https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool.git"
     },
     "engines": {
-        "node": ">=8.11"
+        "node": ">=12"
     },
     "scripts": {
         "start": "node init.js",
