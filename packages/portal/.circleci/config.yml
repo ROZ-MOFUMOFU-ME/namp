@@ -1,9 +1,10 @@
 version: 2.1
 orbs:
-  node: circleci/node@5.2.0
+  node: circleci/node@5.2
 workflows:
-    test-v12:
+    build:
       jobs:
         - node/run:
-            resource_class: large 
             pkg-manager: npm 
+            resource_class: large 
+            version: '12.22' 
