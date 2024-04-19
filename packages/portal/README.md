@@ -342,6 +342,7 @@ Donations
   * LTC: Lh96WZ7Rw9Wf4GDX2KXpzieneZFV5Xe5ou
   * BCH: pzdsppue8uwc20x35psaqq8sgchkenr49c0qxzazxu
   * ETC: 0xc664a0416c23b1b13a18e86cb5fdd1007be375ae
+  * MONA: MLEqE3vi11j4ZguMjkvMn5rUtze6kXbAzQ
 
 Credits
 -------
