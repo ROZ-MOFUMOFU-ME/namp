@@ -337,7 +337,7 @@ Donations
   * SUGAR: sugar1qtwqle9lrr753kxuzqqsh3hv28jl07e3mntx78n
   * VIPS: VFixsia2EstV4uEEigUXUrknDGsFeWyNhE
   * KUMA: KHjjZ5misqq45zwhj86WKqV8bzqcYExzyM
-  * BTC: 3C8oCWjVs2sycQcK3ttiPRSKV4AKBhC7xT
+  * BTC: 3FpbJ5cotwPZQn9fcdZrPv4h72XquzEvez
   * ETH: 0xc664a0416c23b1b13a18e86cb5fdd1007be375ae
   * LTC: Lh96WZ7Rw9Wf4GDX2KXpzieneZFV5Xe5ou
   * BCH: pzdsppue8uwc20x35psaqq8sgchkenr49c0qxzazxu
