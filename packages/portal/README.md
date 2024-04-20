@@ -287,97 +287,70 @@ ie: Miner 1 mines at 0.1 difficulty and finds 10 shares, the pool sees it as 1 s
 
 ```bitzeny.json
 {
-    /* Enables the mining pool; set to false to disable it. */
-    "enabled": true,
+    "enabled": true, // Enables the mining pool; set to false to disable it.
 
-    /* Specifies the coin configuration file. */
-    "coin": "bitzeny.json",
+    "coin": "bitzeny.json", // Specifies the coin configuration file.
 
-    /* A unique string to be embedded in blocks mined by this pool. Used for identification purposes. */
-    "blockIdentifier": "",
+    "blockIdentifier": "", // A unique string to be embedded in blocks mined by this pool. Used for identification purposes.
     "_comment_blockIdentifier1": "a string embedded in the block to be mined. Used to identify the pool in Insight etc.",
     "_comment_blockIdentifire2": "If this value equals null string, website.stratumHost in 'config.json' is used.",
 
-    /* Server wallet address for receiving and sending mining rewards. */
-    "address": "",
-
-    /* Indicates whether the pool is using Bitcoin Core version 0.17 or higher. */
-    "BTCover17": false,
+    "address": "", // Server wallet address for receiving and sending mining rewards.
+    "BTCover17": false, // Indicates whether the pool is using Bitcoin Core version 0.17 or higher.
     "_comment_BTCover17": "If BTC 0.17 or higher, payment does not work please enable it",
- 
-    /* (Option) Server private address used for shielding. */
-    "zAddress": "",
+
+    "zAddress": "", // (for KOTO) Server wallet private address used to send tAddress.
     "_comment_zAddress": "a private address used to send coins to tAddress.",
 
-    /* (Option) Server transparent address used for sending payments. */
-    "tAddress": "",
+    "tAddress": "", // (for KOTO) Server wallet transparent address used for payouts to miners.
     "_comment_tAddress": "transparent address used to send payments, make this a different address, otherwise payments will not send",
 
-    /* (Option) The interval in minutes between wallet operations or updates. */
-    "walletInterval": 2.5,
+    "walletInterval": 2.5, // (for KOTO) The interval in minutes between wallet operations or updates.
+    
     "rewardRecipients": {
-        /* Your Wallet addresses and their corresponding reward percentages. */
-        "": 1.0
+        "": 1.0 // Your wallet addresses and their corresponding reward percentages.
     },
 
+    "urlInsight": "", // (option) Using another explorer
+    "_comment_urlInsight": "for using non-default insight: e.g. https://koto-insight-testnet.poolof.work for testnet",
+
     "paymentProcessing": {
-        /* Minimum number of confirmations for a block before processing payment. */
-        "minConf": 10,
-        /* Enables payment processing. */
-        "enabled": true,
-        /* Options payment mode: proportional (prop) or Pay Per Last N Time (pplnt). */
-        "paymentMode": "prop",
+        "minConf": 10, // Minimum number of confirmations for a block before processing payment.
+        "enabled": true, // Enables payment processing.
+        "paymentMode": "prop", // Payment mode: proportional (prop) or Pay Per Last N Time (pplnt).
         "_comment_paymentMode": "prop, pplnt",
-        /* Payment interval in seconds. */
-        "paymentInterval": 120,
-        /* Minimum amount of coins to be paid out. */
-        "minimumPayment": 0.1,
-        /* Maximum number of blocks to include in a single payment. */
-        "maxBlocksPerPayment": 3,
+        "paymentInterval": 120, // Payment interval in seconds.
+        "minimumPayment": 0.1, // Minimum amount of coins to be paid out.
+        "maxBlocksPerPayment": 3, // Maximum number of blocks to include in a single payment.
         "daemon": {
-            /* Coin daemon server host. */
-            "host": "127.0.0.1",
-            /* Coin daemon server port. */
-            "port": 9252,
-            /* Username for Coin daemon RPC server. */
-            "user": "username",
-            /* Password for Coin daemon RPC server. */
-            "password": "password"
+            "host": "127.0.0.1", // Coin daemon RPC server host.
+            "port": 9252, // Coin daemon RPC server port.
+            "user": "username", // Username for daemon RPC server.
+            "password": "password" // Password for daemon RPC server.
         }
     },
 
     "tlsOptions": {
-        /* Enables TLS/SSL; set to true to secure connections. */
-        "enabled": false,
-        /* Path to the server key file. */
-        "serverKey": "",
-        /* Path to the server certificate file. */
-        "serverCert": "",
-        /* Path to the certificate authority file. */
-        "ca": ""
+        "enabled": false, // Enables TLS/SSL; set to true to secure connections.
+        "serverKey": "", // Path to the server key file.
+        "serverCert": "", // Path to the server certificate file.
+        "ca": "" // Path to the certificate authority file.
     },
 
     "ports": {
         "3031": {
-            /* Initial difficulty for miners connecting on this port. */
-            "diff": 0.1,
-            /* Specifies whether TLS is enabled for this port. */
-            "tls": false,
+            "diff": 0.5, // Initial difficulty for miners connecting on this port.
+            "tls": false, // Specifies whether TLS is enabled for this port.
             "varDiff": {
-                /* Minimum difficulty. */
-                "minDiff": 0.00,
-                /* Maximum difficulty. */
-                "maxDiff": 10,
-                /* Target time per share (in seconds). */
-                "targetTime": 15,
-                /* Time to retarget difficulty. */
-                "retargetTime": 60,
-                /* Allowed variance in percent from target time. */
-                "variancePercent": 30
+                "minDiff": 0.00, // Minimum difficulty.
+                "maxDiff": 16, // Maximum difficulty.
+                "targetTime": 15, // Target time per share (in seconds).
+                "retargetTime": 60, // Time to retarget difficulty.
+                "variancePercent": 30 // Allowed variance in percent from target time.
             }
         },
-        "3032": { /* Enable multiple mining port */
-            "diff": 1,
+         "3032": {  // (Option) Enable multiple difficulty ports
+            "diff": 5,
             "tls": false,
             "varDiff": {
                 "minDiff": 0.01,
@@ -388,51 +361,35 @@ ie: Miner 1 mines at 0.1 difficulty and finds 10 shares, the pool sees it as 1 s
             }
         }
     },
-    /* Identifier for the mining pool, useful for multi-pool setups. */
-    "poolId": "main",
+
+    "poolId": "main", // Identifier for the mining pool, useful for multi-pool setups.
     "_comment_poolId": "use it for region identification: eu, us, asia or keep default if you have one stratum instance for one coin",
 
     "daemons": [
         {
-            /* Host where the daemon is running. */
-            "host": "127.0.0.1",
-            /* Port on which the daemon is listening. */
-            "port": 9252,
-            /* Username for accessing the daemon. */
-            "user": "username",
-            /* Password for accessing the daemon. */
-            "password": "password"
+            "host": "127.0.0.1", // Host where the coin daemon is running.
+            "port": 9252, // Port on which the coin daemon is listening.
+            "user": "username", // Username for accessing the coin daemon.
+            "password": "password" // Password for accessing the coin daemon.
         }
     ],
- 
+
     "p2p": {
-        /* Enables peer-to-peer server. */
-        "enabled": true,
-        /* Host for the P2P server. */
-        "host": "127.0.0.1",
-        /* Port for the P2P server. */
-        "port": 9253,
-        /* Disables transaction messages in P2P mode. */
-        "disableTransactions": true
+        "enabled": true, // Enables P2P mode.
+        "host": "127.0.0.1", // Host for the P2P server.
+        "port": 9253, // Port for the P2P server.
+        "disableTransactions": true // Disables transaction messages in P2P mode.
     },
- 
+
     "mposMode": {
-        /* Enables MPOS compatibility mode. */
-        "enabled": false,
-        /* Database server host for MPOS mode. */
-        "host": "127.0.0.1",
-        /* Database server port for MPOS mode. */
-        "port": 3306,
-        /* Database username. */
-        "user": "",
-        /* Database password. */
-        "password": "",
-        /* Database name. */
-        "database": "",
-        /* Enables password checking for miners. */
-        "checkPassword": true,
-        /* Automatically creates a worker if it doesn't exist. */
-        "autoCreateWorker": false
+        "enabled": false, // Enables MPOS compatibility mode.
+        "host": "127.0.0.1", // Database server host for MPOS mode.
+        "port": 3306, // Database server port for MPOS mode.
+        "user": "", // Database username.
+        "password": "", // Database password.
+        "database": "", // Database name.
+        "checkPassword": true, // Enables password checking for miners.
+        "autoCreateWorker": false // Automatically creates a worker if it doesn't exist.
     }
 }
 ```
