@@ -171,7 +171,7 @@
                             id="statsNetworkSols{{=pool}}">{{=it.stats.pools[pool].poolStats.networkSolsString}}</span>
                     </div>
                     <div><i class="fas fa-unlock fa-fw"></i> <small>Difficulty:</small> <span
-                            id="statsNetworkDiff{{=pool}}">{{=it.stats.pools[pool].poolStats.networkDiff}}</span></div>
+                            id="statsNetworkDiff{{=pool}}">{{=(parseFloat(it.stats.pools[pool].poolStats.networkDiff)).toFixed(8)}}</span></div>
                     <div><i class="fas fa-signal fa-fw"></i> <small>Node Connections:</small> <span
                             id="statsNetworkConnections{{=pool}}">{{=it.stats.pools[pool].poolStats.networkConnections}}</span>
                     </div>
