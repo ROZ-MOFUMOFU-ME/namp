@@ -28,3 +28,6 @@ jobs:
 
     - name: npm test
       run:  npm test
+
+    - name: npm start
+      run:  npm start
