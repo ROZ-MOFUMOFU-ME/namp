@@ -69,7 +69,7 @@ Clone the repository and run `npm update` for all the dependencies to be install
 sudo apt-get install build-essential libsodium-dev libboost-all-dev libgmp3-dev node-gyp libssl-dev -y
 sudo apt install nodejs npm -y
 sudo npm install n -g
-sudo n v12
+sudo n 12
 sudo apt purge nodejs npm -y
 git clone https://github.com/ROZ-MOFUMOFU-ME/zny-nomp
 cd zny-nomp
@@ -285,6 +285,111 @@ Whenever a miner submits a share, the pool counts the difficulty and keeps addin
 ie: Miner 1 mines at 0.1 difficulty and finds 10 shares, the pool sees it as 1 share. Miner 2 mines at 0.5 difficulty and finds 5 shares, the pool sees it as 2.5 shares.
 ```
 
+```bitzeny.json
+{
+    "enabled": true, // Enables the mining pool; set to false to disable it.
+
+    "coin": "bitzeny.json", // Specifies the coin configuration file.
+
+    "blockIdentifier": "", // A unique string to be embedded in blocks mined by this pool. Used for identification purposes.
+    "_comment_blockIdentifier1": "a string embedded in the block to be mined. Used to identify the pool in Insight etc.",
+    "_comment_blockIdentifire2": "If this value equals null string, website.stratumHost in 'config.json' is used.",
+
+    "address": "", // Server wallet address for receiving and sending mining rewards.
+    "BTCover17": false, // Indicates whether the pool is using Bitcoin Core version 0.17 or higher.
+    "_comment_BTCover17": "If BTC 0.17 or higher, payment does not work please enable it",
+
+    "zAddress": "", // (Option) Server private address used for shielding.
+    "_comment_zAddress": "a private address used to send coins to tAddress.",
+
+    "tAddress": "", // (Option) Server transparent address used for sending payments.
+    "_comment_tAddress": "transparent address used to send payments, make this a different address, otherwise payments will not send",
+
+    "walletInterval": 2.5, // (Option) The interval in minutes between wallet operations or updates.
+
+    "rewardRecipients": {
+        "": 1.0 // Your Wallet addresses and their corresponding reward percentages.
+    },
+
+    "paymentProcessing": {
+        "minConf": 10, // Minimum number of confirmations for a block before processing payment.
+        "enabled": true, // Enables payment processing.
+        "paymentMode": "prop", // Options payment mode: proportional (prop) or Pay Per Last N Time (pplnt).
+        "_comment_paymentMode": "prop, pplnt",
+        "paymentInterval": 120, // Payment interval in seconds.
+        "minimumPayment": 0.1, // Minimum amount of coins to be paid out.
+        "maxBlocksPerPayment": 3, // Maximum number of blocks to include in a single payment.
+        "daemon": {
+            "host": "127.0.0.1", // Coin daemon server host.
+            "port": 9252, // Coin daemon server port.
+            "user": "username", // Username for Coin daemon RPC server.
+            "password": "password" // Password for Coin daemon RPC server.
+        }
+    },
+
+    "tlsOptions": {
+        "enabled": false, // Enables TLS/SSL; set to true to secure connections.
+        "serverKey": "", // Path to the server key file.
+        "serverCert": "", // Path to the server certificate file.
+        "ca": "" // Path to the certificate authority file.
+    },
+
+    "ports": {
+        "3031": {
+            "diff": 0.1, // Initial difficulty for miners connecting on this port.
+            "tls": false, // Specifies whether TLS is enabled for this port.
+            "varDiff": {
+                "minDiff": 0.00, // Minimum difficulty.
+                "maxDiff": 10, // Maximum difficulty.
+                "targetTime": 15, // Target time per share (in seconds).
+                "retargetTime": 60, // Time to retarget difficulty.
+                "variancePercent": 30 // Allowed variance in percent from target time.
+            }
+        },
+            "3032": {   // Enable multiple mining port
+            "diff": 1,
+            "tls": false,
+            "varDiff": {
+                "minDiff": 0.01,
+                "maxDiff": 100,
+                "targetTime": 15,
+                "retargetTime": 60,
+                "variancePercent": 30
+            }
+        }
+    },
+
+    "poolId": "main", // Identifier for the mining pool, useful for multi-pool setups.
+    "_comment_poolId": "use it for region identification: eu, us, asia or keep default if you have one stratum instance for one coin",
+
+    "daemons": [
+        {
+            "host": "127.0.0.1", // Host where the daemon is running.
+            "port": 9252, // Port on which the daemon is listening.
+            "user": "username", // Username for accessing the daemon.
+            "password": "password" // Password for accessing the daemon.
+        }
+    ],
+
+    "p2p": {
+        "enabled": true, // Enables peer-to-peer server.
+        "host": "127.0.0.1", // Host for the P2P server.
+        "port": 9253, // Port for the P2P server.
+        "disableTransactions": true // Disables transaction messages in P2P mode.
+    },
+
+    "mposMode": {
+        "enabled": false, // Enables MPOS compatibility mode.
+        "host": "127.0.0.1", // Database server host for MPOS mode.
+        "port": 3306, // Database server port for MPOS mode.
+        "user": "", // Database username.
+        "password": "", // Database password.
+        "database": "", // Database name.
+        "checkPassword": true, // Enables password checking for miners.
+        "autoCreateWorker": false // Automatically creates a worker if it doesn't exist.
+    }
+}
+```
 
 ##### [Optional, recommended] Setting up blocknotify
 1. In `config.json` set the port and password for `blockNotifyListener`
