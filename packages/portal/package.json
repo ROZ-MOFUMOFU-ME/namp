@@ -1,6 +1,6 @@
 {
     "name": "zny-nomp",
-    "version": "0.1.0",
+    "version": "1.2.0",
     "description": "BitZeny (yescrypt) stratum mining pool based on NOMP",
     "keywords": [
         "stratum",
@@ -10,15 +10,17 @@
         "poolserver",
         "bitzeny",
         "zny",
-        "yescrypt"
+        "yescrypt",
+        "yespower"
     ],
     "homepage": "https://github.com/ROZ-MOFUMOFU-ME/zny-nomp",
     "bugs": {
         "url": "https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/issues"
     },
     "license": "MIT",
-    "author": "Joshua Yabut",
+    "author": "ROZ",
     "contributors": [
+        "Joshua Yabut",
         "aayanl",
         "sennevb",
         "Matthew Little",
@@ -32,12 +34,12 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/ROZ-MOFUMOFU-ME/zny-nomp.git"
+        "url": "git+https://github.com/ROZ-MOFUMOFU-ME/zny-nomp.git"
     },
     "dependencies": {
         "async": "^3.2.5",
         "bignum": "^0.13.1",
-        "body-parser": "1.20.2",
+        "body-parser": "^1.20.2",
         "colors": "^1.4.0",
         "compression": "^1.7.4",
         "dateformat": "^4.6.3",
@@ -53,7 +55,7 @@
         "stratum-pool": "git+https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool.git"
     },
     "engines": {
-        "node": ">=12"
+        "node": "=12"
     },
     "scripts": {
         "start": "node init.js",
