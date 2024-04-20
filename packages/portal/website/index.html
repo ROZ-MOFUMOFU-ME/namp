@@ -7,11 +7,14 @@
     <meta charset="utf-8">
     <meta name="keywords" content="bitzeny, zny, mining, pool, cryptocurrency">
     <meta name="description" content="BitZeny node open mining portal">
-    <link rel="shortcut icon" href="/static/favicon.ico" />
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/3.0.0/pure-min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/3.0.0/grids-responsive-min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.js"></script>
@@ -22,157 +25,136 @@
 </head>
 
 <body>
-    <style>
-        .custom-menu {
-            display: inline-block;
-            width: auto;
-            vertical-align: middle;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .custom-menu .pure-menu-link,
-        .custom-menu .pure-menu-heading {
-            color: white;
-        }
-
-        .custom-menu .pure-menu-link:hover,
-        .custom-menu .pure-menu-heading:hover {
-            background-color: transparent;
-        }
-
-        .custom-menu-top {
-            position: relative;
-            padding-top: .5em;
-            padding-bottom: .5em;
-        }
-
-        .custom-menu-brand {
-            display: block;
-            text-align: center;
-            position: relative;
-        }
-
-        .custom-menu-screen {
-            background-color: rgba(0, 0, 0, 0.5);
-            -webkit-transition: all 0.5s;
-            -moz-transition: all 0.5s;
-            -ms-transition: all 0.5s;
-            transition: all 0.5s;
-            height: 3em;
-            width: 70em;
-            position: absolute;
-            top: 0;
-            z-index: -1;
-        }
-
-        .custom-menu-tucked .custom-menu-screen {
-            -webkit-transform: translateY(-44px);
-            -moz-transform: translateY(-44px);
-            -ms-transform: translateY(-44px);
-            transform: translateY(-44px);
-        }
-
-        @media (max-width: 62em) {
-
-            .custom-menu {
-                display: block;
-            }
-
-            .custom-menu-toggle {
-                display: block;
-                display: none\9;
-            }
-
-            .custom-menu-bottom {
-                position: absolute;
-                width: 100%;
-                border-top: 1px solid #eee;
-                background-color: #808080;
-                z-index: 100;
-            }
-
-            .custom-menu-bottom .pure-menu-link {
-                opacity: 1;
-                -webkit-transform: translateX(0);
-                -moz-transform: translateX(0);
-                -ms-transform: translateX(0);
-                transform: translateX(0);
-                -webkit-transition: all 0.5s;
-                -moz-transition: all 0.5s;
-                -ms-transition: all 0.5s;
-                transition: all 0.5s;
-            }
-
-            .custom-menu-bottom.custom-menu-tucked .pure-menu-link {
-                -webkit-transform: translateX(-140px);
-                -moz-transform: translateX(-140px);
-                -ms-transform: translateX(-140px);
-                transform: translateX(-140px);
-                opacity: 0;
-                opacity: 1\9;
-            }
-
-            .pure-menu-horizontal.custom-menu-tucked {
-                z-index: -1;
-                top: 45px;
-                position: absolute;
-                overflow: hidden;
-            }
-
-        }
-    </style>
-    {{ function capitalizeFirstLetter(t){return t.charAt(0).toUpperCase()+t.slice(1)} }}
-    <header>
-        <div class="pure-menu custom-menu custom-menu-top">
-            <a href="/" class="pure-menu-heading custom-menu-brand"><i class="fas fa-house fa-fw"></i> ZNY-NOMP</a>
+{{ function capitalizeFirstLetter(t){return t.charAt(0).toUpperCase()+t.slice(1)} }}
+<header>
+    <div class="custom-wrapper pure-g" id="menu">
+        <div class="pure-u-1 pure-u-md-1-8">
+            <div class="home-menu pure-menu">
+                <a href="/" class="pure-menu-heading">zny-nomp</a>
+                <a href="#" class="custom-toggle" id="toggle"><s class="bar"></s><s class="bar"></s></a>
+            </div>
         </div>
-        <div class="pure-menu pure-menu-horizontal custom-menu custom-menu-bottom custom-menu-tucked" id="tuckedMenu">
-            <div class="custom-menu-screen"></div>
-            <ul class="pure-menu-list">
-                <li class="pure-menu-item">
-                    <a href="/getting_started" class="pure-menu-link"><i class="fas fa-rocket fa-fw"></i> Getting
-                        Started</a>
-                </li>
-                <li class="pure-menu-item">
-                    <a href="/stats" class="pure-menu-link"><i class="fas fa-chart-bar fa-fw"></i> Graph Stats</a>
-                </li>
-                <li class="pure-menu-item">
-                    <a href="/tbs" class="pure-menu-link"><i class="fas fa-table fa-fw"></i> Tab Stats</a>
-                </li>
-                <li class="pure-menu-item">
-                    <a href="/workers" class="pure-menu-link"><i class="fas fa-gears fa-fw"></i> Workers Stats</a>
-                </li>
-                <li class="pure-menu-item">
-                    <a href="/api" class="pure-menu-link"><i class="fas fa-code fa-fw"></i> API</a>
-                </li>
-            </ul>
+        <div class="pure-u-1 pure-u-md-1-8">
+            <div class="home-menu pure-menu pure-menu-horizontal custom-menu custom-can-transform">
+                <ul class="pure-menu-list">
+                    <li class="pure-menu-item">
+                        <a class="pure-menu-link" href="/getting_started">
+                            <i class="fas fa-rocket fa-fw"></i>
+                            <span id="getting_started">Getting Started</span>
+                        </a>
+                    </li>
+                    <li class="pure-menu-item">
+                        <a class="pure-menu-link" href="/stats">
+                            <i class="fas fa-chart-bar fa-fw"></i>
+                            <span id="stats">Pool Stats</span>
+                        </a>
+                    </li>
+                    <li class="pure-menu-item">
+                        <a class="pure-menu-link" href="/workers">
+                            <i class="fas fa-cogs fa-fw"></i>
+                            <span id="workers">Workers Stats</span>
+                        </a>
+                    </li>
+                    <li class="pure-menu-item">
+                        <a class="pure-menu-link" href="/tbs">
+                            <i class="fas fa-table fa-fw"></i>
+                            <span id="tbs">Tab Stats</span>
+                        </a>
+                    </li>
+                    <li class="pure-menu-item">
+                        <a class="pure-menu-link" href="/payments">
+                            <i class="fas fa-money-bill fa-fw"></i>
+                            <span id="payments">Payments</span>
+                        </a>
+                    </li>
+                    <li class="pure-menu-item">
+                        <a class="pure-menu-link" href="/api">
+                            <i class="fas fa-code fa-fw"></i>
+                            <span id="api">API</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </header>
+    </div>
+</header>
     <main>
         {{=it.page}}
     </main>
     <footer>
         <div>
             This site is powered by <a target="_blank" href="https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/">zny-nomp</a>
-            project
-            forked by ROZ-MOFUOFU-ME, created by Joshua Yabut and the Zclassic Community and yoshuki43 originally and is
-            licensed under the <a href="https://en.wikipedia.org/wiki/MIT_License">MIT License</a>
+            project forked by <a target="_blank" href="https://github.com/ROZ-MOFUMOFU-ME/">ROZ</a>, 
+            created by Joshua Yabut and the Zclassic Community and yoshuki43 originally and is
+            licensed under the <a href="https://en.wikipedia.org/wiki/MIT_License">MIT License</a>.
         </div>
         <div>
-            <i class="fas fa-heart fa-fw"></i> Support this project by donating BTC: 3FpbJ5cotwPZQn9fcdZrPv4h72XquzEvez
-            ETH: 0xc664a0416c23b1b13a18e86cb5fdd1007be375ae LTC: Lh96WZ7Rw9Wf4GDX2KXpzieneZFV5Xe5ou
+            <i class="fas fa-heart fa-fw"></i> Donating
+            <i class="fab fa-bitcoin fa-fw"></i> BTC: 3FpbJ5cotwPZQn9fcdZrPv4h72XquzEvez
+            <i class="fab fa-ethereum fa-fw"></i> ETH: 0xc664a0416c23b1b13a18e86cb5fdd1007be375ae
+            <i class="fas fa-litecoin-sign fa-fw"></i> LTC: Lh96WZ7Rw9Wf4GDX2KXpzieneZFV5Xe5ou
         </div>
         <div id="communityFooter">
-            Community <i class="fas fa-comments fa-fw"></i> : <a target="_blank" href="https://bitzeny.info/">Forum</a>
-            |
-            <a target="_blank" href="https://bitzeny.wiki.fc2.com/">Wiki</a>
-            |
-            <a target="_blank" href="https://askmona.org/">Ask Mona</a>
-            |
+            <i class="fas fa-comments fa-fw"></i> Contact : 
+            <a target="_blank" href="https://twitter.com/ROZ_mofumofu_me"><i class="fab fa-x-twitter fa-fw"></i></a>
+            | 
+            <a href="mailto:mail@mofumofu.me"><i class="fas fa-envelope fa-fw"></i></a>
+            | 
+            <a target="_blank" href="https://discord.gg/xmWd3yy"><i class="fab fa-discord fa-fw"></i></a>
+            | 
             <iframe src="https://ghbtns.com/github-btn.html?user=ROZ-MOFUMOFU-ME&repo=zny-nomp&type=star&count=true"
                 frameborder="0" scrolling="0" width="150" height="20"></iframe>
         </div>
     </footer>
+    <script>
+        (function (window, document) {
+            var menu = document.getElementById('menu'),
+                rollback,
+                WINDOW_CHANGE_EVENT = ('onorientationchange' in window) ? 'orientationchange' : 'resize';
+
+            function toggleHorizontal() {
+                menu.classList.remove('closing');
+                [].forEach.call(
+                    document.getElementById('menu').querySelectorAll('.custom-can-transform'),
+                    function (el) {
+                        el.classList.toggle('pure-menu-horizontal');
+                    }
+                );
+            };
+
+            function toggleMenu() {
+                // set timeout so that the panel has a chance to roll up
+                // before the menu switches states
+                if (menu.classList.contains('open')) {
+                    menu.classList.add('closing');
+                    rollBack = setTimeout(toggleHorizontal, 500);
+                }
+                else {
+                    if (menu.classList.contains('closing')) {
+                        clearTimeout(rollBack);
+                    } else {
+                        toggleHorizontal();
+                    }
+                }
+                menu.classList.toggle('open');
+                document.getElementById('toggle').classList.toggle('x');
+            };
+
+            function closeMenu() {
+                if (menu.classList.contains('open')) {
+                    toggleMenu();
+                }
+            }
+
+            document.getElementById('toggle').addEventListener('click', function (e) {
+                toggleMenu();
+                e.preventDefault();
+            });
+
+            window.addEventListener(WINDOW_CHANGE_EVENT, closeMenu);
+        })(this, this.document);
+
+    </script>
 </body>
 
 </html>
