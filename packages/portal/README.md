@@ -455,7 +455,7 @@ Donations
 Credits
 -------
 ### ZNY-NOMP
-* [ROZ-MOFUMOFU-ME](https://github.com/ROZ-MOFUMOFU-ME)
+* [ROZ](https://github.com/ROZ-MOFUMOFU-ME)
 * [zinntikumugai](https://github.com/zinntikumugai) - great supporter
 
 ### cryptocurrency-stratum-pool
