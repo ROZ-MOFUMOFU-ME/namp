@@ -16,7 +16,7 @@ Usage of this software requires abilities with sysadmin, database admin, coin da
 ### Community
 
 ZNY-NOMP official Discord Server
-* Join [https://discord.gg/xmWd3yy](https://discord.gg/zHUdQy2NzU)
+* Join [https://discord.gg/zHUdQy2NzU](https://discord.gg/zHUdQy2NzU)
 
 If your pool uses ZNY-NOMP let us know and we will list your website here.
 
