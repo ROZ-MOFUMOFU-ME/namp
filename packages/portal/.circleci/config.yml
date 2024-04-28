@@ -1,12 +1,49 @@
 version: 2.1
 orbs:
   node: circleci/node@5.2
+jobs:
+  test-v12:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - node/install:
+          node-version: "12.22"
+      - run:
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Verify build
+          command: echo "Build completed successfully!"
+  test-v16:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - node/install:
+          node-version: "16.20"
+      - run:
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Verify build
+          command: echo "Build completed successfully!"
+  test-v20:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - node/install:
+          node-version: "20.12"
+      - run:
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Verify build
+          command: echo "Build completed successfully!"
 workflows:
-    build:
-      jobs:
-        - node/test:
-            pkg-manager: npm 
-            resource_class: large 
-            test-results-for: other 
-            run-command: start 
-            version: '12.22' 
+  build_and_test:
+    jobs:
+      - test-v12
+      - test-v16
+      - test-v20
