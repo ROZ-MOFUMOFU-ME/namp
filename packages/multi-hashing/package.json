@@ -1,7 +1,6 @@
 {
     "name": "multi-hashing",
     "version": "0.1.0",
-    "main": "multihashing",
     "author": {
         "name": "Matthew Little",
         "email": "zone117x@gmail.com"
