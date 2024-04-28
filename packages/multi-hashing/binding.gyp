@@ -135,7 +135,7 @@
                 "crypto"
             ],
             "cflags_cc": [
-                "-std=c++20"
+                "-std=c++2a"
             ],
         }
     ]
