@@ -1,6 +1,6 @@
 {
     "name": "multi-hashing",
-    "version": "0.0.9",
+    "version": "0.1.0",
     "main": "multihashing",
     "author": {
         "name": "Matthew Little",
@@ -11,8 +11,8 @@
         "url": "https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing.git"
     },
     "dependencies": {
-        "bindings": "^1.3.0",
-        "nan": "^2.8.0"
+        "bindings": "^1.5.0",
+        "nan": "^2.19.0"
     },
     "keywords": [
         "scrypt",
