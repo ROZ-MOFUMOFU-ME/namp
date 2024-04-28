@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     strategy:
       matrix:
@@ -17,17 +17,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: install gmp3
-      run: |
-        sudo apt-get update
-        sudo apt-get -y install libgmp3-dev
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-
     - name: npm test
       run:  npm test
-
     - name: npm start
       run:  npm start
