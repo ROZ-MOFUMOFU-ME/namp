@@ -15,6 +15,19 @@ jobs:
       - run:
           name: Verify build
           command: echo "Build completed successfully!"
+    test-v14:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - node/install:
+          node-version: "14.21"
+      - run:
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Verify build
+          command: echo "Build completed successfully!"
   test-v16:
     docker:
       - image: cimg/base:stable
@@ -22,6 +35,19 @@ jobs:
       - checkout
       - node/install:
           node-version: "16.20"
+      - run:
+          name: Install dependencies
+          command: npm install
+      - run:
+          name: Verify build
+          command: echo "Build completed successfully!"
+    test-v18:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - node/install:
+          node-version: "18.20"
       - run:
           name: Install dependencies
           command: npm install
@@ -45,5 +71,7 @@ workflows:
   build_and_test:
     jobs:
       - test-v12
+      - test-v14
       - test-v16
+      - test-v18
       - test-v20
