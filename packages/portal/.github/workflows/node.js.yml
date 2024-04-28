@@ -22,7 +22,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: install build-essrntial
-      run:  sudo apt update && sudo install build-essrntial libgmp3-dev -y 
+      run:  sudo apt update && sudo apt install build-essential libgmp3-dev -y 
     - name: npm install
       run:  npm test
     - name: npm start
