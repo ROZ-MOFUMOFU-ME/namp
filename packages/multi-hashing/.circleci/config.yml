@@ -9,6 +9,11 @@ jobs:
       - checkout
       - run:
           name: Install dependencies
+          command: |
+            sudo apt update && sudo apt install -y g++-9
+            sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
+      - run:
+          name: Run build
           command: npm install
       - run:
           name: Verify build
@@ -21,7 +26,7 @@ jobs:
       - node/install:
           node-version: "10.24"
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
           name: Verify build
@@ -34,7 +39,7 @@ jobs:
       - node/install:
           node-version: "12.22"
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
           name: Verify build
@@ -47,7 +52,7 @@ jobs:
       - node/install:
           node-version: "14.21"
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
           name: Verify build
@@ -60,7 +65,7 @@ jobs:
       - node/install:
           node-version: "16.20"
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
           name: Verify build
@@ -73,7 +78,7 @@ jobs:
       - node/install:
           node-version: "18.20"
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
           name: Verify build
@@ -86,7 +91,7 @@ jobs:
       - node/install:
           node-version: "20.12"
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
           name: Verify build
@@ -99,7 +104,7 @@ jobs:
       - node/install:
           node-version: "22.0"
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
           name: Verify build
