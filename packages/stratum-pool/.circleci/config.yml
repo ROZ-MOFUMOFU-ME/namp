@@ -4,7 +4,7 @@ orbs:
 jobs:
   test-v8:
     docker:
-      - image: circleci/node:8
+      - image: circleci/node:8-jessie
     steps:
       - checkout
       - run:
