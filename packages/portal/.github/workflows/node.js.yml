@@ -20,7 +20,13 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+    - name: install build-essrntial
+      run:  sudo apt update && sudo apt upgrade -y
+    - name: install build-essrntial
+      run:  sudo apt install build-essential libgmp3-dev -y 
     - name: npm install
       run:  npm test
     - name: npm start
       run:  npm start
+    - name: Verify build
+      run: echo "Build and test completed successfully!"
