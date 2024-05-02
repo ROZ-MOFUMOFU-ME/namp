@@ -2,18 +2,17 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
 
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
-
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x, 20.x, 22.x]
+        node-version: [8.x, 10.x, 12.x, 14.x, 16.x, 18.x, 20.x, 22.x]
 
     steps:
     - uses: actions/checkout@v4
@@ -21,10 +20,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-    - name: install build-essrntial
-      run:  sudo apt update && sudo apt upgrade -y
-    - name: install build-essrntial
-      run:  sudo apt install build-essential libgmp3-dev -y 
     - name: npm install
       run:  npm test
     - name: npm start
