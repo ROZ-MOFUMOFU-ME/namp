@@ -2,6 +2,36 @@ version: 2.1
 orbs:
   node: circleci/node@5.2
 jobs:
+  test-v8:
+    docker:
+      - image: circleci/node:8
+    steps:
+      - checkout
+      - run:
+          name: Run build
+          command: npm install
+      - run:
+          name: Run test
+          command: npm start
+      - run:
+          name: Verify build
+          command: echo "Build and test completed successfully!"
+  test-v10:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - node/install:
+          node-version: "10.24"
+      - run:
+          name: Run build
+          command: npm install
+      - run:
+          name: Run test
+          command: npm start
+      - run:
+          name: Verify build
+          command: echo "Build and test completed successfully!"
   test-v12:
     docker:
       - image: cimg/base:stable
@@ -10,11 +40,14 @@ jobs:
       - node/install:
           node-version: "12.22"
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
+          name: Run test
+          command: npm start
+      - run:
           name: Verify build
-          command: echo "Build completed successfully!"
+          command: echo "Build and test completed successfully!"
   test-v14:
     docker:
       - image: cimg/base:stable
@@ -23,11 +56,14 @@ jobs:
       - node/install:
           node-version: "14.21"
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
+          name: Run test
+          command: npm start
+      - run:
           name: Verify build
-          command: echo "Build completed successfully!"
+          command: echo "Build and test completed successfully!"
   test-v16:
     docker:
       - image: cimg/base:stable
@@ -36,11 +72,14 @@ jobs:
       - node/install:
           node-version: "16.20"
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
+          name: Run test
+          command: npm start
+      - run:
           name: Verify build
-          command: echo "Build completed successfully!"
+          command: echo "Build and test completed successfully!"
   test-v18:
     docker:
       - image: cimg/base:stable
@@ -52,11 +91,14 @@ jobs:
           name: update
           command: sudo apt update && sudo apt install -y libssl-dev
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
+          name: Run test
+          command: npm start
+      - run:
           name: Verify build
-          command: echo "Build completed successfully!"
+          command: echo "Build and test completed successfully!"
   test-v20:
     docker:
       - image: cimg/base:stable
@@ -65,11 +107,14 @@ jobs:
       - node/install:
           node-version: "20.12"
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
+          name: Run test
+          command: npm start
+      - run:
           name: Verify build
-          command: echo "Build completed successfully!"
+          command: echo "Build and test completed successfully!"
   test-v22:
     docker:
       - image: cimg/base:stable
@@ -78,15 +123,22 @@ jobs:
       - node/install:
           node-version: "22.0"
       - run:
-          name: Install dependencies
+          name: Run build
           command: npm install
       - run:
+          name: Run test
+          command: npm start
+      - run:
           name: Verify build
-          command: echo "Build completed successfully!"
+          command: echo "Build and test completed successfully!"
 workflows:
   build_and_test:
     jobs:
       - test-v8
+      - test-v10
       - test-v12
+      - test-v14
       - test-v16
+      - test-v18
       - test-v20
+      - test-v22
