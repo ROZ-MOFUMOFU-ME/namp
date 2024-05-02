@@ -134,13 +134,11 @@
                             {{
                             function getReadableLuckTime(lucktime){
                             var luck = lucktime;
-                            var timeUnits = [' Days', ' Hours', ' Minutes', ' Seconds' ];
-                            if (luck < 1) { luck=luck * 24; if (luck < 1) { luck=luck * 60; if (luck < 1) { luck=luck *
-                                60; return luck.toFixed(2) + timeUnits[3]; } else { return luck.toFixed(2) +
-                                timeUnits[2]; } } else { return luck.toFixed(2) + timeUnits[1]; } } return luck +
+                            var timeUnits = [ ' Days', ' Hours', ' Minutes' ];
+                            if (luck < 1) { luck=luck * 24; if (luck < 1) { luck=luck * 60; return luck.toFixed(0) +
+                                timeUnits[2]; } else { return luck.toFixed(2) + timeUnits[1]; } } return luck +
                                 timeUnits[0]; } _luckTime=getReadableLuckTime(it.stats.pools[pool].luckDays); }}
-                                {{=_luckTime}} </span>
-
+                                {{=_luckTime}}</span>
                     </div>
                     <div>
                         <i class="fas fa-chart-bar fa-fw"></i> Share: <span id="statsHashPercent{{=pool}}">
@@ -171,7 +169,8 @@
                             id="statsNetworkSols{{=pool}}">{{=it.stats.pools[pool].poolStats.networkSolsString}}</span>
                     </div>
                     <div><i class="fas fa-unlock fa-fw"></i> <small>Difficulty:</small> <span
-                            id="statsNetworkDiff{{=pool}}">{{=(parseFloat(it.stats.pools[pool].poolStats.networkDiff)).toFixed(8)}}</span></div>
+                            id="statsNetworkDiff{{=pool}}">{{=(parseFloat(it.stats.pools[pool].poolStats.networkDiff)).toFixed(8)}}</span>
+                    </div>
                     <div><i class="fas fa-signal fa-fw"></i> <small>Node Connections:</small> <span
                             id="statsNetworkConnections{{=pool}}">{{=it.stats.pools[pool].poolStats.networkConnections}}</span>
                     </div>
