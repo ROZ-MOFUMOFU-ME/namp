@@ -400,3 +400,4 @@ FodyWeavers.xsd
 # zny-nomp
 config.json
 pool_configs/*.json
+coins/*.json
