@@ -1,15 +1,9 @@
-html,
-button,
-input,
-select,
-textarea,
 .pure-g [class *="pure-u"] {
     font-family: "Noto Sans", sans-serif;
     font-optical-sizing: auto;
     font-weight: 400;
     font-style: normal;
-    font-variation-settings:
-    "wdth" 100;
+    font-variation-settings: "wdth" 100;
 }
 
 html {
@@ -22,40 +16,6 @@ body {
     flex-direction: column;
     max-width: 1160px;
     margin: 0 auto;
-}
-
-header>.home-menu {
-    background: inherit !important;
-    height: 54px;
-    display: flex;
-}
-
-header>.home-menu>a.pure-menu-heading,
-header>.home-menu>ul,
-header>.home-menu>ul>li {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    line-height: normal !important;
-}
-
-header>.home-menu>a.pure-menu-heading {
-    color: white;
-    font-size: 1.5em;
-}
-
-header>.home-menu>ul>li>a {
-    color: #ced4d9;
-}
-
-header>.home-menu>ul>li>a:hover,
-header>.home-menu>ul>li>a:focus {
-    background: inherit !important;
-}
-
-header>.home-menu>ul>li>a:hover,
-header>.home-menu>ul>li.pure-menu-selected>a {
-    color: white;
 }
 
 main {
@@ -79,10 +39,6 @@ footer a {
 
 footer iframe {
     vertical-align: middle;
-}
-
-.home-menu {
-    background-color: #2d2d2d !important;
 }
 
 .home-menu>a.pure-menu-heading {
@@ -174,6 +130,10 @@ a.pure-menu-link {
     text-align: left;
 }
 
+a.pure-menu-link:hover {
+    background: #2d2d2d;
+    color: #fff;
+}
 
 @media (max-width: 47.999em) {
 
@@ -184,5 +144,4 @@ a.pure-menu-link {
     .custom-toggle {
         display: block;
     }
-
 }
