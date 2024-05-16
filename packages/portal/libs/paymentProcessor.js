@@ -924,7 +924,17 @@ function SetupForPool(logger, poolOptions, setupFinished) {
                                 var workerShares = allWorkerShares[i];
                                 if (!workerShares) {
                                     err = true;
-                                    logger.error(logSystem, logComponent, 'No worker shares for round: ' + round.height + ' blockHash: ' + round.blockHash);
+                                    logger.warning(logSystem, logComponent, 'Remove no worker shares block for round: ' + round.height + ' blockHash: ' + round.blockHash);
+                                    var noWorkerSharesMoveCommand = ['smove', coin + ':blocksPending', coin + ':blocksKicked', round.serialized];
+                                    startRedisTimer();
+                                    redisClient.multi([noWorkerSharesMoveCommand]).exec(function(error, moved){
+                                        endRedisTimer();
+                                        if (error) {
+                                            logger.error(logSystem, logComponent, 'Error removing no worker shares block: ' + JSON.stringify(error));
+                                        } else {
+                                            logger.debug(logSystem, logComponent, 'Removed no worker shares block: ' + round.blockHash);
+                                        }
+                                    });
                                     return;
                                 }
                                 var workerTimes = allWorkerTimes[i];
