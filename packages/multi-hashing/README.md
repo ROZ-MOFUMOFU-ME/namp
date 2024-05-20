@@ -6,8 +6,8 @@
 
 node-multi-hashing
 ===============
-
-[![Build Status](https://travis-ci.org/ROZ-MOFUMOFU-ME/node-multi-hashing.svg?branch=main)](https://travis-ci.org/ROZ-MOFUMOFU-ME/node-multi-hashing)
+[![gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ROZ-MOFUMOFU-ME/zny-nomp)
+[![GitHub CI](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing/actions/workflows/node.js.yml/badge.svg)](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing/actions/workflows/node.js.yml)
 [![CircleCI](https://circleci.com/gh/ROZ-MOFUMOFU-ME/node-multi-hashing/tree/main.svg?style=svg)](https://circleci.com/gh/ROZ-MOFUMOFU-ME/node-multi-hashing/tree/main)
 
 Cryptocurrency hashing functions for node.js.

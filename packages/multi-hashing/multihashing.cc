@@ -59,143 +59,143 @@ extern "C" {
 using namespace node;
 using namespace v8;
 
-#if NODE_MAJOR_VERSION >= 4
+#if NODE_MAJOR_VERSION >= 13
 
 #define DECLARE_INIT(x) \
-    void x(Local<Object> exports)
+	void x(Local<Object> exports)
 
 #define DECLARE_FUNC(x) \
-    void x(const FunctionCallbackInfo<Value>& args)
+	void x(const FunctionCallbackInfo<Value>& args)
 
 #define DECLARE_SCOPE \
-    v8::Isolate* isolate = args.GetIsolate();
+	v8::Isolate* isolate = args.GetIsolate();
 
 #define SET_BUFFER_RETURN(x, len) \
-    args.GetReturnValue().Set(Buffer::Copy(isolate, x, len).ToLocalChecked());
+	args.GetReturnValue().Set(Buffer::Copy(isolate, x, len).ToLocalChecked());
 
 #define SET_BOOLEAN_RETURN(x) \
-    args.GetReturnValue().Set(Boolean::New(isolate, x));
+	args.GetReturnValue().Set(Boolean::New(isolate, x));
 
 #define RETURN_EXCEPT(msg) \
-    do { \
-        isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, msg))); \
-        return; \
-    } while (0)
+	do { \
+		isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, msg).ToLocalChecked())); \
+		return; \
+	} while (0)
 
 #else
 
 #define DECLARE_INIT(x) \
-    void x(Handle<Object> exports)
+	void x(Local<Object> exports)
 
 #define DECLARE_FUNC(x) \
-    Handle<Value> x(const Arguments& args)
+	void x(const FunctionCallbackInfo<Value>& args)
 
 #define DECLARE_SCOPE \
-    HandleScope scope
+	v8::Isolate* isolate = args.GetIsolate();
 
 #define SET_BUFFER_RETURN(x, len) \
-    do { \
-        Buffer* buff = Buffer::New(x, len); \
-        return scope.Close(buff->handle_); \
-    } while (0)
+	args.GetReturnValue().Set(Buffer::Copy(isolate, x, len).ToLocalChecked());
 
 #define SET_BOOLEAN_RETURN(x) \
-    return scope.Close(Boolean::New(x));
+	args.GetReturnValue().Set(Boolean::New(isolate, x));
 
 #define RETURN_EXCEPT(msg) \
-    return ThrowException(Exception::Error(String::New(msg)))
+	do { \
+		isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, msg))); \
+		return; \
+	} while (0)
 
-#endif // NODE_MAJOR_VERSION
+#endif // NODE_MAJOR_VERSION >= 13
 
-#if NODE_MAJOR_VERSION >= 12
+#if NODE_MAJOR_VERSION >= 13
 
 #define DECLARE_CALLBACK(name, hash, output_len) \
-    DECLARE_FUNC(name) { \
-    DECLARE_SCOPE; \
- \
-    if (args.Length() < 1) \
-        RETURN_EXCEPT("You must provide one argument."); \
- \
-    Local<Object> target = args[0]->ToObject(isolate); \
- \
-    if(!Buffer::HasInstance(target)) \
-        RETURN_EXCEPT("Argument should be a buffer object."); \
- \
-    char * input = Buffer::Data(target); \
-    char output[output_len]; \
- \
-    uint32_t input_len = Buffer::Length(target); \
- \
-    hash(input, output, input_len); \
- \
-    SET_BUFFER_RETURN(output, output_len); \
+	DECLARE_FUNC(name) { \
+	DECLARE_SCOPE; \
+	\
+		if (args.Length() < 1) \
+			RETURN_EXCEPT("You must provide one argument."); \
+	\
+		Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked(); \
+	\
+		if(!Buffer::HasInstance(target)) \
+			RETURN_EXCEPT("Argument should be a buffer object."); \
+	\
+		char * input = Buffer::Data(target); \
+		char output[output_len]; \
+	\
+		uint32_t input_len = Buffer::Length(target); \
+	\
+		hash(input, output, input_len); \
+	\
+		SET_BUFFER_RETURN(output, output_len); \
 }
 
 #define DECLARE_NO_INPUT_LENGTH_CALLBACK(name, hash, output_len) \
-    DECLARE_FUNC(name) { \
-    DECLARE_SCOPE; \
- \
-    if (args.Length() < 1) \
-        RETURN_EXCEPT("You must provide one argument."); \
- \
-    Local<Object> target = args[0]->ToObject(isolate); \
- \
-    if(!Buffer::HasInstance(target)) \
-        RETURN_EXCEPT("Argument should be a buffer object."); \
- \
-    char * input = Buffer::Data(target); \
-    char output[output_len]; \
- \
-    hash(input, output); \
- \
-    SET_BUFFER_RETURN(output, output_len); \
+	DECLARE_FUNC(name) { \
+	DECLARE_SCOPE; \
+	\
+		if (args.Length() < 1) \
+			RETURN_EXCEPT("You must provide one argument."); \
+	\
+		Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked(); \
+	\
+		if(!Buffer::HasInstance(target)) \
+			RETURN_EXCEPT("Argument should be a buffer object."); \
+	\
+		char * input = Buffer::Data(target); \
+		char output[output_len]; \
+	\
+		hash(input, output); \
+	\
+		SET_BUFFER_RETURN(output, output_len); \
 }
 
 #else
 
 #define DECLARE_CALLBACK(name, hash, output_len) \
-    DECLARE_FUNC(name) { \
-    DECLARE_SCOPE; \
- \
-    if (args.Length() < 1) \
-        RETURN_EXCEPT("You must provide one argument."); \
- \
-    Local<Object> target = args[0]->ToObject(); \
- \
-    if(!Buffer::HasInstance(target)) \
-        RETURN_EXCEPT("Argument should be a buffer object."); \
- \
-    char * input = Buffer::Data(target); \
-    char output[output_len]; \
- \
-    uint32_t input_len = Buffer::Length(target); \
- \
-    hash(input, output, input_len); \
- \
-    SET_BUFFER_RETURN(output, output_len); \
+	DECLARE_FUNC(name) { \
+	DECLARE_SCOPE; \
+	\
+		if (args.Length() < 1) \
+			RETURN_EXCEPT("You must provide one argument."); \
+	\
+		Local<Object> target = args[0]->ToObject(isolate); \
+	\
+		if(!Buffer::HasInstance(target)) \
+			RETURN_EXCEPT("Argument should be a buffer object."); \
+	\
+		char * input = Buffer::Data(target); \
+		char output[output_len]; \
+	\
+		uint32_t input_len = Buffer::Length(target); \
+	\
+		hash(input, output, input_len); \
+	\
+		SET_BUFFER_RETURN(output, output_len); \
 }
 
 #define DECLARE_NO_INPUT_LENGTH_CALLBACK(name, hash, output_len) \
-    DECLARE_FUNC(name) { \
-    DECLARE_SCOPE; \
- \
-    if (args.Length() < 1) \
-        RETURN_EXCEPT("You must provide one argument."); \
- \
-    Local<Object> target = args[0]->ToObject(); \
- \
-    if(!Buffer::HasInstance(target)) \
-        RETURN_EXCEPT("Argument should be a buffer object."); \
- \
-    char * input = Buffer::Data(target); \
-    char output[output_len]; \
- \
-    hash(input, output); \
- \
-    SET_BUFFER_RETURN(output, output_len); \
+	DECLARE_FUNC(name) { \
+	DECLARE_SCOPE; \
+	\
+		if (args.Length() < 1) \
+			RETURN_EXCEPT("You must provide one argument."); \
+	\
+		Local<Object> target = args[0]->ToObject(isolate); \
+	\
+		if(!Buffer::HasInstance(target)) \
+			RETURN_EXCEPT("Argument should be a buffer object."); \
+	\
+		char * input = Buffer::Data(target); \
+		char output[output_len]; \
+	\
+		hash(input, output); \
+	\
+		SET_BUFFER_RETURN(output, output_len); \
 }
 
-#endif // NODE_MAJOR_VERSION >= 12
+#endif // NODE_MAJOR_VERSION >= 13
 
 DECLARE_CALLBACK(blake, blake_hash, 32);
 DECLARE_CALLBACK(blake2s, blake2s_hash, 32);
@@ -248,467 +248,467 @@ DECLARE_NO_INPUT_LENGTH_CALLBACK(yespower_ltncg, yespower_ltncg_hash, 32);
 DECLARE_NO_INPUT_LENGTH_CALLBACK(yespower_r16, yespower_r16_hash, 32);
 
 DECLARE_FUNC(scrypt) {
-    DECLARE_SCOPE;
+	DECLARE_SCOPE;
 
-    if (args.Length() < 3)
-        RETURN_EXCEPT("You must provide buffer to hash, N value, and R value");
+	if (args.Length() < 3)
+		RETURN_EXCEPT("You must provide buffer to hash, N value, and R value");
 
-#if NODE_MAJOR_VERSION >= 12
-    Local<Object> target = args[0]->ToObject(isolate);
+#if NODE_MAJOR_VERSION >= 13
+	Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
 #else
-    Local<Object> target = args[0]->ToObject();
+	Local<Object> target = args[0]->ToObject(isolate);
 #endif
 
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
+	if (!Buffer::HasInstance(target))
+		RETURN_EXCEPT("Argument should be a buffer object.");
 
 #if NODE_MAJOR_VERSION >= 12
-    Local<Context> currentContext = isolate->GetCurrentContext();
-    unsigned int nValue = args[1]->Uint32Value(currentContext).FromJust();
-    unsigned int rValue = args[2]->Uint32Value(currentContext).FromJust();
+	Local<Context> currentContext = isolate->GetCurrentContext();
+	unsigned int nValue = args[1]->Uint32Value(currentContext).FromJust();
+	unsigned int rValue = args[2]->Uint32Value(currentContext).FromJust();
 #else
-    unsigned int nValue = args[1]->Uint32Value();
-    unsigned int rValue = args[2]->Uint32Value();
+	unsigned int nValue = args[1]->Uint32Value();
+	unsigned int rValue = args[2]->Uint32Value();
 #endif
-    char* input = Buffer::Data(target);
-    char output[32];
+	char* input = Buffer::Data(target);
+	char output[32];
 
-    uint32_t input_len = Buffer::Length(target);
+	uint32_t input_len = Buffer::Length(target);
 
-    scrypt_N_R_1_256(input, output, nValue, rValue, input_len);
+	scrypt_N_R_1_256(input, output, nValue, rValue, input_len);
 
-    SET_BUFFER_RETURN(output, 32);
+	SET_BUFFER_RETURN(output, 32);
 }
 
 DECLARE_FUNC(neoscrypt) {
-    DECLARE_SCOPE;
+	DECLARE_SCOPE;
 
-    if (args.Length() < 2)
-        RETURN_EXCEPT("You must provide two arguments.");
+	if (args.Length() < 2)
+		RETURN_EXCEPT("You must provide two arguments.");
 
-#if NODE_MAJOR_VERSION >= 12
-    Local<Object> target = args[0]->ToObject(isolate);
+#if NODE_MAJOR_VERSION >= 13
+	Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
 #else
-    Local<Object> target = args[0]->ToObject();
+	Local<Object> target = args[0]->ToObject(isolate);
 #endif
 
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
+	if (!Buffer::HasInstance(target))
+		RETURN_EXCEPT("Argument should be a buffer object.");
 
-    char* input = Buffer::Data(target);
-    char output[32];
+	char* input = Buffer::Data(target);
+	char output[32];
 
-    neoscrypt(input, output, 0);
+	neoscrypt(input, output, 0);
 
-    SET_BUFFER_RETURN(output, 32);
+	SET_BUFFER_RETURN(output, 32);
 }
 
 DECLARE_FUNC(scryptn) {
-    DECLARE_SCOPE;
+	DECLARE_SCOPE;
 
-    if (args.Length() < 2)
-        RETURN_EXCEPT("You must provide buffer to hash and N factor.");
+	if (args.Length() < 2)
+		RETURN_EXCEPT("You must provide buffer to hash and N factor.");
 
-#if NODE_MAJOR_VERSION >= 12
-    Local<Object> target = args[0]->ToObject(isolate);
+#if NODE_MAJOR_VERSION >= 13
+	Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
 #else
-    Local<Object> target = args[0]->ToObject();
+	Local<Object> target = args[0]->ToObject(isolate);
 #endif
 
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
+	if (!Buffer::HasInstance(target))
+		RETURN_EXCEPT("Argument should be a buffer object.");
 
 #if NODE_MAJOR_VERSION >= 12
-    Local<Context> currentContext = isolate->GetCurrentContext();
-    unsigned int nFactor = args[1]->Uint32Value(currentContext).FromJust();
+	Local<Context> currentContext = isolate->GetCurrentContext();
+	unsigned int nFactor = args[1]->Uint32Value(currentContext).FromJust();
 #else
-    unsigned int nFactor = args[1]->Uint32Value();
+	unsigned int nFactor = args[1]->Uint32Value();
 #endif
 
-    char* input = Buffer::Data(target);
-    char output[32];
+	char* input = Buffer::Data(target);
+	char output[32];
 
-    uint32_t input_len = Buffer::Length(target);
+	uint32_t input_len = Buffer::Length(target);
 
-    //unsigned int N = 1 << (getNfactor(input) + 1);
-    unsigned int N = 1 << nFactor;
+	//unsigned int N = 1 << (getNfactor(input) + 1);
+	unsigned int N = 1 << nFactor;
 
-    scrypt_N_R_1_256(input, output, N, 1, input_len); //hardcode to R=1 for now
+	scrypt_N_R_1_256(input, output, N, 1, input_len); //hardcode to R=1 for now
 
-    SET_BUFFER_RETURN(output, 32);
+	SET_BUFFER_RETURN(output, 32);
 }
 
 DECLARE_FUNC(scryptjane) {
-    DECLARE_SCOPE;
+	DECLARE_SCOPE;
 
-    if (args.Length() < 5)
-        RETURN_EXCEPT("You must provide two argument: buffer, timestamp as number, and nChainStarTime as number, nMin, and nMax");
+	if (args.Length() < 5)
+		RETURN_EXCEPT("You must provide two argument: buffer, timestamp as number, and nChainStarTime as number, nMin, and nMax");
 
-#if NODE_MAJOR_VERSION >= 12
-    Local<Object> target = args[0]->ToObject(isolate);
+#if NODE_MAJOR_VERSION >= 13
+	Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
 #else
-    Local<Object> target = args[0]->ToObject();
+	Local<Object> target = args[0]->ToObject(isolate);
 #endif
 
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("First should be a buffer object.");
+	if (!Buffer::HasInstance(target))
+		RETURN_EXCEPT("First should be a buffer object.");
 
 #if NODE_MAJOR_VERSION >= 12
-    Local<Context> currentContext = isolate->GetCurrentContext();
-    int timestamp = args[1]->Int32Value(currentContext).FromJust();
-    int nChainStartTime = args[2]->Int32Value(currentContext).FromJust();
-    int nMin = args[3]->Int32Value(currentContext).FromJust();
-    int nMax = args[4]->Int32Value(currentContext).FromJust();
+	Local<Context> currentContext = isolate->GetCurrentContext();
+	int timestamp = args[1]->Int32Value(currentContext).FromJust();
+	int nChainStartTime = args[2]->Int32Value(currentContext).FromJust();
+	int nMin = args[3]->Int32Value(currentContext).FromJust();
+	int nMax = args[4]->Int32Value(currentContext).FromJust();
 #else
-    int timestamp = args[1]->Int32Value();
-    int nChainStartTime = args[2]->Int32Value();
-    int nMin = args[3]->Int32Value();
-    int nMax = args[4]->Int32Value();
+	int timestamp = args[1]->Int32Value();
+	int nChainStartTime = args[2]->Int32Value();
+	int nMin = args[3]->Int32Value();
+	int nMax = args[4]->Int32Value();
 #endif
 
-    char* input = Buffer::Data(target);
-    char output[32];
+	char* input = Buffer::Data(target);
+	char output[32];
 
-    uint32_t input_len = Buffer::Length(target);
+	uint32_t input_len = Buffer::Length(target);
 
-    scryptjane_hash(input, input_len, (uint32_t*)output, GetNfactorJane(timestamp, nChainStartTime, nMin, nMax));
+	scryptjane_hash(input, input_len, (uint32_t*)output, GetNfactorJane(timestamp, nChainStartTime, nMin, nMax));
 
-    SET_BUFFER_RETURN(output, 32);
+	SET_BUFFER_RETURN(output, 32);
 }
 
 DECLARE_FUNC(cryptonight) {
-    DECLARE_SCOPE;
+	DECLARE_SCOPE;
 #if NODE_MAJOR_VERSION >= 12
-    Local<Context> currentContext = isolate->GetCurrentContext();
+	Local<Context> currentContext = isolate->GetCurrentContext();
 #endif
 
-    bool fast = false;
-    uint32_t cn_variant = 0;
-    uint64_t height = 0;
+	bool fast = false;
+	uint32_t cn_variant = 0;
+	uint64_t height = 0;
 
-    if (args.Length() < 1)
-        RETURN_EXCEPT("You must provide one argument.");
+	if (args.Length() < 1)
+		RETURN_EXCEPT("You must provide one argument.");
 
-    if (args.Length() >= 2) {
-        if (args[1]->IsBoolean())
+	if (args.Length() >= 2) {
+		if (args[1]->IsBoolean())
 #if NODE_MAJOR_VERSION >= 12
-            fast = args[1]->BooleanValue(isolate);
+	fast = args[1]->BooleanValue(isolate);
 #else
-            fast = args[1]->BooleanValue();
+	fast = args[1]->BooleanValue();
 #endif
-        else if (args[1]->IsUint32())
+	else if (args[1]->IsUint32())
 #if NODE_MAJOR_VERSION >= 12
-            cn_variant = args[1]->Uint32Value(currentContext).FromJust();
+	cn_variant = args[1]->Uint32Value(currentContext).FromJust();
 #else
-            cn_variant = args[1]->Uint32Value();
+	cn_variant = args[1]->Uint32Value();
 #endif
-        else
-            RETURN_EXCEPT("Argument 2 should be a boolean or uint32_t");
-    }
+	else
+		RETURN_EXCEPT("Argument 2 should be a boolean or uint32_t");
+	}
 
-    if ((cn_variant == 4) && (args.Length() < 3)) {
-        RETURN_EXCEPT("You must provide Argument 3 (block height) for Cryptonight variant 4");
-    }
+	if ((cn_variant == 4) && (args.Length() < 3)) {
+		RETURN_EXCEPT("You must provide Argument 3 (block height) for Cryptonight variant 4");
+	}
 
-    if (args.Length() >= 3) {
-        if (args[2]->IsUint32())
+	if (args.Length() >= 3) {
+		if (args[2]->IsUint32())
 #if NODE_MAJOR_VERSION >= 12
-            height = args[2]->Uint32Value(currentContext).FromJust();
+	height = args[2]->Uint32Value(currentContext).FromJust();
 #else
-            height = args[2]->Uint32Value();
+	height = args[2]->Uint32Value();
 #endif
-        else
-            RETURN_EXCEPT("Argument 3 should be uint32_t");
-    }
+	else
+		RETURN_EXCEPT("Argument 3 should be uint32_t");
+	}
 
-#if NODE_MAJOR_VERSION >= 12
-    Local<Object> target = args[0]->ToObject(isolate);
+#if NODE_MAJOR_VERSION >= 13
+	Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
 #else
-    Local<Object> target = args[0]->ToObject();
+	Local<Object> target = args[0]->ToObject(isolate);
 #endif
 
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
+	if (!Buffer::HasInstance(target))
+		RETURN_EXCEPT("Argument should be a buffer object.");
 
-    char* input = Buffer::Data(target);
-    char output[32];
+	char* input = Buffer::Data(target);
+	char output[32];
 
-    uint32_t input_len = Buffer::Length(target);
+	uint32_t input_len = Buffer::Length(target);
 
-    if (fast)
-        cryptonight_fast_hash(input, output, input_len);
-    else {
-        if ((cn_variant == 1) && input_len < 43)
-            RETURN_EXCEPT("Argument must be 43 bytes for monero variant 1");
-        cryptonight_hash(input, output, input_len, cn_variant, height);
-    }
-    SET_BUFFER_RETURN(output, 32);
+	if (fast)
+		cryptonight_fast_hash(input, output, input_len);
+	else {
+		if ((cn_variant == 1) && input_len < 43)
+			RETURN_EXCEPT("Argument must be 43 bytes for monero variant 1");
+		cryptonight_hash(input, output, input_len, cn_variant, height);
+	}
+	SET_BUFFER_RETURN(output, 32);
 }
 DECLARE_FUNC(cryptonightfast) {
-    DECLARE_SCOPE;
+	DECLARE_SCOPE;
 #if NODE_MAJOR_VERSION >= 12
-    Local<Context> currentContext = isolate->GetCurrentContext();
+	Local<Context> currentContext = isolate->GetCurrentContext();
 #endif
 
-    bool fast = false;
-    uint32_t cn_variant = 0;
+	bool fast = false;
+	uint32_t cn_variant = 0;
 
-    if (args.Length() < 1)
-        RETURN_EXCEPT("You must provide one argument.");
+	if (args.Length() < 1)
+		RETURN_EXCEPT("You must provide one argument.");
 
-    if (args.Length() >= 2) {
-        if (args[1]->IsBoolean())
+	if (args.Length() >= 2) {
+		if (args[1]->IsBoolean())
 #if NODE_MAJOR_VERSION >= 12
-            fast = args[1]->BooleanValue(isolate);
+	fast = args[1]->BooleanValue(isolate);
 #else
-            fast = args[1]->BooleanValue();
+	fast = args[1]->BooleanValue();
 #endif
-        else if (args[1]->IsUint32())
+	else if (args[1]->IsUint32())
 #if NODE_MAJOR_VERSION >= 12
-            cn_variant = args[1]->Uint32Value(currentContext).FromJust();
+	cn_variant = args[1]->Uint32Value(currentContext).FromJust();
 #else
-            cn_variant = args[1]->Uint32Value();
+	cn_variant = args[1]->Uint32Value();
 #endif
-        else
-            RETURN_EXCEPT("Argument 2 should be a boolean or uint32_t");
-    }
+	else
+		RETURN_EXCEPT("Argument 2 should be a boolean or uint32_t");
+	}
 
-#if NODE_MAJOR_VERSION >= 12
-    Local<Object> target = args[0]->ToObject(isolate);
+#if NODE_MAJOR_VERSION >= 13
+	Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
 #else
-    Local<Object> target = args[0]->ToObject();
+	Local<Object> target = args[0]->ToObject(isolate);
 #endif
 
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
+	if (!Buffer::HasInstance(target))
+		RETURN_EXCEPT("Argument should be a buffer object.");
 
-    char* input = Buffer::Data(target);
-    char output[32];
+	char* input = Buffer::Data(target);
+	char output[32];
 
-    uint32_t input_len = Buffer::Length(target);
+	uint32_t input_len = Buffer::Length(target);
 
-    if (fast)
-        cryptonightfast_fast_hash(input, output, input_len);
-    else {
-        if (cn_variant > 0 && input_len < 43)
-            RETURN_EXCEPT("Argument must be 43 bytes for monero variant 1+");
-        cryptonightfast_hash(input, output, input_len, cn_variant);
-    }
-    SET_BUFFER_RETURN(output, 32);
+	if (fast)
+		cryptonightfast_fast_hash(input, output, input_len);
+	else {
+		if (cn_variant > 0 && input_len < 43)
+			RETURN_EXCEPT("Argument must be 43 bytes for monero variant 1+");
+		cryptonightfast_hash(input, output, input_len, cn_variant);
+	}
+	SET_BUFFER_RETURN(output, 32);
 }
 DECLARE_FUNC(boolberry) {
-    DECLARE_SCOPE;
+	DECLARE_SCOPE;
 #if NODE_MAJOR_VERSION >= 12
-    Local<Context> currentContext = isolate->GetCurrentContext();
+	Local<Context> currentContext = isolate->GetCurrentContext();
 #endif
 
-    if (args.Length() < 2)
-        RETURN_EXCEPT("You must provide two arguments.");
+	if (args.Length() < 2)
+		RETURN_EXCEPT("You must provide two arguments.");
 
-#if NODE_MAJOR_VERSION >= 12
-    Local<Object> target = args[0]->ToObject(isolate);
-    Local<Object> target_spad = args[1]->ToObject(isolate);
+#if NODE_MAJOR_VERSION >= 13
+	Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
+	Local<Object> target_spad = args[1]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
 #else
-    Local<Object> target = args[0]->ToObject();
-    Local<Object> target_spad = args[1]->ToObject();
+	Local<Object> target = args[0]->ToObject(isolate);
+	Local<Object> target_spad = args[1]->ToObject(isolate);
 #endif
-    uint32_t height = 1;
+	uint32_t height = 1;
 
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument 1 should be a buffer object.");
+	if (!Buffer::HasInstance(target))
+		RETURN_EXCEPT("Argument 1 should be a buffer object.");
 
-    if (!Buffer::HasInstance(target_spad))
-        RETURN_EXCEPT("Argument 2 should be a buffer object.");
+	if (!Buffer::HasInstance(target_spad))
+		RETURN_EXCEPT("Argument 2 should be a buffer object.");
 
-    if (args.Length() >= 3) {
-        if (args[2]->IsUint32())
+	if (args.Length() >= 3) {
+		if (args[2]->IsUint32())
 #if NODE_MAJOR_VERSION >= 12
-            height = args[2]->Uint32Value(currentContext).FromJust();
+	height = args[2]->Uint32Value(currentContext).FromJust();
 #else
-            height = args[2]->Uint32Value();
+	height = args[2]->Uint32Value();
 #endif
-        else
-            RETURN_EXCEPT("Argument 3 should be an unsigned integer.");
-    }
+	else
+		RETURN_EXCEPT("Argument 3 should be an unsigned integer.");
+	}
 
-    char* input = Buffer::Data(target);
-    char* scratchpad = Buffer::Data(target_spad);
-    char output[32];
+	char* input = Buffer::Data(target);
+	char* scratchpad = Buffer::Data(target_spad);
+	char output[32];
 
-    uint32_t input_len = Buffer::Length(target);
-    uint64_t spad_len = Buffer::Length(target_spad);
+	uint32_t input_len = Buffer::Length(target);
+	uint64_t spad_len = Buffer::Length(target_spad);
 
-    boolberry_hash(input, input_len, scratchpad, spad_len, output, height);
+	boolberry_hash(input, input_len, scratchpad, spad_len, output, height);
 
-    SET_BUFFER_RETURN(output, 32);
+	SET_BUFFER_RETURN(output, 32);
 }
 
 DECLARE_FUNC(skunk) {
-    DECLARE_SCOPE;
+	DECLARE_SCOPE;
 
-    if (args.Length() < 1)
-        RETURN_EXCEPT("You must provide one argument.");
+	if (args.Length() < 1)
+		RETURN_EXCEPT("You must provide one argument.");
 
-#if NODE_MAJOR_VERSION >= 12
-    Local<Object> target = args[0]->ToObject(isolate);
+#if NODE_MAJOR_VERSION >= 13
+	Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
 #else
-    Local<Object> target = args[0]->ToObject();
+	Local<Object> target = args[0]->ToObject(isolate);
 #endif
 
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
+	if (!Buffer::HasInstance(target))
+		RETURN_EXCEPT("Argument should be a buffer object.");
 
-    char* input = Buffer::Data(target);
-    char output[32];
+	char* input = Buffer::Data(target);
+	char output[32];
 
-    skunk_hash(input, output, 0);
+	skunk_hash(input, output, 0);
 
-    SET_BUFFER_RETURN(output, 32);
+	SET_BUFFER_RETURN(output, 32);
 }
 
 DECLARE_FUNC(odo) {
-    DECLARE_SCOPE;
+	DECLARE_SCOPE;
 
-    if (args.Length() < 2)
-        RETURN_EXCEPT("You must provide buffer to hash and key value");
+	if (args.Length() < 2)
+		RETURN_EXCEPT("You must provide buffer to hash and key value");
 
-#if NODE_MAJOR_VERSION >= 12
-    Local<Object> target = args[0]->ToObject(isolate);
+#if NODE_MAJOR_VERSION >= 13
+	Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
 #else
-    Local<Object> target = args[0]->ToObject();
+	Local<Object> target = args[0]->ToObject(isolate);
 #endif
 
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
+	if (!Buffer::HasInstance(target))
+		RETURN_EXCEPT("Argument should be a buffer object.");
 
 #if NODE_MAJOR_VERSION >= 12
-    Local<Context> currentContext = isolate->GetCurrentContext();
-    unsigned int keyValue = args[1]->Uint32Value(currentContext).FromJust();
+	Local<Context> currentContext = isolate->GetCurrentContext();
+	unsigned int keyValue = args[1]->Uint32Value(currentContext).FromJust();
 #else
-    unsigned int keyValue = args[1]->Uint32Value();
+	unsigned int keyValue = args[1]->Uint32Value();
 #endif
 
-    char* input = Buffer::Data(target);
-    char output[32];
+	char* input = Buffer::Data(target);
+	char output[32];
 
-    uint32_t input_len = Buffer::Length(target);
+	uint32_t input_len = Buffer::Length(target);
 
-    odo_hash(input, output, input_len, keyValue);
+	odo_hash(input, output, input_len, keyValue);
 
-    SET_BUFFER_RETURN(output, 32);
+	SET_BUFFER_RETURN(output, 32);
 }
 
 DECLARE_FUNC(yespower_0_5_R8G) {
-    DECLARE_SCOPE;
+	DECLARE_SCOPE;
 
-    if (args.Length() < 1)
-        RETURN_EXCEPT("You must provide one argument.");
+	if (args.Length() < 1)
+		RETURN_EXCEPT("You must provide one argument.");
 
-#if NODE_MAJOR_VERSION >= 12
-    Local<Object> target = args[0]->ToObject(isolate);
+#if NODE_MAJOR_VERSION >= 13
+	Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
 #else
-    Local<Object> target = args[0]->ToObject();
+	Local<Object> target = args[0]->ToObject(isolate);
 #endif
 
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
+	if (!Buffer::HasInstance(target))
+		RETURN_EXCEPT("Argument should be a buffer object.");
 
 
-    char* input = Buffer::Data(target);
-    uint32_t input_len = Buffer::Length(target);
-    char output[32];
+	char* input = Buffer::Data(target);
+	uint32_t input_len = Buffer::Length(target);
+	char output[32];
 
 
-    yespower_0_5_R8G_hash(input, input_len, output);
+	yespower_0_5_R8G_hash(input, input_len, output);
 
-    SET_BUFFER_RETURN(output, 32);
+	SET_BUFFER_RETURN(output, 32);
 }
 
 DECLARE_FUNC(yespower_sugar) {
-    DECLARE_SCOPE;
+	DECLARE_SCOPE;
 
-    if (args.Length() < 1)
-        RETURN_EXCEPT("You must provide one argument.");
+	if (args.Length() < 1)
+		RETURN_EXCEPT("You must provide one argument.");
 
-#if NODE_MAJOR_VERSION >= 12
-    Local<Object> target = args[0]->ToObject(isolate);
+#if NODE_MAJOR_VERSION >= 13
+	Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
 #else
-    Local<Object> target = args[0]->ToObject();
+	Local<Object> target = args[0]->ToObject(isolate);
 #endif
 
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
+	if (!Buffer::HasInstance(target))
+		RETURN_EXCEPT("Argument should be a buffer object.");
 
 
-    char* input = Buffer::Data(target);
-    uint32_t input_len = Buffer::Length(target);
-    char output[32];
+	char* input = Buffer::Data(target);
+	uint32_t input_len = Buffer::Length(target);
+	char output[32];
 
-    yespower_sugar_hash(input, output, input_len);
+	yespower_sugar_hash(input, output, input_len);
 
-    SET_BUFFER_RETURN(output, 32);
+	SET_BUFFER_RETURN(output, 32);
 }
 
 DECLARE_INIT(init) {
-    NODE_SET_METHOD(exports, "allium", allium);
-    NODE_SET_METHOD(exports, "bcrypt", bcrypt);
-    NODE_SET_METHOD(exports, "blake", blake);
-    NODE_SET_METHOD(exports, "blake2s", blake2s);
-    NODE_SET_METHOD(exports, "boolberry", boolberry);
-    NODE_SET_METHOD(exports, "c11", c11);
-    NODE_SET_METHOD(exports, "cryptonight", cryptonight);
-    NODE_SET_METHOD(exports, "cryptonightfast", cryptonightfast);
-    NODE_SET_METHOD(exports, "fresh", fresh);
-    NODE_SET_METHOD(exports, "fugue", fugue);
-    NODE_SET_METHOD(exports, "gost", gost);
-    NODE_SET_METHOD(exports, "groestl", groestl);
-    NODE_SET_METHOD(exports, "groestlmyriad", groestlmyriad);
-    NODE_SET_METHOD(exports, "hefty1", hefty1);
-    NODE_SET_METHOD(exports, "hsr", hsr);
-    NODE_SET_METHOD(exports, "keccak", keccak);
-    NODE_SET_METHOD(exports, "lbry", lbry);
-    NODE_SET_METHOD(exports, "lyra2re2", lyra2re2);
-    NODE_SET_METHOD(exports, "lyra2rev2", lyra2rev2);
-    NODE_SET_METHOD(exports, "lyra2rev3", lyra2rev3);
-    NODE_SET_METHOD(exports, "lyra2z", lyra2z);
-    NODE_SET_METHOD(exports, "lyra2z16m330", lyra2z16m330);
-    NODE_SET_METHOD(exports, "lyra2z330", lyra2z330);
-    NODE_SET_METHOD(exports, "m7", m7);
-    NODE_SET_METHOD(exports, "m7m", m7m);
-    NODE_SET_METHOD(exports, "minotaur", minotaur);
-    NODE_SET_METHOD(exports, "neoscrypt", neoscrypt);
-    NODE_SET_METHOD(exports, "nist5", nist5);
-    NODE_SET_METHOD(exports, "odo", odo);
-    NODE_SET_METHOD(exports, "phi1612", phi1612);
-    NODE_SET_METHOD(exports, "quark", quark);
-    NODE_SET_METHOD(exports, "qubit", qubit);
-    NODE_SET_METHOD(exports, "scrypt", scrypt);
-    NODE_SET_METHOD(exports, "scryptjane", scryptjane);
-    NODE_SET_METHOD(exports, "scryptn", scryptn);
-    NODE_SET_METHOD(exports, "sha1", sha1);
-    NODE_SET_METHOD(exports, "sha256d", sha256d);
-    NODE_SET_METHOD(exports, "shavite3", shavite3);
-    NODE_SET_METHOD(exports, "skein", skein);
-    NODE_SET_METHOD(exports, "skunk", skunk);
-    NODE_SET_METHOD(exports, "tribus", tribus);
-    NODE_SET_METHOD(exports, "x11", x11);
-    NODE_SET_METHOD(exports, "x13", x13);
-    NODE_SET_METHOD(exports, "x15", x15);
-    NODE_SET_METHOD(exports, "x16r", x16r);
-    NODE_SET_METHOD(exports, "x16rv2", x16rv2);
-    NODE_SET_METHOD(exports, "x17", x17);
-    NODE_SET_METHOD(exports, "skydoge", skydoge);  
-    NODE_SET_METHOD(exports, "x25x", x25x);
-    NODE_SET_METHOD(exports, "xevan", xevan);
-    NODE_SET_METHOD(exports, "yespower", yespower);
-    NODE_SET_METHOD(exports, "yespower_0_5_R8", yespower_0_5_R8);
-    NODE_SET_METHOD(exports, "yespower_0_5_R8G", yespower_0_5_R8G);
-    NODE_SET_METHOD(exports, "yespower_0_5_R16", yespower_0_5_R16);
-    NODE_SET_METHOD(exports, "yespower_0_5_R24", yespower_0_5_R24);
-    NODE_SET_METHOD(exports, "yespower_0_5_R32", yespower_0_5_R32);
-    NODE_SET_METHOD(exports, "yespower_sugar", yespower_sugar);
-    NODE_SET_METHOD(exports, "yespower_ltncg", yespower_ltncg);
-    NODE_SET_METHOD(exports, "yespower_r16", yespower_r16);
+	NODE_SET_METHOD(exports, "allium", allium);
+	NODE_SET_METHOD(exports, "bcrypt", bcrypt);
+	NODE_SET_METHOD(exports, "blake", blake);
+	NODE_SET_METHOD(exports, "blake2s", blake2s);
+	NODE_SET_METHOD(exports, "boolberry", boolberry);
+	NODE_SET_METHOD(exports, "c11", c11);
+	NODE_SET_METHOD(exports, "cryptonight", cryptonight);
+	NODE_SET_METHOD(exports, "cryptonightfast", cryptonightfast);
+	NODE_SET_METHOD(exports, "fresh", fresh);
+	NODE_SET_METHOD(exports, "fugue", fugue);
+	NODE_SET_METHOD(exports, "gost", gost);
+	NODE_SET_METHOD(exports, "groestl", groestl);
+	NODE_SET_METHOD(exports, "groestlmyriad", groestlmyriad);
+	NODE_SET_METHOD(exports, "hefty1", hefty1);
+	NODE_SET_METHOD(exports, "hsr", hsr);
+	NODE_SET_METHOD(exports, "keccak", keccak);
+	NODE_SET_METHOD(exports, "lbry", lbry);
+	NODE_SET_METHOD(exports, "lyra2re2", lyra2re2);
+	NODE_SET_METHOD(exports, "lyra2rev2", lyra2rev2);
+	NODE_SET_METHOD(exports, "lyra2rev3", lyra2rev3);
+	NODE_SET_METHOD(exports, "lyra2z", lyra2z);
+	NODE_SET_METHOD(exports, "lyra2z16m330", lyra2z16m330);
+	NODE_SET_METHOD(exports, "lyra2z330", lyra2z330);
+	NODE_SET_METHOD(exports, "m7", m7);
+	NODE_SET_METHOD(exports, "m7m", m7m);
+	NODE_SET_METHOD(exports, "minotaur", minotaur);
+	NODE_SET_METHOD(exports, "neoscrypt", neoscrypt);
+	NODE_SET_METHOD(exports, "nist5", nist5);
+	NODE_SET_METHOD(exports, "odo", odo);
+	NODE_SET_METHOD(exports, "phi1612", phi1612);
+	NODE_SET_METHOD(exports, "quark", quark);
+	NODE_SET_METHOD(exports, "qubit", qubit);
+	NODE_SET_METHOD(exports, "scrypt", scrypt);
+	NODE_SET_METHOD(exports, "scryptjane", scryptjane);
+	NODE_SET_METHOD(exports, "scryptn", scryptn);
+	NODE_SET_METHOD(exports, "sha1", sha1);
+	NODE_SET_METHOD(exports, "sha256d", sha256d);
+	NODE_SET_METHOD(exports, "shavite3", shavite3);
+	NODE_SET_METHOD(exports, "skein", skein);
+	NODE_SET_METHOD(exports, "skunk", skunk);
+	NODE_SET_METHOD(exports, "tribus", tribus);
+	NODE_SET_METHOD(exports, "x11", x11);
+	NODE_SET_METHOD(exports, "x13", x13);
+	NODE_SET_METHOD(exports, "x15", x15);
+	NODE_SET_METHOD(exports, "x16r", x16r);
+	NODE_SET_METHOD(exports, "x16rv2", x16rv2);
+	NODE_SET_METHOD(exports, "x17", x17);
+  NODE_SET_METHOD(exports, "skydoge", skydoge);  
+	NODE_SET_METHOD(exports, "x25x", x25x);
+	NODE_SET_METHOD(exports, "xevan", xevan);
+	NODE_SET_METHOD(exports, "yespower", yespower);
+	NODE_SET_METHOD(exports, "yespower_0_5_R8", yespower_0_5_R8);
+	NODE_SET_METHOD(exports, "yespower_0_5_R8G", yespower_0_5_R8G);
+	NODE_SET_METHOD(exports, "yespower_0_5_R16", yespower_0_5_R16);
+	NODE_SET_METHOD(exports, "yespower_0_5_R24", yespower_0_5_R24);
+	NODE_SET_METHOD(exports, "yespower_0_5_R32", yespower_0_5_R32);
+	NODE_SET_METHOD(exports, "yespower_sugar", yespower_sugar);
+	NODE_SET_METHOD(exports, "yespower_ltncg", yespower_ltncg);
+	NODE_SET_METHOD(exports, "yespower_r16", yespower_r16);
 }
 
 NODE_MODULE(multihashing, init)
