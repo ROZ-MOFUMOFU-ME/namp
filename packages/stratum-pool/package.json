@@ -37,6 +37,6 @@
         "multi-hashing": "git+https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing.git"
     },
     "engines": {
-        "node": ">=10.4.0"
+        "node": ">=16"
     }
 }
