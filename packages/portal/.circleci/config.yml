@@ -134,10 +134,6 @@ jobs:
 workflows:
   build_and_test:
     jobs:
-      - test-v8
-      - test-v10
-      - test-v12
-      - test-v14
       - test-v16
       - test-v18
       - test-v20
