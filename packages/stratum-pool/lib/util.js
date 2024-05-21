@@ -1,6 +1,5 @@
 var crypto = require('crypto');
-var base58 = require('base58-native');
-var bignum = require('bignum');
+var base58 = require('bs58check');
 var bitcoin = require('bitcoinjs-lib');
 
 
@@ -337,13 +336,15 @@ exports.shiftMax256Right = function (shiftRight) {
 
 
 exports.bufferToCompactBits = function (startingBuff) {
-    var bigNum = bignum.fromBuffer(startingBuff);
-    var buff = bigNum.toBuffer();
+    let bigNum = BigInt('0x' + startingBuff.toString('hex'));
+    let buff = Buffer.from(bigNum.toString(16), 'hex');
 
-    buff = buff.readUInt8(0) > 0x7f ? Buffer.concat([new Buffer([0x00]), buff]) : buff;
+    if (buff[0] > 0x7f) {
+        buff = Buffer.concat([Buffer.from([0x00]), buff]);
+    }
 
-    buff = Buffer.concat([new Buffer([buff.length]), buff]);
-    var compact = buff.slice(0, 4);
+    buff = Buffer.concat([Buffer.from([buff.length]), buff]);
+    let compact = buff.slice(0, 4);
     return compact;
 };
 
@@ -353,28 +354,21 @@ exports.bufferToCompactBits = function (startingBuff) {
  */
 
 exports.bignumFromBitsBuffer = function (bitsBuff) {
-    var numBytes = bitsBuff.readUInt8(0);
-    var bigBits = bignum.fromBuffer(bitsBuff.slice(1));
-    var target = bigBits.mul(
-        bignum(2).pow(
-            bignum(8).mul(
-                numBytes - 3
-            )
-        )
-    );
+    let numBytes = bitsBuff.readUInt8(0);
+    let bigBits = BigInt('0x' + bitsBuff.slice(1).toString('hex'));
+    let target = bigBits * (BigInt(2) ** (BigInt(8) * BigInt(numBytes - 3)));
     return target;
 };
 
 exports.bignumFromBitsHex = function (bitsString) {
-    var bitsBuff = new Buffer(bitsString, 'hex');
+    let bitsBuff = Buffer.from(bitsString, 'hex');
     return exports.bignumFromBitsBuffer(bitsBuff);
 };
 
 exports.convertBitsToBuff = function (bitsBuff) {
-    var target = exports.bignumFromBitsBuffer(bitsBuff);
-    var resultBuff = target.toBuffer();
-    var buff256 = new Buffer(32);
-    buff256.fill(0);
+    let target = exports.bignumFromBitsBuffer(bitsBuff);
+    let resultBuff = Buffer.from(target.toString(16), 'hex');
+    let buff256 = Buffer.alloc(32);
     resultBuff.copy(buff256, buff256.length - resultBuff.length);
     return buff256;
 };
