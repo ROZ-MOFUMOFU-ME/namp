@@ -32,11 +32,8 @@ exports.sha256d = function (buffer) {
     return exports.sha256(exports.sha256(buffer));
 };
 
-exports.reverseBuffer = function (buff) {
-    var reversed = new Buffer(buff.length);
-    for (var i = buff.length - 1; i >= 0; i--)
-        reversed[buff.length - i - 1] = buff[i];
-    return reversed;
+exports.reverseBuffer = function(buffer) {
+    return Buffer.from(buffer).reverse();
 };
 
 exports.reverseHex = function (hex) {
@@ -352,6 +349,10 @@ exports.bufferToCompactBits = function (startingBuff) {
  Used to convert getblocktemplate bits field into target if target is not included.
  More info: https://en.bitcoin.it/wiki/Target
  */
+ 
+exports.bignumFromBuffer = function(buffer) {
+    return BigInt('0x' + buffer.toString('hex'));
+};
 
 exports.bignumFromBitsBuffer = function (bitsBuff) {
     let numBytes = bitsBuff.readUInt8(0);
