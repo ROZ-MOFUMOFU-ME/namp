@@ -88,6 +88,8 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         var headerSize;
         if (rpcData.version == 5 && rpcData.finalsaplingroothash) {
             headerSize = 112;
+        /*} else if (rpcData.hashstateroot && rpcData.hashutxoroot) {
+            headerSize = 181;*/
         } else {
             headerSize = 80;
         }
@@ -95,10 +97,29 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
         var header = Buffer.alloc(headerSize);
         var position = 0;
 
+        /*
+        console.log('headerSize:' + headerSize);
+        console.log('rpcData.finalsaplingroothash:' + rpcData.finalsaplingroothash);
+        console.log('rpcData.hashutxoroot: ' + rpcData.hashutxoroot);
+        console.log('rpcData.hashstateroot: ' + rpcData.hashstateroot);
+        console.log('nonce:' + nonce);
+        console.log('rpcData.bits: ' + rpcData.bits);
+        console.log('nTime: ' + nTime);
+        console.log('merkleRoot: ' + merkleRoot);
+        console.log('rpcData.previousblockhash: ' + rpcData.previousblockhash);
+        console.log('rpcData.version: ' + rpcData.version);
+        */
+
         if (rpcData.version == 5 && rpcData.finalsaplingroothash) {
             header.write(rpcData.finalsaplingroothash, position, 32, 'hex');
             position += 32;
         }
+        /*if (rpcData.hashstateroot && rpcData.hashutxoroot) {
+            header.write('00ffffffff000000000000000000000000000000000000000000000000000000000000', position, 37, 'hex');
+            header.write(rpcData.hashutxoroot, position += 37, 32, 'hex');
+            header.write(rpcData.hashstateroot, position += 32, 32, 'hex');
+            header.write(nonce, position +=32, 4, 'hex');
+        }*/
         header.write(nonce, position, 4, 'hex');
         header.write(rpcData.bits, position += 4, 4, 'hex');
         header.write(nTime, position += 4, 4, 'hex');
@@ -151,6 +172,11 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
             if (this.finalsaplingroothashReversed) {
                 this.jobParams.push(this.finalsaplingroothashReversed);
             }
+            /*if (this.hashstaterootReversed && this.hashutxorootReversed) {
+                this.jobParams.push(this.hashstaterootReversed);
+                this.jobParams.push(this.hashutxorootReversed);
+                this.jobParams.push('0000000000000000000000000000000000000000000000000000000000000000ffffffff00');
+            }*/
         }
         return this.jobParams;
     };

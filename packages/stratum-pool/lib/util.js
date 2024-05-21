@@ -6,7 +6,7 @@ var bitcoin = require('bitcoinjs-lib');
 exports.addressFromEx = function (exAddress, ripdm160Key) {
     try {
         var versionByte = exports.getVersionByte(exAddress);
-        var addrBase = Buffer.concat([versionByte, new Buffer(ripdm160Key, 'hex')]);
+        var addrBase = Buffer.concat([versionByte, Buffer.from(ripdm160Key, 'hex')]);
         var checksum = exports.sha256d(addrBase).slice(0, 4);
         var address = Buffer.concat([addrBase, checksum]);
         return base58.encode(address);
@@ -32,12 +32,12 @@ exports.sha256d = function (buffer) {
     return exports.sha256(exports.sha256(buffer));
 };
 
-exports.reverseBuffer = function(buffer) {
+exports.reverseBuffer = function (buffer) {
     return Buffer.from(buffer).reverse();
 };
 
 exports.reverseHex = function (hex) {
-    return exports.reverseBuffer(new Buffer(hex, 'hex')).toString('hex');
+    return exports.reverseBuffer(Buffer.from(hex, 'hex')).toString('hex');
 };
 
 exports.reverseByteOrder = function (buff) {
@@ -47,10 +47,10 @@ exports.reverseByteOrder = function (buff) {
 
 exports.uint256BufferFromHash = function (hex) {
 
-    var fromHex = new Buffer(hex, 'hex');
+    var fromHex = Buffer.from(hex, 'hex');
 
     if (fromHex.length != 32) {
-        var empty = new Buffer(32);
+        var empty = Buffer.alloc(32);
         empty.fill(0);
         fromHex.copy(empty);
         fromHex = empty;
@@ -70,21 +70,21 @@ Defined in bitcoin protocol here:
  */
 exports.varIntBuffer = function (n) {
     if (n < 0xfd)
-        return new Buffer([n]);
+        return Buffer.from([n]);
     else if (n <= 0xffff) {
-        var buff = new Buffer(3);
+        var buff = Buffer.alloc(3);
         buff[0] = 0xfd;
         buff.writeUInt16LE(n, 1);
         return buff;
     }
     else if (n <= 0xffffffff) {
-        var buff = new Buffer(5);
+        var buff = Buffer.alloc(5);
         buff[0] = 0xfe;
         buff.writeUInt32LE(n, 1);
         return buff;
     }
     else {
-        var buff = new Buffer(9);
+        var buff = Buffer.alloc(9);
         buff[0] = 0xff;
         exports.packUInt16LE(n).copy(buff, 1);
         return buff;
@@ -128,9 +128,9 @@ exports.serializeNumber = function (n) {
     }*/
 
     //New version from TheSeven
-    if (n >= 1 && n <= 16) return new Buffer([0x50 + n]);
+    if (n >= 1 && n <= 16) return Buffer.from([0x50 + n]);
     var l = 1;
-    var buff = new Buffer(9);
+    var buff = Buffer.alloc(9);
     while (n > 0x7f) {
         buff.writeUInt8(n & 0xff, l++);
         n >>= 8;
@@ -175,32 +175,32 @@ exports.serializeString = function (s) {
 
 
 exports.packUInt16LE = function (num) {
-    var buff = new Buffer(2);
+    var buff = Buffer.alloc(2);
     buff.writeUInt16LE(num, 0);
     return buff;
 };
 exports.packInt32LE = function (num) {
-    var buff = new Buffer(4);
+    var buff = Buffer.alloc(4);
     buff.writeInt32LE(num, 0);
     return buff;
 };
 exports.packInt32BE = function (num) {
-    var buff = new Buffer(4);
+    var buff = Buffer.alloc(4);
     buff.writeInt32BE(num, 0);
     return buff;
 };
 exports.packUInt32LE = function (num) {
-    var buff = new Buffer(4);
+    var buff = Buffer.alloc(4);
     buff.writeUInt32LE(num, 0);
     return buff;
 };
 exports.packUInt32BE = function (num) {
-    var buff = new Buffer(4);
+    var buff = Buffer.alloc(4);
     buff.writeUInt32BE(num, 0);
     return buff;
 };
 exports.packInt64LE = function (num) {
-    var buff = new Buffer(8);
+    var buff = Buffer.alloc(8);
     buff.writeUInt32LE(num % Math.pow(2, 32), 0);
     buff.writeUInt32LE(Math.floor(num / Math.pow(2, 32)), 4);
     return buff;
@@ -240,7 +240,7 @@ exports.pubkeyToScript = function (key) {
         console.error('Invalid pubkey: ' + key);
         throw new Error();
     }
-    var pubkey = new Buffer(35);
+    var pubkey = Buffer.alloc(35);
     pubkey[0] = 0x21;
     pubkey[34] = 0xac;
     new Buffer(key, 'hex').copy(pubkey, 1);
@@ -249,8 +249,8 @@ exports.pubkeyToScript = function (key) {
 
 
 exports.miningKeyToScript = function (key) {
-    var keyBuffer = new Buffer(key, 'hex');
-    return Buffer.concat([new Buffer([0x76, 0xa9, 0x14]), keyBuffer, new Buffer([0x88, 0xac])]);
+    var keyBuffer = Buffer.from(key, 'hex');
+    return Buffer.concat([Buffer.from([0x76, 0xa9, 0x14]), keyBuffer, Buffer.from([0x88, 0xac])]);
 };
 
 /*
@@ -261,7 +261,7 @@ exports.addressToScript = function (network, addr) {
     if (typeof network !== 'undefined' && network !== null) {
         return bitcoin.address.toOutputScript(addr, network);
     } else {
-        return Buffer.concat([new Buffer([0x76, 0xa9, 0x14]), bitcoin.address.fromBase58Check(addr).hash, new Buffer([0x88, 0xac])]);
+        return Buffer.concat([Buffer.from([0x76, 0xa9, 0x14]), bitcoin.address.fromBase58Check(addr).hash, Buffer.from([0x88, 0xac])]);
     }
 
 };
@@ -349,8 +349,8 @@ exports.bufferToCompactBits = function (startingBuff) {
  Used to convert getblocktemplate bits field into target if target is not included.
  More info: https://en.bitcoin.it/wiki/Target
  */
- 
-exports.bignumFromBuffer = function(buffer) {
+
+exports.bignumFromBuffer = function (buffer) {
     return BigInt('0x' + buffer.toString('hex'));
 };
 
@@ -442,7 +442,7 @@ exports.getFounderRewardScript = function (network, addr) {
     if (typeof network !== 'undefined' && network !== null) {
         return bitcoin.address.toOutputScript(addr, network);
     } else {
-        return Buffer.concat([new Buffer([0x76, 0xa9, 0x14]), bitcoin.address.fromBase58Check(addr).hash, new Buffer([0x88, 0xac])]);
+        return Buffer.concat([Buffer.from([0x76, 0xa9, 0x14]), bitcoin.address.fromBase58Check(addr).hash, Buffer.from([0x88, 0xac])]);
     }
 
 };

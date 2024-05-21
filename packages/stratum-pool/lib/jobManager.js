@@ -78,17 +78,7 @@ var JobManager = module.exports = function JobManager(options) {
     var blockHasher = (function () {
         switch (options.coin.algorithm) {
             case 'scrypt':
-                if (options.coin.reward === 'POS') {
-                    return function (d) {
-                        return util.reverseBuffer(hashDigest.apply(this, arguments));
-                    };
-                }
             case 'scrypt-og':
-                if (options.coin.reward === 'POS') {
-                    return function (d) {
-                        return util.reverseBuffer(hashDigest.apply(this, arguments));
-                    };
-                }
             case 'scrypt-jane':
                 if (options.coin.reward === 'POS') {
                     return function (d) {
@@ -102,9 +92,6 @@ var JobManager = module.exports = function JobManager(options) {
             case 'lyra2re2':
             case 'yespowerLTNCG':
             case 'yescryptR16':
-                return function (d) {
-                    return util.reverseBuffer(util.sha256d(d));
-                };
             case 'yespowerR16':
                 return function (d) {
                     return util.reverseBuffer(util.sha256d(d));
