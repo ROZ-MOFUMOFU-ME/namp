@@ -126,9 +126,10 @@ var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, pool
             position += 32;
         }
         /*if (rpcData.hashstateroot && rpcData.hashutxoroot) {
-            header.write('0000000000000000000000000000000000000000000000000000000000000000ffffffff00', position, 37, 'hex');
+            header.write('00ffffffff000000000000000000000000000000000000000000000000000000000000', position, 37, 'hex');
             header.write(rpcData.hashutxoroot, position += 37, 32, 'hex');
             header.write(rpcData.hashstateroot, position += 32, 32, 'hex');
+            header.write(nonce, position +=32, 4, 'hex');
         }
         */
         header.write(nonce, position, 4, 'hex');
