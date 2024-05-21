@@ -38,6 +38,7 @@
     },
     "dependencies": {
         "async": "^3.2.5",
+        "axios": "^0.28.1",
         "bignum": "^0.13.1",
         "body-parser": "^1.20.2",
         "colors": "^1.4.0",
@@ -51,8 +52,7 @@
         "node-watch": "^0.7.4",
         "nonce": "^1.0.4",
         "redis": "^3.1.2",
-        "axios": "^0.28.1",
-        "stratum-pool": "git+https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool.git#dev"
+        "stratum-pool": "git+https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool.git"
     },
     "engines": {
         "node": ">=8.11"
