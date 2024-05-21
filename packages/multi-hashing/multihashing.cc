@@ -649,6 +649,31 @@ DECLARE_FUNC(yespower_sugar) {
 	SET_BUFFER_RETURN(output, 32);
 }
 
+DECLARE_FUNC(yespower_urx) {
+	DECLARE_SCOPE;
+
+	if (args.Length() < 1)
+		RETURN_EXCEPT("You must provide one argument.");
+
+#if NODE_MAJOR_VERSION >= 13
+	Local<Object> target = args[0]->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
+#else
+	Local<Object> target = args[0]->ToObject(isolate);
+#endif
+
+	if (!Buffer::HasInstance(target))
+		RETURN_EXCEPT("Argument should be a buffer object.");
+
+
+	char* input = Buffer::Data(target);
+	uint32_t input_len = Buffer::Length(target);
+	char output[32];
+
+	yespower_urx_hash(input, output, input_len);
+
+	SET_BUFFER_RETURN(output, 32);
+}
+
 DECLARE_INIT(init) {
 	NODE_SET_METHOD(exports, "allium", allium);
 	NODE_SET_METHOD(exports, "bcrypt", bcrypt);
@@ -697,7 +722,7 @@ DECLARE_INIT(init) {
 	NODE_SET_METHOD(exports, "x16r", x16r);
 	NODE_SET_METHOD(exports, "x16rv2", x16rv2);
 	NODE_SET_METHOD(exports, "x17", x17);
-  NODE_SET_METHOD(exports, "skydoge", skydoge);  
+    NODE_SET_METHOD(exports, "skydoge", skydoge);  
 	NODE_SET_METHOD(exports, "x25x", x25x);
 	NODE_SET_METHOD(exports, "xevan", xevan);
 	NODE_SET_METHOD(exports, "yespower", yespower);
@@ -709,6 +734,7 @@ DECLARE_INIT(init) {
 	NODE_SET_METHOD(exports, "yespower_sugar", yespower_sugar);
 	NODE_SET_METHOD(exports, "yespower_ltncg", yespower_ltncg);
 	NODE_SET_METHOD(exports, "yespower_r16", yespower_r16);
+	NODE_SET_METHOD(exports, "yespower_urx", yespower_urx);
 }
 
 NODE_MODULE(multihashing, init)

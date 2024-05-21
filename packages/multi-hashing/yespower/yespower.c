@@ -48,7 +48,7 @@ void yespower_0_5_R8_hash(const char* input, char* output)
             .version = YESPOWER_0_5,
             .N = 2048,
             .r = 8,
-            .pers = "Client Key",
+            .pers = (const uint8_t *)"Client Key",
             .perslen = 10
     };
     yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
@@ -75,7 +75,7 @@ void yespower_0_5_R16_hash(const char* input, char* output)
             .version = YESPOWER_0_5,
             .N = 4096,
             .r = 16,
-            .pers = "Client Key",
+            .pers = (const uint8_t *)"Client Key",
             .perslen = 10
     };
     yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
@@ -88,7 +88,7 @@ void yespower_0_5_R24_hash(const char* input, char* output)
             .version = YESPOWER_0_5,
             .N = 4096,
             .r = 24,
-            .pers = "Jagaricoin",
+            .pers = (const uint8_t *)"Jagaricoin",
             .perslen = 10
     };
     yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
@@ -101,7 +101,7 @@ void yespower_0_5_R32_hash(const char* input, char* output)
             .version = YESPOWER_0_5,
             .N = 4096,
             .r = 32,
-            .pers = "WaviBanana",
+            .pers = (const uint8_t *)"WaviBanana",
             .perslen = 10
     };
     yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
@@ -113,10 +113,10 @@ void yespower_sugar_hash(const char* input, char* output, uint32_t len)
             .version = YESPOWER_1_0,
             .N = 2048,
             .r = 32,
-            .pers = "Satoshi Nakamoto 31/Oct/2008 Proof-of-work is essentially one-CPU-one-vote",
+            .pers = (const uint8_t *)"Satoshi Nakamoto 31/Oct/2008 Proof-of-work is essentially one-CPU-one-vote",
             .perslen = 74
     };
-    yespower_tls((yespower_binary_t*)input, len, &params, (yespower_binary_t*)output);
+    yespower_tls((const uint8_t*)input, len, &params, (yespower_binary_t*)output);
 }
 
 void yespower_ltncg_hash(const char* input, char* output)
@@ -140,6 +140,19 @@ void yespower_r16_hash(const char* input, char* output)
             .r = 16,
             .pers = NULL,
             .perslen = 0
+    };
+    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+}
+
+// for YespowerURX (UraniumX)
+void yespower_urx_hash(const char* input, char* output, uint32_t len)
+{
+    yespower_params_t params = {
+            .version = YESPOWER_1_0,
+            .N = 2048,
+            .r = 32,
+            .pers = (const uint8_t*)"UraniumX",
+            .perslen = 8
     };
     yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
 }

@@ -139,3 +139,4 @@ void yespower_0_5_R32_hash(const char* input, char* output);
 void yespower_sugar_hash(const char* input, char* output, uint32_t len);
 void yespower_ltncg_hash(const char* input, char* output);
 void yespower_r16_hash(const char* input, char* output);
+void yespower_urx_hash(const char* input, char* output, uint32_t len);
