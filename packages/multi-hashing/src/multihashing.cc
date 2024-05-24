@@ -477,8 +477,8 @@ DECLARE_FUNC(odo)
 
 DECLARE_FUNC(yespower_0_5_R8G)
 {
-    if (info.Length() < 2)
-        RETURN_EXCEPT("You must provide two arguments");
+    if (info.Length() < 1)
+        RETURN_EXCEPT("You must provide one argument.");
 
     Local<Object> target = Nan::To<Object>(info[0]).ToLocalChecked();
 
