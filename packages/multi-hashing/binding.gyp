@@ -98,6 +98,7 @@
                 "src/crypto/sha256.c",
                 "src/crypto/wild_keccak.cpp",
                 "src/crypto/yespower/yespower.c",
+                "src/crypto/yespower/yespower-opt.c"
             ],
             "include_dirs": [
                 "src/crypto",
@@ -105,7 +106,7 @@
             ],
             "cflags_cc": [
                 "-std=c++17"
-            ],
+            ]
         }
     ]
 }

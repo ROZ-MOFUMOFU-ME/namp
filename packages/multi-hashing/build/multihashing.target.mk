@@ -7,6 +7,8 @@ DEFS_Debug := \
 	'-DUSING_UV_SHARED=1' \
 	'-DUSING_V8_SHARED=1' \
 	'-DV8_DEPRECATION_WARNINGS=1' \
+	'-DV8_DEPRECATION_WARNINGS' \
+	'-DV8_IMMINENT_DEPRECATION_WARNINGS' \
 	'-D_GLIBCXX_USE_CXX11_ABI=1' \
 	'-D_LARGEFILE_SOURCE' \
 	'-D_FILE_OFFSET_BITS=64' \
@@ -15,7 +17,8 @@ DEFS_Debug := \
 	'-DOPENSSL_THREADS' \
 	'-DBUILDING_NODE_EXTENSION' \
 	'-DDEBUG' \
-	'-D_DEBUG'
+	'-D_DEBUG' \
+	'-DV8_ENABLE_CHECKS'
 
 # Flags passed to all source files.
 CFLAGS_Debug := \
@@ -35,17 +38,17 @@ CFLAGS_C_Debug :=
 CFLAGS_CC_Debug := \
 	-fno-rtti \
 	-fno-exceptions \
-	-std=gnu++17 \
+	-std=gnu++14 \
 	-std=c++17
 
 INCS_Debug := \
-	-I/home/aoi/.cache/node-gyp/20.13.1/include/node \
-	-I/home/aoi/.cache/node-gyp/20.13.1/src \
-	-I/home/aoi/.cache/node-gyp/20.13.1/deps/openssl/config \
-	-I/home/aoi/.cache/node-gyp/20.13.1/deps/openssl/openssl/include \
-	-I/home/aoi/.cache/node-gyp/20.13.1/deps/uv/include \
-	-I/home/aoi/.cache/node-gyp/20.13.1/deps/zlib \
-	-I/home/aoi/.cache/node-gyp/20.13.1/deps/v8/include \
+	-I/home/aoi/.cache/node-gyp/16.20.2/include/node \
+	-I/home/aoi/.cache/node-gyp/16.20.2/src \
+	-I/home/aoi/.cache/node-gyp/16.20.2/deps/openssl/config \
+	-I/home/aoi/.cache/node-gyp/16.20.2/deps/openssl/openssl/include \
+	-I/home/aoi/.cache/node-gyp/16.20.2/deps/uv/include \
+	-I/home/aoi/.cache/node-gyp/16.20.2/deps/zlib \
+	-I/home/aoi/.cache/node-gyp/16.20.2/deps/v8/include \
 	-I$(srcdir)/src/crypto \
 	-I$(srcdir)/node_modules/nan
 
@@ -54,6 +57,8 @@ DEFS_Release := \
 	'-DUSING_UV_SHARED=1' \
 	'-DUSING_V8_SHARED=1' \
 	'-DV8_DEPRECATION_WARNINGS=1' \
+	'-DV8_DEPRECATION_WARNINGS' \
+	'-DV8_IMMINENT_DEPRECATION_WARNINGS' \
 	'-D_GLIBCXX_USE_CXX11_ABI=1' \
 	'-D_LARGEFILE_SOURCE' \
 	'-D_FILE_OFFSET_BITS=64' \
@@ -80,17 +85,17 @@ CFLAGS_C_Release :=
 CFLAGS_CC_Release := \
 	-fno-rtti \
 	-fno-exceptions \
-	-std=gnu++17 \
+	-std=gnu++14 \
 	-std=c++17
 
 INCS_Release := \
-	-I/home/aoi/.cache/node-gyp/20.13.1/include/node \
-	-I/home/aoi/.cache/node-gyp/20.13.1/src \
-	-I/home/aoi/.cache/node-gyp/20.13.1/deps/openssl/config \
-	-I/home/aoi/.cache/node-gyp/20.13.1/deps/openssl/openssl/include \
-	-I/home/aoi/.cache/node-gyp/20.13.1/deps/uv/include \
-	-I/home/aoi/.cache/node-gyp/20.13.1/deps/zlib \
-	-I/home/aoi/.cache/node-gyp/20.13.1/deps/v8/include \
+	-I/home/aoi/.cache/node-gyp/16.20.2/include/node \
+	-I/home/aoi/.cache/node-gyp/16.20.2/src \
+	-I/home/aoi/.cache/node-gyp/16.20.2/deps/openssl/config \
+	-I/home/aoi/.cache/node-gyp/16.20.2/deps/openssl/openssl/include \
+	-I/home/aoi/.cache/node-gyp/16.20.2/deps/uv/include \
+	-I/home/aoi/.cache/node-gyp/16.20.2/deps/zlib \
+	-I/home/aoi/.cache/node-gyp/16.20.2/deps/v8/include \
 	-I$(srcdir)/src/crypto \
 	-I$(srcdir)/node_modules/nan
 
@@ -189,7 +194,8 @@ OBJS := \
 	$(obj).target/$(TARGET)/src/crypto/aesb.o \
 	$(obj).target/$(TARGET)/src/crypto/sha256.o \
 	$(obj).target/$(TARGET)/src/crypto/wild_keccak.o \
-	$(obj).target/$(TARGET)/src/crypto/yespower/yespower.o
+	$(obj).target/$(TARGET)/src/crypto/yespower/yespower.o \
+	$(obj).target/$(TARGET)/src/crypto/yespower/yespower-opt.o
 
 # Add to the list of files we specially track dependencies for.
 all_deps += $(OBJS)
@@ -205,31 +211,31 @@ $(OBJS): GYP_CXXFLAGS := $(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))  $(CFLAGS_$(B
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
+
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
 
 # Try building from generated source, too.
 
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
+
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
 
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
+
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
 
 # End of this set of suffix rules
 ### Rules for final target.
