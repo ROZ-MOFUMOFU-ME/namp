@@ -40,6 +40,7 @@
                 "src/skein.c",
                 "src/skunk.c",
                 "src/skydoge.c",
+                "src/tribus.c",
                 "src/whirlpoolx.c",
                 "src/x11.c",
                 "src/x13.c",

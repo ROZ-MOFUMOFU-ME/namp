@@ -137,6 +137,7 @@ OBJS := \
 	$(obj).target/$(TARGET)/src/skein.o \
 	$(obj).target/$(TARGET)/src/skunk.o \
 	$(obj).target/$(TARGET)/src/skydoge.o \
+	$(obj).target/$(TARGET)/src/tribus.o \
 	$(obj).target/$(TARGET)/src/whirlpoolx.o \
 	$(obj).target/$(TARGET)/src/x11.o \
 	$(obj).target/$(TARGET)/src/x13.o \
@@ -208,31 +209,31 @@ $(OBJS): GYP_CXXFLAGS := $(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))  $(CFLAGS_$(B
 
 # Suffix rules, putting all outputs into $(obj).
 
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
+
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
 
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 
 # Try building from generated source, too.
 
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
+
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
 
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 
-$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cc FORCE_DO_CMD
-	@$(call do_cmd,cxx,1)
-
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
+
+$(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cc FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
 
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)

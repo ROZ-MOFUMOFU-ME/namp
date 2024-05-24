@@ -41,6 +41,7 @@ extern "C"
 #include "skein.h"
 #include "skunk.h"
 #include "skydoge.h"
+#include "tribus.h"
 #include "crypto/sponge.h"
 #include "whirlpoolx.h"
 #include "x11.h"
@@ -132,6 +133,7 @@ DECLARE_CALLBACK(shavite3, shavite3_hash, 32);
 DECLARE_CALLBACK(skein, skein_hash, 32);
 DECLARE_CALLBACK(skunk, skunk_hash, 32);
 DECLARE_CALLBACK(skydoge, skydoge_hash, 32);
+DECLARE_CALLBACK(tribus, tribus_hash, 32);
 DECLARE_CALLBACK(whirlpoolx, whirlpoolx_hash, 32);
 DECLARE_CALLBACK(x11, x11_hash, 32);
 DECLARE_CALLBACK(x13, x13_hash, 32);
@@ -589,6 +591,7 @@ NAN_MODULE_INIT(init)
     NAN_EXPORT(target, skein);
     NAN_EXPORT(target, skunk);
     NAN_EXPORT(target, skydoge);
+    NAN_EXPORT(target, tribus);
     NAN_EXPORT(target, whirlpoolx);
     NAN_EXPORT(target, x11);
     NAN_EXPORT(target, x13);

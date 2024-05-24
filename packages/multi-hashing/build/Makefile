@@ -309,7 +309,7 @@ endif
 
 quiet_cmd_regen_makefile = ACTION Regenerating $@
 cmd_regen_makefile = cd $(srcdir); /usr/local/lib/node_modules/npm/node_modules/node-gyp/gyp/gyp_main.py -fmake --ignore-environment "-Dlibrary=shared_library" "-Dvisibility=default" "-Dnode_root_dir=/home/aoi/.cache/node-gyp/16.20.2" "-Dnode_gyp_dir=/usr/local/lib/node_modules/npm/node_modules/node-gyp" "-Dnode_lib_file=/home/aoi/.cache/node-gyp/16.20.2/<(target_arch)/node.lib" "-Dmodule_root_dir=/home/aoi/node-multi-hashing" "-Dnode_engine=v8" "--depth=." "-Goutput_dir=." "--generator-output=build" -I/home/aoi/node-multi-hashing/build/config.gypi -I/usr/local/lib/node_modules/npm/node_modules/node-gyp/addon.gypi -I/home/aoi/.cache/node-gyp/16.20.2/include/node/common.gypi "--toplevel-dir=." binding.gyp
-Makefile: $(srcdir)/../../../usr/local/lib/node_modules/npm/node_modules/node-gyp/addon.gypi $(srcdir)/../.cache/node-gyp/16.20.2/include/node/common.gypi $(srcdir)/binding.gyp $(srcdir)/build/config.gypi
+Makefile: $(srcdir)/../../../usr/local/lib/node_modules/npm/node_modules/node-gyp/addon.gypi $(srcdir)/build/config.gypi $(srcdir)/../.cache/node-gyp/16.20.2/include/node/common.gypi $(srcdir)/binding.gyp
 	$(call do_cmd,regen_makefile)
 
 # "all" is a concatenation of the "all" targets from all the included
