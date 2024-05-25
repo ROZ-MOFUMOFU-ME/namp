@@ -94,7 +94,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "sha256.h"
+#include "../sha256.h"
 #include "sysendian.h"
 
 #include "yespower.h"
@@ -1073,7 +1073,7 @@ int yespower(yespower_local_t *local,
 	ctx.S0 = S;
 	ctx.S1 = S + Swidth_to_Sbytes1(Swidth);
 
-	SHA256_Buf(src, srclen, sha256);
+	sha256_buf(src, srclen, sha256);
 
 	if (version == YESPOWER_0_5) {
 		PBKDF2_SHA256(sha256, sizeof(sha256), src, srclen, 1,
@@ -1084,9 +1084,9 @@ int yespower(yespower_local_t *local,
 		    (uint8_t *)dst, sizeof(*dst));
 
 		if (pers) {
-			HMAC_SHA256_Buf(dst, sizeof(*dst), pers, perslen,
+			hmac_sha256_buf(dst, sizeof(*dst), pers, perslen,
 			    sha256);
-			SHA256_Buf(sha256, sizeof(sha256), (uint8_t *)dst);
+			sha256_buf(sha256, sizeof(sha256), (uint8_t *)dst);
 		}
 	} else {
 		ctx.S2 = S + 2 * Swidth_to_Sbytes1(Swidth);
@@ -1102,7 +1102,7 @@ int yespower(yespower_local_t *local,
 		PBKDF2_SHA256(sha256, sizeof(sha256), src, srclen, 1, B, 128);
 		memcpy(sha256, B, sizeof(sha256));
 		smix_1_0(B, r, N, V, XY, &ctx);
-		HMAC_SHA256_Buf(B + B_size - 64, 64,
+		hmac_sha256_buf(B + B_size - 64, 64,
 		    sha256, sizeof(sha256), (uint8_t *)dst);
 	}
 

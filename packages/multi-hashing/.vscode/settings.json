@@ -2,6 +2,7 @@
     "files.associations": {
         "sha256.h": "c",
         "stdlib.h": "c",
-        "errno.h": "c"
+        "errno.h": "c",
+        "functional": "cpp"
     }
 }

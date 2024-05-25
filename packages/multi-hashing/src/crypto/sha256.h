@@ -89,6 +89,36 @@ typedef struct HMAC_SHA256Context {
 	sha256_ctx octx;
 } hmac_sha256_ctx;
 
+/**
+ * SHA256_Buf(in, len, digest):
+ * Compute the SHA256 hash of ${len} bytes from ${in} and write it to ${digest}.
+ */
+static void
+sha256_buf(const void* in, size_t len, uint8_t digest[32])
+{
+	sha256_ctx ctx;
+
+	sha256_init(&ctx);
+	sha256_update(&ctx, in, len);
+	sha256_final(digest, &ctx);
+}
+
+/**
+ * HMAC_SHA256_Buf(K, Klen, in, len, digest):
+ * Compute the HMAC-SHA256 of ${len} bytes from ${in} using the key ${K} of
+ * length ${Klen}, and write the result to ${digest}.
+ */
+static void
+hmac_sha256_buf(const void* K, size_t Klen, const void* in, size_t len,
+	uint8_t digest[32])
+{
+	hmac_sha256_ctx ctx;
+
+	hmac_sha256_init(&ctx, K, Klen);
+	hmac_sha256_update(&ctx, in, len);
+	hmac_sha256_final(digest, &ctx);
+}
+
 void	sha256_init(sha256_ctx *);
 void	sha256_update(sha256_ctx *, const void *, size_t);
 void	sha256_final(unsigned char [32], sha256_ctx *);

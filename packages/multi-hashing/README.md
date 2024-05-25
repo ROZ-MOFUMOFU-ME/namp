@@ -10,7 +10,7 @@ Cryptocurrency hashing functions for node.js.
 
 Algorithms
 ----------
-Supported algorithms: `quark, x11, x13, x16r, x16rv2, nist5, scrypt, scryptn, scryptjane, keccak, bcrypt, skein, groestl, blake, fugue, qubit, hefty1, shavite3, cryptonight, boolberry, sha256d, lbry, kawpaw, allium, hsr, lyra2re2, m7, minotaur, odo, phi1612, skunk, skydoge, tribus, x17, x25x, yescrypt, yespower`, *__and more!__*
+Supported algorithms: `quark, x11, x13, x16r, x16rv2, nist5, scrypt, scryptn, scryptjane, keccak, bcrypt, skein, groestl, blake, fugue, qubit, hefty1, shavite3, cryptonight, boolberry, sha256d, lbry, kawpaw, allium, blake2s, gost, hsr, lyra2re2, lyra2z, m7, m7m, minotaur, odo, phi1612, sha1, skunk, skydoge, tribus, whirlpoolx, x17, x25x, xevan, zr5, yescrypt, yespower`, *__and more!__*
 
 
 Usage
