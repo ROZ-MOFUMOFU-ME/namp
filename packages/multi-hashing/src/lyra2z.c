@@ -33,7 +33,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "sha3/sph_blake.h"
-#include "lyra2.h"
+#include "crypto/lyra2.h"
 
 void lyra2z_hash(const char* input, char* output, uint32_t len)
 {

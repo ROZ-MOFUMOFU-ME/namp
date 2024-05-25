@@ -3,6 +3,7 @@
         "sha256.h": "c",
         "stdlib.h": "c",
         "errno.h": "c",
-        "functional": "cpp"
+        "functional": "cpp",
+        "lyra2.h": "c"
     }
 }

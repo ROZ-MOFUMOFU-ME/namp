@@ -77,7 +77,6 @@ le32enc(void *pp, uint32_t x)
 	p[3] = (x >> 24) & 0xff;
 }
 
-
 typedef struct SHA256Context {
 	uint32_t state[8];
 	uint32_t count[2];
@@ -89,43 +88,15 @@ typedef struct HMAC_SHA256Context {
 	sha256_ctx octx;
 } hmac_sha256_ctx;
 
-/**
- * SHA256_Buf(in, len, digest):
- * Compute the SHA256 hash of ${len} bytes from ${in} and write it to ${digest}.
- */
-static void
-sha256_buf(const void* in, size_t len, uint8_t digest[32])
-{
-	sha256_ctx ctx;
-
-	sha256_init(&ctx);
-	sha256_update(&ctx, in, len);
-	sha256_final(digest, &ctx);
-}
-
-/**
- * HMAC_SHA256_Buf(K, Klen, in, len, digest):
- * Compute the HMAC-SHA256 of ${len} bytes from ${in} using the key ${K} of
- * length ${Klen}, and write the result to ${digest}.
- */
-static void
-hmac_sha256_buf(const void* K, size_t Klen, const void* in, size_t len,
-	uint8_t digest[32])
-{
-	hmac_sha256_ctx ctx;
-
-	hmac_sha256_init(&ctx, K, Klen);
-	hmac_sha256_update(&ctx, in, len);
-	hmac_sha256_final(digest, &ctx);
-}
-
 void	sha256_init(sha256_ctx *);
 void	sha256_update(sha256_ctx *, const void *, size_t);
 void	sha256_final(unsigned char [32], sha256_ctx *);
+void	sha256_buf(const void* in, size_t len, uint8_t digest[32]);
+void	sha256_transform(uint32_t * state, const unsigned char block[64]);
 void	hmac_sha256_init(hmac_sha256_ctx *, const void *, size_t);
 void	hmac_sha256_update(hmac_sha256_ctx *, const void *, size_t);
 void	hmac_sha256_final(unsigned char [32], hmac_sha256_ctx *);
-
+void	hmac_sha256_buf(const void* K, size_t Klen, const void* in, size_t len, uint8_t digest[32]);
 /**
  * PBKDF2_SHA256(passwd, passwdlen, salt, saltlen, c, buf, dkLen):
  * Compute PBKDF2(passwd, salt, c, dkLen) using HMAC-SHA256 as the PRF, and

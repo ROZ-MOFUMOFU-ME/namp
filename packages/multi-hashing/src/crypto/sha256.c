@@ -105,7 +105,7 @@ static const uint32_t K[64] = {
  * SHA256 block compression function.  The 256-bit state is transformed via
  * the 512-bit input block to produce a new state.
  */
-static void
+void
 sha256_transform(uint32_t * state, const unsigned char block[64])
 {
 	uint32_t W[64];
@@ -315,6 +315,20 @@ sha256_final(unsigned char digest[32], sha256_ctx * ctx)
 	memset((void *)ctx, 0, sizeof(*ctx));
 }
 
+/**
+ * SHA256_Buf(in, len, digest):
+ * Compute the SHA256 hash of ${len} bytes from ${in} and write it to ${digest}.
+ */
+void
+sha256_buf(const void* in, size_t len, uint8_t digest[32])
+{
+	sha256_ctx ctx;
+
+	sha256_init(&ctx);
+	sha256_update(&ctx, in, len);
+	sha256_final(digest, &ctx);
+}
+
 /* Initialize an HMAC-SHA256 operation with the given key. */
 void
 hmac_sha256_init(hmac_sha256_ctx * ctx, const void * _K, size_t Klen)
@@ -377,6 +391,22 @@ hmac_sha256_final(unsigned char digest[32], hmac_sha256_ctx * ctx)
 
 	/* Clean the stack. */
 	memset(ihash, 0, 32);
+}
+
+/**
+ * HMAC_SHA256_Buf(K, Klen, in, len, digest):
+ * Compute the HMAC-SHA256 of ${len} bytes from ${in} using the key ${K} of
+ * length ${Klen}, and write the result to ${digest}.
+ */
+void
+hmac_sha256_buf(const void* K, size_t Klen, const void* in, size_t len,
+	uint8_t digest[32])
+{
+	hmac_sha256_ctx ctx;
+
+	hmac_sha256_init(&ctx, K, Klen);
+	hmac_sha256_update(&ctx, in, len);
+	hmac_sha256_final(digest, &ctx);
 }
 
 /**
