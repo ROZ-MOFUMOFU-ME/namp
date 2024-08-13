@@ -56,7 +56,8 @@
                         <th>Time</th>
                         <th>Miners</th>
                         <th>Shares</th>
-                        <th>Amount</th>
+                        <th>Payment Amount</th>                        
+                        <th>Total Payment Amount</th>
                     </tr>
                 </thead>
                 {{ for(var p in it.stats.pools[pool].payments) { }}
@@ -72,7 +73,10 @@
                     <td>{{=readableDate(it.stats.pools[pool].payments[p].time)}}</td>
                     <td>{{=it.stats.pools[pool].payments[p].miners}}</td>
                     <td>{{=Math.round(it.stats.pools[pool].payments[p].shares)}}</td>
-                    <td>{{=it.stats.pools[pool].payments[p].paid}} {{=it.stats.pools[pool].symbol}}</td>
+                    <td>{{ for(var a in it.stats.pools[pool].payments[p].amounts){ }}
+                                         {{=a.substr(4,10)+"******"+a.substr(30)}}：<a style='color:red;'>{{=it.stats.pools[pool].payments[p].amounts[a]}}  </a>  个{{=it.stats.pools[pool].symbol}}<br>
+                                       {{ } }}</td>
+                    <td>{{=it.stats.pools[pool].payments[p].paid}} {{=it.stats.pools[pool].symbol}}</td>                    
                 </tr>
                 {{ } }}
             </table>
