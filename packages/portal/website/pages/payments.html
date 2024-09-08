@@ -74,7 +74,7 @@
                     <td>{{=it.stats.pools[pool].payments[p].miners}}</td>
                     <td>{{=Math.round(it.stats.pools[pool].payments[p].shares)}}</td>
                     <td>{{ for(var a in it.stats.pools[pool].payments[p].amounts){ }}
-                                         {{=a.substr(4,10)+"******"+a.substr(30)}}：<a style='color:red;'>{{=it.stats.pools[pool].payments[p].amounts[a]}}  </a>  个{{=it.stats.pools[pool].symbol}}<br>
+                                         {{=a.substr(4,10)+"******"+a.substr(30)}}：<a style='color:red;'>{{=it.stats.pools[pool].payments[p].amounts[a]}}  </a> {{=it.stats.pools[pool].symbol}}<br>
                                        {{ } }}</td>
                     <td>{{=it.stats.pools[pool].payments[p].paid}} {{=it.stats.pools[pool].symbol}}</td>                    
                 </tr>
