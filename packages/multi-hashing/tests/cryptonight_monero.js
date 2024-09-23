@@ -66,10 +66,8 @@ var tests = [
 ];
 
 var height = 1806260;
-for (var i = 0; i < 10; ++i, ++height)
-{
-	for (var variant = 0; variant <= 4; ++variant)
-	{
+for (var i = 0; i < 10; ++i, ++height) {
+	for (var variant = 0; variant <= 4; ++variant) {
 		var hash = multiHashing['cryptonight'](tests[i * 6], variant, height);
 		assert.deepEqual(hash, tests[i * 6 + variant + 1]);
 	}
