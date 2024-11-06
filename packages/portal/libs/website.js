@@ -8,7 +8,6 @@ var redis = require('redis');
 
 var dot = require('dot');
 var express = require('express');
-var bodyParser = require('body-parser');
 var compress = require('compression');
 
 var Stratum = require('stratum-pool');
@@ -284,8 +283,8 @@ module.exports = function(logger){
 
     var app = express();
 
-
-    app.use(bodyParser.json());
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
     app.get('/get_page', function(req, res, next){
         var requestedPage = getPage(req.query.id);
@@ -315,7 +314,7 @@ module.exports = function(logger){
             if (portalConfig.website.adminCenter.password === req.body.password)
                 portalApi.handleAdminApiRequest(req, res, next);
             else
-                res.send(401, JSON.stringify({error: 'Incorrect Password'}));
+                res.status(401).json({error: 'Incorrect Password'});
 
         }
         else
@@ -328,7 +327,7 @@ module.exports = function(logger){
 
     app.use(function(err, req, res, next){
         console.error(err.stack);
-        res.send(500, 'Something broke!');
+        res.status(500).send('Something broke!');
     });
 
     try {        
