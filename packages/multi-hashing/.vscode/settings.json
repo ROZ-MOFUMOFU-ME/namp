@@ -4,6 +4,21 @@
         "stdlib.h": "c",
         "errno.h": "c",
         "functional": "cpp",
-        "lyra2.h": "c"
+        "lyra2.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "sph_sha2.h": "c",
+        "groestl.h": "c",
+        "skein.h": "c",
+        "sph_groestl.h": "c",
+        "stdint.h": "c",
+        "stdio.h": "c",
+        "sph_skein.h": "c",
+        "vipstar.h": "c",
+        "sysendian.h": "c",
+        "sph_types.h": "c",
+        "string.h": "c",
+        "inttypes.h": "c"
     }
 }
