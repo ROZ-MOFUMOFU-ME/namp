@@ -112,13 +112,13 @@
 </div>
 {{ function capitalizeFirstLetter(t){return t.charAt(0).toUpperCase()+t.slice(1)} }}
 {{ function readableDate(a) {
-    var d = new Date(parseInt(a));
-    return d.getFullYear() + '/' +
-           (d.getMonth() + 1).toString().padStart(2, '0') + '/' +
-           d.getDate().toString().padStart(2, '0') + ' ' +
-           d.getHours().toString().padStart(2, '0') + ':' +
-           d.getMinutes().toString().padStart(2, '0') + ':' +
-           d.getSeconds().toString().padStart(2, '0');
+var d = new Date(parseInt(a));
+return d.getFullYear() + '/' +
+(d.getMonth() + 1).toString().padStart(2, '0') + '/' +
+d.getDate().toString().padStart(2, '0') + ' ' +
+d.getHours().toString().padStart(2, '0') + ':' +
+d.getMinutes().toString().padStart(2, '0') + ':' +
+d.getSeconds().toString().padStart(2, '0');
 } }}
 <div class="pure-g" id="boxesLower">
     {{ for(var pool in it.stats.pools) { }}
@@ -135,13 +135,12 @@
                             id="statsHashrate{{=pool}}">{{=it.stats.pools[pool].hashrateString}}</span> (Now)</div>
                     <div><i class="fas fa-gauge-simple-high fa-fw"></i> <span id="statsHashrateAvg{{=pool}}">...</span>
                         (Avg)</div>
-                    <div>
-                        <i class="fas fa-gavel fa-fw"></i> Luck: <span id="statsLuckDays{{=pool}}">
+                    <div><i class="fas fa-clock fa-fw"></i>&nbsp;Luck: <span id="statsLuckDays{=pool}}">
                             {{
                             function getReadableLuckTime(lucktime){
                             var luck = lucktime;
                             var timeUnits = [ ' Days', ' Hours', ' Minutes' ];
-                            if (luck < 1) { luck=luck * 24; if (luck < 1) { luck=luck * 60; return luck.toFixed(0) +
+                            if (luck < 1) { luck=luck * 24; if (luck < 1) { luck=luck * 60; return luck.toFixed(2) +
                                 timeUnits[2]; } else { return luck.toFixed(2) + timeUnits[1]; } } return luck +
                                 timeUnits[0]; } _luckTime=getReadableLuckTime(it.stats.pools[pool].luckDays); }}
                                 {{=_luckTime}}</span>
@@ -153,7 +152,7 @@
                             if(it.stats.pools[pool].hashrate == 0 ) {
                             percent=0.0;
                             } else {
-                            percent=it.stats.pools[pool].hashrate / it.stats.pools[pool].poolStats.networkSols * 100;
+                            percent=it.stats.pools[pool].hashrate / it.stats.pools[pool].poolStats.networkHash * 100;
                             }
                             }}
                             {{=percent.toFixed(5)}}
@@ -172,7 +171,7 @@
                             id="statsNetworkBlocks{{=pool}}">{{=it.stats.pools[pool].poolStats.networkBlocks}}</span>
                     </div>
                     <div><i class="fas fa-gauge-simple-high fa-fw"></i> <small>Network H/s:</small> <span
-                            id="statsNetworkSols{{=pool}}">{{=it.stats.pools[pool].poolStats.networkSolsString}}</span>
+                            id="statsnetworkHash{{=pool}}">{{=it.stats.pools[pool].poolStats.networkHashString}}</span>
                     </div>
                     <div><i class="fas fa-unlock fa-fw"></i> <small>Difficulty:</small> <span
                             id="statsNetworkDiff{{=pool}}">{{=(parseFloat(it.stats.pools[pool].poolStats.networkDiff)).toFixed(8)}}</span>
@@ -386,7 +385,7 @@
         .enter()
         .append('g')
         .attr('class', 'legend')
-        .attr('id', function() { return JSON.stringify(pool); })
+        .attr('id', function () { return JSON.stringify(pool); })
         .attr('transform', function (d, i) {
             var height = legendRectSize + legendSpacing;
             var offset = height * color.domain().length / 2;
@@ -428,9 +427,9 @@
                 $('#statsTotalPaid' + pool).text((parseFloat(stats.pools[pool].poolStats.totalPaid)).toFixed(8));
                 $('#statsNetworkBlocks' + pool).text(stats.pools[pool].poolStats.networkBlocks);
                 $('#statsNetworkDiff' + pool).text(stats.pools[pool].poolStats.networkDiff);
-                $('#statsNetworkSols' + pool).text(getReadableHashRateString(stats.pools[pool].poolStats.networkSols));
+                $('#statsnetworkHash' + pool).text(getReadableHashRateString(stats.pools[pool].poolStats.networkHash));
                 $('#statsNetworkConnections' + pool).text(stats.pools[pool].poolStats.networkConnections);
-                $('#statsHashPercent' + pool).text((stats.pools[pool].hashrate / stats.pools[pool].poolStats.networkSols * 100).toFixed(5));
+                $('#statsHashPercent' + pool).text((stats.pools[pool].hashrate / stats.pools[pool].poolStats.networkHash * 100).toFixed(5));
             }
         });
     });
