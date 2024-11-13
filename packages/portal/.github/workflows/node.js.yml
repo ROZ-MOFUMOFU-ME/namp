@@ -20,8 +20,8 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-    - name: npm install
-      run:  npm test
+    - name: Build
+      run:  npm install
     - name: Run and Verify Start
       run: |
         npm start > start.log 2>&1 &
