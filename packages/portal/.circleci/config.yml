@@ -9,7 +9,19 @@ jobs:
       - checkout
       - run:
           name: Start and Verify
-          command: ./ci_script.sh
+          command: |
+            npm start > start.log 2>&1 &
+            START_PID=$!
+            sleep 5
+            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
+              echo "Build and start completed successfully!"
+              kill $START_PID
+              exit 0
+            else
+              echo "An unexpected error occurred!"
+            fi
+            kill $START_PID
+            exit 1
   test-v10:
     docker:
       - image: cimg/base:stable
@@ -19,7 +31,19 @@ jobs:
           node-version: "10.24"
       - run:
           name: Start and Verify
-          command: ./ci_script.sh
+          command: |
+            npm start > start.log 2>&1 &
+            START_PID=$!
+            sleep 5
+            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
+              echo "Build and start completed successfully!"
+              kill $START_PID
+              exit 0
+            else
+              echo "An unexpected error occurred!"
+            fi
+            kill $START_PID
+            exit 1
   test-v12:
     docker:
       - image: cimg/base:stable
@@ -29,7 +53,19 @@ jobs:
           node-version: "12.22"
       - run:
           name: Start and Verify
-          command: ./ci_script.sh
+          command: |
+            npm start > start.log 2>&1 &
+            START_PID=$!
+            sleep 5
+            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
+              echo "Build and start completed successfully!"
+              kill $START_PID
+              exit 0
+            else
+              echo "An unexpected error occurred!"
+            fi
+            kill $START_PID
+            exit 1
   test-v14:
     docker:
       - image: cimg/base:stable
@@ -39,7 +75,19 @@ jobs:
           node-version: "14.21"
       - run:
           name: Start and Verify
-          command: ./ci_script.sh
+          command: |
+            npm start > start.log 2>&1 &
+            START_PID=$!
+            sleep 5
+            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
+              echo "Build and start completed successfully!"
+              kill $START_PID
+              exit 0
+            else
+              echo "An unexpected error occurred!"
+            fi
+            kill $START_PID
+            exit 1
   test-v16:
     docker:
       - image: cimg/base:stable
@@ -49,7 +97,19 @@ jobs:
           node-version: "16.20"
       - run:
           name: Start and Verify
-          command: ./ci_script.sh
+          command: |
+            npm start > start.log 2>&1 &
+            START_PID=$!
+            sleep 5
+            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
+              echo "Build and start completed successfully!"
+              kill $START_PID
+              exit 0
+            else
+              echo "An unexpected error occurred!"
+            fi
+            kill $START_PID
+            exit 1
   test-v18:
     docker:
       - image: cimg/base:stable
@@ -59,7 +119,19 @@ jobs:
           node-version: "18.20"
       - run:
           name: Start and Verify
-          command: ./ci_script.sh
+          command: |
+            npm start > start.log 2>&1 &
+            START_PID=$!
+            sleep 5
+            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
+              echo "Build and start completed successfully!"
+              kill $START_PID
+              exit 0
+            else
+              echo "An unexpected error occurred!"
+            fi
+            kill $START_PID
+            exit 1
   test-v20:
     docker:
       - image: cimg/base:stable
@@ -68,8 +140,19 @@ jobs:
       - node/install:
           node-version: "20.18"
       - run:
-          name: Start and Verify
-          command: ./ci_script.sh
+          command: |
+            npm start > start.log 2>&1 &
+            START_PID=$!
+            sleep 5
+            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
+              echo "Build and start completed successfully!"
+              kill $START_PID
+              exit 0
+            else
+              echo "An unexpected error occurred!"
+            fi
+            kill $START_PID
+            exit 1
   test-v22:
     docker:
       - image: cimg/base:stable
@@ -79,7 +162,19 @@ jobs:
           node-version: "22.11"
       - run:
           name: Start and Verify
-          command: ./ci_script.sh
+          command: |
+            npm start > start.log 2>&1 &
+            START_PID=$!
+            sleep 5
+            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
+              echo "Build and start completed successfully!"
+              kill $START_PID
+              exit 0
+            else
+              echo "An unexpected error occurred!"
+            fi
+            kill $START_PID
+            exit 1
 workflows:
   build_and_test:
     jobs:
