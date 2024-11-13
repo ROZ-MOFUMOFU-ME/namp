@@ -29,6 +29,9 @@
         "Yoshuki43"
     ],
     "main": "init.js",
+    "scripts": {
+        "start": "node init.js"
+    },
     "bin": {
         "block-notify": "./scripts/blockNotify.js"
     },
@@ -55,9 +58,5 @@
     "engines": {
         "node": ">=16",
         "npm": ">=7"
-    },
-    "scripts": {
-        "start": "node init.js",
-        "test": "npm install"
     }
 }

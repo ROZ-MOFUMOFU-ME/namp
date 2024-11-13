@@ -1,6 +1,3 @@
-var redis = require('redis');
-var async = require('async');
-
 var stats = require('./stats.js');
 
 module.exports = function(logger, portalConfig, poolConfigs){

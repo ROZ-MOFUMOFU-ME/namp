@@ -22,7 +22,15 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: npm install
       run:  npm test
-    - name: npm start
-      run:  npm start
-    - name: Verify build
-      run: echo "Build and test completed successfully!"
+    - name: Run and Verify Start
+      run: |
+        npm start > start.log 2>&1 &
+        START_PID=$!
+        sleep 5
+        if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
+          echo "Error detected: config.json file does not exist."
+          kill $START_PID
+          exit 1
+        else
+          echo "Build and start completed successfully!"
+        fi
