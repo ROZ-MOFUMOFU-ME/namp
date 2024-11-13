@@ -5,13 +5,11 @@ START_PID=$!
 sleep 5
 
 if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
-  echo "Error detected: config.json file does not exist."
+  echo "Build and start completed successfully!"
+  kill $START_PID
+  exit 0
+else
+  echo "An unexpected error occurred!"
   kill $START_PID
   exit 1
-else
-  echo "Build and start completed successfully!"
 fi
-
-kill $START_PID
-
-exit 0
