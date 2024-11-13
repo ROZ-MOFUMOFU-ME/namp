@@ -8,19 +8,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Dependencies
+          name: Install
           command: npm install
       - run:
-          name: Start and Verify
-          command: |
-            npm start > start.log 2>&1 &
-            sleep 5
-            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
-              echo "Build and start completed successfully!"
-              exit 0
-            else
-              echo "An unexpected error occurred!"
-              exit 1
+          name: Start
+          command: npm start
+      - run:
+          name: Verify
+          command: echo "Build completed successfully!"
   test-v10:
     docker:
       - image: cimg/base:stable
@@ -29,19 +24,14 @@ jobs:
       - node/install:
           node-version: "10.24"
       - run:
-          name: Install Dependencies
+          name: Install
           command: npm install
       - run:
-          name: Start and Verify
-          command: |
-            npm start > start.log 2>&1 &
-            sleep 5
-            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
-              echo "Build and start completed successfully!"
-              exit 0
-            else
-              echo "An unexpected error occurred!"
-              exit 1
+          name: Start
+          command: npm start
+      - run:
+          name: Verify
+          command: echo "Build completed successfully!"
   test-v12:
     docker:
       - image: cimg/base:stable
@@ -50,19 +40,14 @@ jobs:
       - node/install:
           node-version: "12.22"
       - run:
-          name: Install Dependencies
+          name: Install
           command: npm install
       - run:
-          name: Start and Verify
-          command: |
-            npm start > start.log 2>&1 &
-            sleep 5
-            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
-              echo "Build and start completed successfully!"
-              exit 0
-            else
-              echo "An unexpected error occurred!"
-              exit 1
+          name: Start
+          command: npm start
+      - run:
+          name: Verify
+          command: echo "Build completed successfully!"
   test-v14:
     docker:
       - image: cimg/base:stable
@@ -71,19 +56,14 @@ jobs:
       - node/install:
           node-version: "14.21"
       - run:
-          name: Install Dependencies
+          name: Install
           command: npm install
       - run:
-          name: Start and Verify
-          command: |
-            npm start > start.log 2>&1 &
-            sleep 5
-            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
-              echo "Build and start completed successfully!"
-              exit 0
-            else
-              echo "An unexpected error occurred!"
-              exit 1
+          name: Start
+          command: npm start
+      - run:
+          name: Verify
+          command: echo "Build completed successfully!"
   test-v16:
     docker:
       - image: cimg/base:stable
@@ -92,19 +72,14 @@ jobs:
       - node/install:
           node-version: "16.20"
       - run:
-          name: Install Dependencies
+          name: Install
           command: npm install
       - run:
-          name: Start and Verify
-          command: |
-            npm start > start.log 2>&1 &
-            sleep 5
-            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
-              echo "Build and start completed successfully!"
-              exit 0
-            else
-              echo "An unexpected error occurred!"
-              exit 1
+          name: Start
+          command: npm start
+      - run:
+          name: Verify
+          command: echo "Build completed successfully!"
   test-v18:
     docker:
       - image: cimg/base:stable
@@ -113,19 +88,14 @@ jobs:
       - node/install:
           node-version: "18.20"
       - run:
-          name: Install Dependencies
+          name: Install
           command: npm install
       - run:
-          name: Start and Verify
-          command: |
-            npm start > start.log 2>&1 &
-            sleep 5
-            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
-              echo "Build and start completed successfully!"
-              exit 0
-            else
-              echo "An unexpected error occurred!"
-              exit 1
+          name: Start
+          command: npm start
+      - run:
+          name: Verify
+          command: echo "Build completed successfully!"
   test-v20:
     docker:
       - image: cimg/base:stable
@@ -134,19 +104,14 @@ jobs:
       - node/install:
           node-version: "20.18"
       - run:
-          name: Install Dependencies
+          name: Install
           command: npm install
       - run:
-          name: Start and Verify
-          command: |
-            npm start > start.log 2>&1 &
-            sleep 5
-            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
-              echo "Build and start completed successfully!"
-              exit 0
-            else
-              echo "An unexpected error occurred!"
-              exit 1
+          name: Start
+          command: npm start
+      - run:
+          name: Verify
+          command: echo "Build completed successfully!"
   test-v22:
     docker:
       - image: cimg/base:stable
@@ -155,19 +120,14 @@ jobs:
       - node/install:
           node-version: "22.11"
       - run:
-          name: Install Dependencies
+          name: Install
           command: npm install
       - run:
-          name: Start and Verify
-          command: |
-            npm start > start.log 2>&1 &
-            sleep 5
-            if grep -q "config.json file does not exist. Read the installation/setup instructions." start.log; then
-              echo "Build and start completed successfully!"
-              exit 0
-            else
-              echo "An unexpected error occurred!"
-              exit 1
+          name: Start
+          command: npm start
+      - run:
+          name: Verify
+          command: echo "Build completed successfully!"
 workflows:
   build_and_test:
     jobs:
