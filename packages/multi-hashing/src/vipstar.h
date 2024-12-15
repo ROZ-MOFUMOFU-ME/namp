@@ -35,7 +35,7 @@ static const uint32_t sha256d_hash1[16] = {
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x00000000, 0x00000000, 0x00000000, 0x00000000,
 	0x80000000, 0x00000000, 0x00000000, 0x00000000,
-	0x00000000, 0x00000000, 0x00000000, 0x00000100
+	0x00000000, 0x00000000, 0x00000000, 0x000005a8
 };
 
 /* Elementary functions used by SHA256 */
@@ -69,7 +69,7 @@ static inline void sha256d_preextend(uint32_t *W);
 static inline void sha256d_preextend2(uint32_t *W);
 static inline void sha256d_prehash(uint32_t *S, const uint32_t *W);
 static inline void sha256d_ms_vips(uint32_t *hash, uint32_t *W,	const uint32_t *midstate, const uint32_t *prehash);
-void vipstar_hash(char* output, const char* input,  uint32_t len);
+void vipstar_hash(void *output, const void *input, uint32_t len);
 
 #ifdef __cplusplus
 }
