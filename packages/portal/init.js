@@ -18,14 +18,9 @@ var algos = require('stratum-pool/lib/algoProperties.js');
 
 JSON.minify = JSON.minify || require("node-json-minify");
 
-try {
-    if (!fs.existsSync('config.json')) {
-        console.log('config.json file does not exist. Read the installation/setup instructions.');
-        process.exit(0);
-    }
-} catch (error) {
-    console.error("An unexpected error occurred:", error);
-    process.exit(1);
+if (!fs.existsSync('config.json')) {
+    console.log('config.json file does not exist. Read the installation/setup instructions.');
+    process.exit(0);
 }
 
 var portalConfig = JSON.parse(JSON.minify(fs.readFileSync("config.json", { encoding: 'utf8' })));
@@ -230,7 +225,7 @@ var spawnPoolWorkers = function () {
 
     if (Object.keys(poolConfigs).length === 0) {
         logger.warning('Master', 'PoolSpawner', 'No pool configs exists or are enabled in pool_configs folder. No pools spawned.');
-        return;
+        process.exit(0);
     }
 
 

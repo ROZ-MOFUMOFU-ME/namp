@@ -26,7 +26,8 @@
         background: #ddd;
         width: 100%;
     }
-    table th{
+
+    table th {
         background: #c7c7c7;
     }
 </style>
@@ -52,8 +53,10 @@
     <div class="poolWrapper">
         <div class="poolLabel">
             <span style="float:right; margin-bottom: 8px;">
-                <small>Miner Lookup:
-                    <input type="text" class="form-control input-lg" onkeypress="return searchKeyPress(event);">
+                <small><label>Miner Lookup:
+                        <input type="text" class="form-control input-lg" name="lookup"
+                            onkeypress="return searchKeyPress(event);">
+                    </label>
                     <span class="input-group-btn">
                         <button class="btn btn-default btn-lg" type="button">Lookup</button>
                     </span>

@@ -8,14 +8,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install
+          name: Run build
           command: npm install
       - run:
-          name: Start
-          command: npm start
+          name: Run test
+          command: npm run test
       - run:
-          name: Verify
-          command: echo "Build completed successfully!"
+          name: Verify build and test
+          command: echo "Build and test completed successfully!"
   test-v10:
     docker:
       - image: cimg/base:stable
@@ -24,14 +24,14 @@ jobs:
       - node/install:
           node-version: "10.24"
       - run:
-          name: Install
+          name: Run build
           command: npm install
       - run:
-          name: Start
-          command: npm start
+          name: Run test
+          command: npm run test
       - run:
-          name: Verify
-          command: echo "Build completed successfully!"
+          name: Verify build and test
+          command: echo "Build and test completed successfully!"
   test-v12:
     docker:
       - image: cimg/base:stable
@@ -40,14 +40,14 @@ jobs:
       - node/install:
           node-version: "12.22"
       - run:
-          name: Install
+          name: Run build
           command: npm install
       - run:
-          name: Start
-          command: npm start
+          name: Run test
+          command: npm run test
       - run:
-          name: Verify
-          command: echo "Build completed successfully!"
+          name: Verify build and test
+          command: echo "Build and test completed successfully!"
   test-v14:
     docker:
       - image: cimg/base:stable
@@ -56,14 +56,14 @@ jobs:
       - node/install:
           node-version: "14.21"
       - run:
-          name: Install
+          name: Run build
           command: npm install
       - run:
-          name: Start
-          command: npm start
+          name: Run test
+          command: npm run test
       - run:
-          name: Verify
-          command: echo "Build completed successfully!"
+          name: Verify build and test
+          command: echo "Build and test completed successfully!"
   test-v16:
     docker:
       - image: cimg/base:stable
@@ -72,14 +72,14 @@ jobs:
       - node/install:
           node-version: "16.20"
       - run:
-          name: Install
+          name: Run build
           command: npm install
       - run:
-          name: Start
-          command: npm start
+          name: Run test
+          command: npm run test
       - run:
-          name: Verify
-          command: echo "Build completed successfully!"
+          name: Verify build and test
+          command: echo "Build and test completed successfully!"
   test-v18:
     docker:
       - image: cimg/base:stable
@@ -88,14 +88,14 @@ jobs:
       - node/install:
           node-version: "18.20"
       - run:
-          name: Install
+          name: Run build
           command: npm install
       - run:
-          name: Start
-          command: npm start
+          name: Run test
+          command: npm run test
       - run:
-          name: Verify
-          command: echo "Build completed successfully!"
+          name: Verify build and test
+          command: echo "Build and test completed successfully!"
   test-v20:
     docker:
       - image: cimg/base:stable
@@ -104,30 +104,30 @@ jobs:
       - node/install:
           node-version: "20.18"
       - run:
-          name: Install
+          name: Run build
           command: npm install
       - run:
-          name: Start
-          command: npm start
+          name: Run test
+          command: npm run test
       - run:
-          name: Verify
-          command: echo "Build completed successfully!"
+          name: Verify build and test
+          command: echo "Build and test completed successfully!"
   test-v22:
     docker:
       - image: cimg/base:stable
     steps:
       - checkout
       - node/install:
-          node-version: "22.11"
+          node-version: "22.12"
       - run:
-          name: Install
+          name: Run build
           command: npm install
       - run:
-          name: Start
-          command: npm start
+          name: Run test
+          command: npm run test
       - run:
-          name: Verify
-          command: echo "Build completed successfully!"
+          name: Verify build and test
+          command: echo "Build and test completed successfully!"
 workflows:
   build_and_test:
     jobs:
