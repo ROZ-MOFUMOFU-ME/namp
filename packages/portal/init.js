@@ -3,7 +3,6 @@ var path = require('path');
 var os = require('os');
 var cluster = require('cluster');
 
-var async = require('async');
 var extend = require('extend');
 
 var redis = require('redis');
@@ -19,10 +18,6 @@ var algos = require('stratum-pool/lib/algoProperties.js');
 
 JSON.minify = JSON.minify || require("node-json-minify");
 
-if (!fs.existsSync('config.json')) {
-    console.log('config.json file does not exist. Read the installation/setup instructions.');
-    return;
-}
 
 var portalConfig = JSON.parse(JSON.minify(fs.readFileSync("config.json", { encoding: 'utf8' })));
 var poolConfigs;
