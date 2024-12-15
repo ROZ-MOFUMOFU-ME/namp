@@ -555,14 +555,14 @@ DECLARE_FUNC(vipstar)
     if (!Buffer::HasInstance(target))
         RETURN_EXCEPT("Argument should be a buffer object.");
 
-    uint32_t input[32];
-    uint32_t output[32];
+    char *input = Buffer::Data(target);
+    char output[32];
 
-    std::memcpy(input, Buffer::Data(target), sizeof(input));
+    uint32_t input_len = Buffer::Length(target);
 
-    vipstar_hash(output, input);
+    vipstar_hash(output, input, input_len);
 
-    SET_BUFFER_RETURN(reinterpret_cast<char*>(output), sizeof(output));
+    SET_BUFFER_RETURN(output, 32);
 }
 
 NAN_MODULE_INIT(init)

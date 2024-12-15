@@ -69,7 +69,7 @@ static inline void sha256d_preextend(uint32_t *W);
 static inline void sha256d_preextend2(uint32_t *W);
 static inline void sha256d_prehash(uint32_t *S, const uint32_t *W);
 static inline void sha256d_ms_vips(uint32_t *hash, uint32_t *W,	const uint32_t *midstate, const uint32_t *prehash);
-void vipstar_hash(uint32_t *output, const uint32_t *input);
+void vipstar_hash(char* output, const char* input,  uint32_t len);
 
 #ifdef __cplusplus
 }

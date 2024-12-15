@@ -5,8 +5,8 @@
 
 #include "vipstar.h"
 
-void vipstar_hash(uint32_t *output, const uint32_t *input) {
-    sha256d_181_swap(output, input);
+void vipstar_hash(char *output, const char *input, uint32_t len) {
+    sha256d_181_swap((uint32_t*)output, (const uint32_t*)input);
 }
 
 static inline void sha256d_preextend(uint32_t *W)
