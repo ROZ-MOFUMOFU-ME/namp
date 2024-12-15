@@ -1,6 +1,6 @@
 {
     "name": "zny-nomp",
-    "version": "1.2.8",
+    "version": "1.2.10",
     "description": "BitZeny (yescrypt) stratum mining pool based on NOMP",
     "keywords": [
         "stratum",
@@ -30,7 +30,11 @@
     ],
     "main": "init.js",
     "bin": {
-        "block-notify": "./scripts/blockNotify.js"
+        "block-notify": "./scripts/cli.js"
+    },
+    "scripts": {
+        "start": "node init.js",
+        "test": "npm install"
     },
     "repository": {
         "type": "git",
@@ -55,9 +59,5 @@
     "engines": {
         "node": ">=16",
         "npm": ">=7"
-    },
-    "scripts": {
-        "start": "node init.js",
-        "test": "npm install"
     }
 }
