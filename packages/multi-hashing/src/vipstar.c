@@ -21,6 +21,14 @@ static inline void sha256_init_256(__m256i *state)
 }
 #endif /* __SSE2__ */
 
+static inline uint32_t swab32(uint32_t x)
+{
+	return ((x & 0x000000FF) << 24) |
+		   ((x & 0x0000FF00) << 8) |
+		   ((x & 0x00FF0000) >> 8) |
+		   ((x & 0xFF000000) >> 24);
+}
+
 static inline void sha256d_preextend(uint32_t *W)
 {
 	W[16] = s1(W[14]) + W[9] + s0(W[1]) + W[0];
