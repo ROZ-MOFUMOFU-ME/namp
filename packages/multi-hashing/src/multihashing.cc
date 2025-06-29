@@ -280,9 +280,6 @@ DECLARE_FUNC(neoscrypt)
         RETURN_EXCEPT("Argument must be longer than 80 bytes");
     neoscrypt(input, output, profile);
 
-    // Reverse output for little-endian
-    std::reverse(output, output + 32);
-
     SET_BUFFER_RETURN(output, 32);
 }
 
