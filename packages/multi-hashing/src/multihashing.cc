@@ -558,9 +558,7 @@ DECLARE_FUNC(vipstar)
     char *input = Buffer::Data(target);
     char output[32];
 
-    uint32_t input_len = Buffer::Length(target);
-
-    vipstar_hash(output, input, input_len);
+    vipstar_hash((uint32_t*)output, (const uint32_t*)input);
 
     SET_BUFFER_RETURN(output, 32);
 }

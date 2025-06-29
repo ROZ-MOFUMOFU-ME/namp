@@ -64,16 +64,101 @@ static const uint32_t sha256d_hash1[16] = {
 		S[(70 - i) % 8], S[(71 - i) % 8], \
 		W[i] + sha256_k[i])
 
-// Add missing function declarations
-static inline void sha256_init(uint32_t *state);
-static inline void sha256_transform(uint32_t *state, const uint32_t *block);
-
-static inline void sha256d_181_swap(uint32_t *hash, const uint32_t *data);
-static inline void sha256d_preextend(uint32_t *W);
-static inline void sha256d_preextend2(uint32_t *W);
-static inline void sha256d_prehash(uint32_t *S, const uint32_t *W);
-static inline void sha256d_ms_vips(uint32_t *hash, uint32_t *W,	const uint32_t *midstate, const uint32_t *prehash);
 void vipstar_hash(uint32_t *output, const uint32_t *input);
+
+// Add missing SHA256 implementation for VIPStar
+static inline void vipstar_sha256_init(uint32_t *state)
+{
+	memcpy(state, sha256_h, 32);
+}
+
+static inline void vipstar_sha256_transform(uint32_t *state, const uint32_t *block)
+{
+	uint32_t W[64];
+	uint32_t S[8];
+	uint32_t t0, t1;
+	int i;
+
+	/* 1. Prepare message schedule W. */
+	memcpy(W, block, 64);
+	for (i = 16; i < 64; i += 2) {
+		W[i]   = s1(W[i - 2]) + W[i - 7] + s0(W[i - 15]) + W[i - 16];
+		W[i+1] = s1(W[i - 1]) + W[i - 6] + s0(W[i - 14]) + W[i - 15];
+	}
+
+	/* 2. Initialize working variables. */
+	memcpy(S, state, 32);
+
+	/* 3. Mix. */
+	RNDr(S, W,  0);
+	RNDr(S, W,  1);
+	RNDr(S, W,  2);
+	RNDr(S, W,  3);
+	RNDr(S, W,  4);
+	RNDr(S, W,  5);
+	RNDr(S, W,  6);
+	RNDr(S, W,  7);
+	RNDr(S, W,  8);
+	RNDr(S, W,  9);
+	RNDr(S, W, 10);
+	RNDr(S, W, 11);
+	RNDr(S, W, 12);
+	RNDr(S, W, 13);
+	RNDr(S, W, 14);
+	RNDr(S, W, 15);
+	RNDr(S, W, 16);
+	RNDr(S, W, 17);
+	RNDr(S, W, 18);
+	RNDr(S, W, 19);
+	RNDr(S, W, 20);
+	RNDr(S, W, 21);
+	RNDr(S, W, 22);
+	RNDr(S, W, 23);
+	RNDr(S, W, 24);
+	RNDr(S, W, 25);
+	RNDr(S, W, 26);
+	RNDr(S, W, 27);
+	RNDr(S, W, 28);
+	RNDr(S, W, 29);
+	RNDr(S, W, 30);
+	RNDr(S, W, 31);
+	RNDr(S, W, 32);
+	RNDr(S, W, 33);
+	RNDr(S, W, 34);
+	RNDr(S, W, 35);
+	RNDr(S, W, 36);
+	RNDr(S, W, 37);
+	RNDr(S, W, 38);
+	RNDr(S, W, 39);
+	RNDr(S, W, 40);
+	RNDr(S, W, 41);
+	RNDr(S, W, 42);
+	RNDr(S, W, 43);
+	RNDr(S, W, 44);
+	RNDr(S, W, 45);
+	RNDr(S, W, 46);
+	RNDr(S, W, 47);
+	RNDr(S, W, 48);
+	RNDr(S, W, 49);
+	RNDr(S, W, 50);
+	RNDr(S, W, 51);
+	RNDr(S, W, 52);
+	RNDr(S, W, 53);
+	RNDr(S, W, 54);
+	RNDr(S, W, 55);
+	RNDr(S, W, 56);
+	RNDr(S, W, 57);
+	RNDr(S, W, 58);
+	RNDr(S, W, 59);
+	RNDr(S, W, 60);
+	RNDr(S, W, 61);
+	RNDr(S, W, 62);
+	RNDr(S, W, 63);
+
+	/* 4. Mix local working variables into global state */
+	for (i = 0; i < 8; i++)
+		state[i] += S[i];
+}
 
 #ifdef __cplusplus
 }
