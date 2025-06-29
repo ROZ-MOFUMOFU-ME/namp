@@ -1,6 +1,6 @@
 {
     "name": "multi-hashing",
-    "version": "1.0.3",
+    "version": "1.1.0",
     "main": "index.js",
     "author": {
         "name": "Matthew Little",
@@ -19,9 +19,9 @@
         "nan": "^2.22.2"
     },
     "devDependencies": {
-        "@babel/core": "7.26.9",
-        "@babel/register": "^7.25.9",
-        "mocha": "^11.1.0"
+        "@babel/core": "7.27.7",
+        "@babel/register": "^7.27.1",
+        "mocha": "^11.7.1"
     },
     "keywords": [
         "argon2",

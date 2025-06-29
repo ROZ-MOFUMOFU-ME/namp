@@ -102,7 +102,7 @@ jobs:
     steps:
       - checkout
       - node/install:
-          node-version: "20.18"
+          node-version: "20.19"
       - run:
           name: Run build
           command: npm install
@@ -118,7 +118,7 @@ jobs:
     steps:
       - checkout
       - node/install:
-          node-version: "22.12"
+          node-version: "22.17"
       - run:
           name: Run build
           command: npm install
