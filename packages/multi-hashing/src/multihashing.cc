@@ -3,6 +3,7 @@
 #include <v8.h>
 #include <stdint.h>
 #include <nan.h>
+#include <algorithm>
 
 extern "C"
 {
@@ -278,6 +279,9 @@ DECLARE_FUNC(neoscrypt)
     if (input_len < 80)
         RETURN_EXCEPT("Argument must be longer than 80 bytes");
     neoscrypt(input, output, profile);
+
+    // Reverse output for little-endian
+    std::reverse(output, output + 32);
 
     SET_BUFFER_RETURN(output, 32);
 }
