@@ -118,7 +118,7 @@ jobs:
     steps:
       - checkout
       - node/install:
-          node-version: "22.17"
+          node-version: "22.21"
       - run:
           name: Run build
           command: npm install
