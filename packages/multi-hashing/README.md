@@ -13,6 +13,13 @@ Algorithms
 Supported algorithms: `quark, x11, x13, x16r, x16rv2, nist5, scrypt, scryptn, scryptjane, keccak, bcrypt, skein, groestl, blake, fugue, qubit, hefty1, shavite3, cryptonight, boolberry, sha256d, lbry, kawpaw, allium, blake2s, gost, hsr, lyra2re2, lyra2z, m7, m7m, minotaur, odo, phi1612, sha1, skunk, skydoge, tribus, whirlpoolx, x17, x25x, xevan, zr5, yescrypt, yespower`, *__and more!__*
 
 
+Requirements
+------------
+- Node.js v18+ (tested on Node 18, 20, 22 and 24)
+- A C/C++ toolchain with C++20 support (gcc 10+ or equivalent) — the addon is built with `-std=c++20`, which the V8 headers of Node 24 require
+- Python (used by node-gyp)
+
+
 Usage
 -----
 
@@ -25,22 +32,31 @@ npm install multi-hashing
 Example usage:
 
 ```javascript
-var multiHashing = require('multi-hashing');
+const multiHashing = require('multi-hashing');
 
-var algorithms = ['quark', 'x11', 'scrypt', 'scryptn', 'keccak', 'bcrypt', 'skein', 'blake'];
+const algorithms = ['quark', 'x11', 'scrypt', 'scryptn', 'keccak', 'bcrypt', 'skein', 'blake'];
 
-var data = new Buffer("7000000001e980924e4e1109230383e66d62945ff8e749903bea4336755c00000000000051928aff1b4d72416173a8c3948159a09a73ac3bb556aa6bfbcad1a85da7f4c1d13350531e24031b939b9e2b", "hex");
+const data = Buffer.from("7000000001e980924e4e1109230383e66d62945ff8e749903bea4336755c00000000000051928aff1b4d72416173a8c3948159a09a73ac3bb556aa6bfbcad1a85da7f4c1d13350531e24031b939b9e2b", "hex");
 
-var hashedData = algorithms.map(function(algo){
-    return multiHashing[algo](data);
-});
-
+const hashedData = algorithms.map((algo) => multiHashing[algo](data));
 
 console.log(hashedData);
 //<Buffer 0b de 16 ef 2d 92 e4 35 65 c6 6c d8 92 d9 66 b4 3d 65 ..... >
-
-
 ```
+
+
+Development
+-----------
+
+```bash
+npm install          # builds the native addon via node-gyp
+npm run build        # rebuild after source or Node version changes
+npm test             # run the known-answer test vectors
+```
+
+This repository is developed on the `dev` branch together with [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool) and [zny-nomp](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp), which consume it as a git dependency.
+
+Note: the compiled addon is tied to the Node ABI it was built with. If you switch Node versions and see `Error: Module did not self-register`, run `npm run build` again (or `npm rebuild multi-hashing` in a consuming project).
 
 Credits
 -------
