@@ -38,6 +38,7 @@
 #include "sha3/sph_bmw.h"
 #include "sha3/sph_keccak.h"
 #include "sha3/sph_skein.h"
+#include "sha3/bmw256_lyra.h"
 #include "crypto/lyra2.h"
 
 void lyra2re_hash(const char* input, char* output, uint32_t len)
@@ -77,7 +78,6 @@ void lyra2rev2_hash(const char* input, char* output, uint32_t len)
 	sph_cubehash256_context ctx_cubehash;
 	sph_keccak256_context ctx_keccak;
 	sph_skein256_context ctx_skein;
-	sph_bmw256_context ctx_bmw;
 
 	uint32_t hashA[8], hashB[8];
 
@@ -104,9 +104,9 @@ void lyra2rev2_hash(const char* input, char* output, uint32_t len)
     sph_cubehash256(&ctx_cubehash, hashA, 32);
     sph_cubehash256_close(&ctx_cubehash, hashB);
 
-    sph_bmw256_init(&ctx_bmw);
-    sph_bmw256(&ctx_bmw, hashB, 32);
-    sph_bmw256_close(&ctx_bmw, hashA);
+    // BMW-256 with SHA-3 reference finalization (monacoin-compatible), not
+    // sphlib's sph_bmw256 which yields a different digest for Lyra2REv2
+    bmw256_lyra((const unsigned char *)hashB, (unsigned char *)hashA);
 
    	memcpy(output, hashA, 32);
 }
