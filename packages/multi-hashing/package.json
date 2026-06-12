@@ -16,12 +16,12 @@
     },
     "dependencies": {
         "bindings": "^1.5.0",
-        "nan": "^2.24.0"
+        "nan": "^2.27.0"
     },
     "devDependencies": {
-        "@babel/core": "7.28.5",
-        "@babel/register": "^7.28.3",
-        "mocha": "^11.7.5"
+        "@babel/core": "^7.29.7",
+        "@babel/register": "^7.29.7",
+        "mocha": "^11.7.6"
     },
     "keywords": [
         "argon2",
