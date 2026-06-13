@@ -2,6 +2,7 @@
     "name": "multi-hashing",
     "version": "1.1.2",
     "main": "index.js",
+    "license": "GPL-2.0",
     "author": {
         "name": "Matthew Little",
         "email": "zone117x@gmail.com"
