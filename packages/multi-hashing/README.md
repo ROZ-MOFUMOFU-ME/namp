@@ -5,6 +5,8 @@ node-multi-hashing
 
 Cryptocurrency hashing functions for node.js.
 
+**Roadmap:** see [ROADMAP.md](ROADMAP.md) for current status, known issues, and planned improvements.
+
 
 Algorithms
 ----------
