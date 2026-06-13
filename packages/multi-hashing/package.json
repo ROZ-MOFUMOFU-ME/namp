@@ -23,6 +23,10 @@
         "@babel/register": "^7.29.7",
         "mocha": "^11.7.6"
     },
+    "overrides": {
+        "serialize-javascript": "^7.0.5",
+        "diff": "^8.0.3"
+    },
     "keywords": [
         "argon2",
         "scrypt",
