@@ -41,6 +41,8 @@ repo has its own `ROADMAP.md`.
   an `ethash` function (and registering the existing `kawpow` export) would
   extend coverage to the Ethash family. Note these algorithms need an epoch
   height parameter, unlike the header-only hashers.
+- Add more memory-hard / modern algorithms on demand (e.g. RandomX, Equihash,
+  Autolykos, KHeavyHash) for coins the stack wants to support.
 
 ### Long-term
 - Ship prebuilt binaries (e.g. prebuildify) so consumers can install without
