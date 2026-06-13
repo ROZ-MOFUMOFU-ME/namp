@@ -87,6 +87,7 @@
                 "src/sha3/sph_sha2big.c",
                 "src/sha3/sph_tiger.c",
                 "src/sha3/hamsi.c",
+                "src/sha3/bmw_lyra.c",
                 "src/crypto/lyra2.c",
                 "src/crypto/sponge.c",
                 "src/crypto/oaes_lib.c",
@@ -107,7 +108,7 @@
                 "<!(node -e \"require('nan')\")"
             ],
             "cflags_cc": [
-                "-std=c++17"
+                "-std=c++20"
             ]
         }
     ]

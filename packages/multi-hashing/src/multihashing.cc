@@ -3,6 +3,7 @@
 #include <v8.h>
 #include <stdint.h>
 #include <nan.h>
+#include <algorithm>
 
 extern "C"
 {
@@ -555,14 +556,12 @@ DECLARE_FUNC(vipstar)
     if (!Buffer::HasInstance(target))
         RETURN_EXCEPT("Argument should be a buffer object.");
 
-    uint32_t input[32];
-    uint32_t output[32];
+    char *input = Buffer::Data(target);
+    char output[32];
 
-    std::memcpy(input, Buffer::Data(target), sizeof(input));
+    vipstar_hash((uint32_t*)output, (const uint32_t*)input);
 
-    vipstar_hash(output, input);
-
-    SET_BUFFER_RETURN(reinterpret_cast<char*>(output), sizeof(output));
+    SET_BUFFER_RETURN(output, 32);
 }
 
 NAN_MODULE_INIT(init)
