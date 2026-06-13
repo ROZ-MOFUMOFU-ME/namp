@@ -36,6 +36,11 @@ repo has its own `ROADMAP.md`.
 ### Mid-term
 - Evaluate porting from NAN to N-API (node-addon-api) so the compiled binary
   is ABI-stable across Node major versions.
+- **Export Ethash as a standalone algorithm** — the ethash/progpow library is
+  already vendored and used by `kawpow` (`src/kawpow/ethash.cpp`), so exposing
+  an `ethash` function (and registering the existing `kawpow` export) would
+  extend coverage to the Ethash family. Note these algorithms need an epoch
+  height parameter, unlike the header-only hashers.
 
 ### Long-term
 - Ship prebuilt binaries (e.g. prebuildify) so consumers can install without
