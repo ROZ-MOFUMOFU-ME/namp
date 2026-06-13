@@ -4,17 +4,17 @@
 
 ## マルチリポジトリ開発
 
-このネイティブアドオンは、一体で開発される3リポジトリ構成の最下層です。**3リポジトリとも統合ブランチは `dev` で、開発作業は `dev` 上で行います**（`main` は安定版。利用側はこのリポジトリの `dev` ブランチを git 依存としてインストールします）。兄弟リポジトリは隣のディレクトリにローカルクローンがある前提です:
+このネイティブアドオンは、一体で開発される3リポジトリ構成の最下層です。**3リポジトリとも単一の `main` ブランチで開発します**（2026-06-13 に dev/stable/old を main へ統合して削除しました。利用側はこのリポジトリの `main` ブランチを git 依存としてインストールします。このリポジトリの main は直接 push 可能です）。兄弟リポジトリは隣のディレクトリにローカルクローンがある前提です:
 
 ```
 ../zny-nomp (ポータル本体)
   └─ ../node-stratum-pool (stratum ライブラリ)
-       └─ multi-hashing (このリポジトリ — git 依存 ROZ-MOFUMOFU-ME/node-multi-hashing#dev として公開)
+       └─ multi-hashing (このリポジトリ — git 依存 ROZ-MOFUMOFU-ME/node-multi-hashing#main として公開)
 ```
 
 各兄弟リポジトリにもそれぞれ CLAUDE.md があります。重要なポイント:
 
-- 利用側はこのリポジトリを**ローカルパスではなく GitHub の `dev` ブランチから**インストールします。ローカルの編集は `dev` に push するまで `../node-stratum-pool` / `../zny-nomp` に届きません。ローカルクローンをリンクする場合:
+- 利用側はこのリポジトリを**ローカルパスではなく GitHub の `main` ブランチから**インストールします。ローカルの編集は `main` に push するまで `../node-stratum-pool` / `../zny-nomp` に届きません。ローカルクローンをリンクする場合:
 
 ```bash
 npm link                                            # このリポジトリで実行（アドオンをビルド）
@@ -22,7 +22,7 @@ cd ../node-stratum-pool && npm link multi-hashing && npm link
 cd ../zny-nomp          && npm link stratum-pool
 ```
 
-- リンクしない場合: `dev` に push してから、node-stratum-pool で `npm update multi-hashing`（さらに zny-nomp で `npm update stratum-pool`）を実行します。
+- リンクしない場合: `main` に push してから、node-stratum-pool で `npm update multi-hashing`（さらに zny-nomp で `npm update stratum-pool`）を実行します。
 - 主要な利用元は `../node-stratum-pool/lib/algoProperties.js`（`import multiHashing from 'multi-hashing'`）です。エクスポートされる各ハッシュ関数は `fn(dataBuffer, ...params) → Buffer` として呼ばれます。
 
 ## コマンド
