@@ -47,6 +47,9 @@ repo has its own `ROADMAP.md`.
 ### Long-term
 - Ship prebuilt binaries (e.g. prebuildify) so consumers can install without
   a local C/C++ toolchain.
+- **WebAssembly build** of the hashing functions (Emscripten/WASM), enabling
+  browser-based mining and other WASM consumers — feeds the portal's
+  browser-mining feature.
 - **Monorepo consolidation** — this addon is intended to eventually merge
   with node-stratum-pool and zny-nomp into a single monorepo (see the
   [zny-nomp ROADMAP](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/blob/main/ROADMAP.md)),
