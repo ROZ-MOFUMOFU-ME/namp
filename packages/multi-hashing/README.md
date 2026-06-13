@@ -10,7 +10,9 @@ Cryptocurrency hashing functions for node.js.
 
 Algorithms
 ----------
-Supported algorithms: `quark, x11, x13, x16r, x16rv2, nist5, scrypt, scryptn, scryptjane, keccak, bcrypt, skein, groestl, blake, fugue, qubit, hefty1, shavite3, cryptonight, boolberry, sha256d, lbry, kawpaw, allium, blake2s, gost, hsr, lyra2re2, lyra2z, m7, m7m, minotaur, odo, phi1612, sha1, skunk, skydoge, tribus, whirlpoolx, x17, x25x, xevan, zr5, yescrypt, yespower`, *__and more!__*
+Supported algorithms: `quark, x11, x13, x15, x16r, x16rv2, x17, x25x, nist5, scrypt, scryptn, scryptjane, keccak, bcrypt, skein, groestl, blake, fugue, qubit, hefty1, shavite3, cryptonight, boolberry, sha256d, lbry, kawpow, allium, blake2s, gost, hsr, lyra2re, lyra2re2, lyra2rev2, lyra2z, m7, m7m, minotaur, odo, phi1612, sha1, skunk, skydoge, tribus, vipstar, whirlpoolx, xevan, zr5, yescrypt, yespower`, *__and more!__*
+
+Note: `lyra2rev2` (Monacoin's Lyra2REv2) is finalized with the SHA-3 reference BMW (BlueMidnightWish), which is what the live network uses — `sph_bmw256` produces a different, incompatible digest. `vipstar` is the VIPSTARCOIN (HTMLcoin/qtum-style) sha256d over a 181-byte header.
 
 
 Requirements
@@ -54,7 +56,7 @@ npm run build        # rebuild after source or Node version changes
 npm test             # run the known-answer test vectors
 ```
 
-This repository is developed on the `dev` branch together with [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool) and [zny-nomp](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp), which consume it as a git dependency.
+This repository is developed on the `main` branch together with [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool) and [zny-nomp](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp), which consume it as a git dependency (`#main`).
 
 Note: the compiled addon is tied to the Node ABI it was built with. If you switch Node versions and see `Error: Module did not self-register`, run `npm run build` again (or `npm rebuild multi-hashing` in a consuming project).
 
