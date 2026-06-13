@@ -32,8 +32,8 @@ static const char _NR[] = {
 	0x41,0x6c,0x20,0x52,0x61,0x6d,0x6c,0x69,0x00 };
 
 #include <stddef.h>
-#include <time.h> 
-#include <sys/timeb.h>
+#include <time.h>
+#include <sys/time.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -460,17 +460,19 @@ OAES_RET oaes_sprintf(
 #ifdef OAES_HAVE_ISAAC
 static void oaes_get_seed( char buf[RANDSIZ + 1] )
 {
-	struct timeb timer;
+	struct timeval timer;
 	struct tm *gmTimer;
 	char * _test = NULL;
-	
-	ftime (&timer);
-	gmTimer = gmtime( &timer.time );
-	_test = (char *) calloc( sizeof( char ), timer.millitm );
-	sprintf( buf, "%04d%02d%02d%02d%02d%02d%03d%p%d",
+	long millitm;
+
+	gettimeofday( &timer, NULL );
+	millitm = timer.tv_usec / 1000;
+	gmTimer = gmtime( &timer.tv_sec );
+	_test = (char *) calloc( sizeof( char ), millitm );
+	sprintf( buf, "%04d%02d%02d%02d%02d%02d%03ld%p%d",
 		gmTimer->tm_year + 1900, gmTimer->tm_mon + 1, gmTimer->tm_mday,
-		gmTimer->tm_hour, gmTimer->tm_min, gmTimer->tm_sec, timer.millitm,
-		_test + timer.millitm, getpid() );
+		gmTimer->tm_hour, gmTimer->tm_min, gmTimer->tm_sec, millitm,
+		_test + millitm, getpid() );
 	
 	if( _test )
 		free( _test );
@@ -478,17 +480,19 @@ static void oaes_get_seed( char buf[RANDSIZ + 1] )
 #else
 static uint32_t oaes_get_seed(void)
 {
-	struct timeb timer;
+	struct timeval timer;
 	struct tm *gmTimer;
 	char * _test = NULL;
 	uint32_t _ret = 0;
-	
-	ftime (&timer);
-	gmTimer = gmtime( &timer.time );
-	_test = (char *) calloc( sizeof( char ), timer.millitm );
+	long millitm;
+
+	gettimeofday( &timer, NULL );
+	millitm = timer.tv_usec / 1000;
+	gmTimer = gmtime( &timer.tv_sec );
+	_test = (char *) calloc( sizeof( char ), millitm );
 	_ret = gmTimer->tm_year + 1900 + gmTimer->tm_mon + 1 + gmTimer->tm_mday +
-			gmTimer->tm_hour + gmTimer->tm_min + gmTimer->tm_sec + timer.millitm +
-			(uintptr_t) ( _test + timer.millitm ) + getpid();
+			gmTimer->tm_hour + gmTimer->tm_min + gmTimer->tm_sec + millitm +
+			(uintptr_t) ( _test + millitm ) + getpid();
 
 	if( _test )
 		free( _test );
