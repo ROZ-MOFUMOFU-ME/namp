@@ -9,16 +9,20 @@ repo has its own `ROADMAP.md`.
 
 - NAN-based native addon, builds with `-std=c++20` on Node 20–24 (requires
   GCC 10+; CircleCI installs GCC 10 explicitly).
-- 33 algorithms are covered by known-answer test vectors (set1/set2/set3).
+- 74 algorithms are exported (see `src/multihashing.cc`); 30 of them are
+  covered by known-answer test vectors (set1/set2/set3).
 - `lyra2rev2` (Monacoin's Lyra2REv2) was fixed to finalize with the SHA-3
   reference BMW (BlueMidnightWish) instead of sphlib's `sph_bmw256`, which
   produced an incompatible digest.
+- Released as 1.2.0 (built and tested on Node 24 with C++20).
 
 ## Known issues & limitations
 
-- **46 algorithms are excluded from the vector tests** — they build and
-  export but have no known-answer coverage, so a regression in any of them
-  would go unnoticed.
+- **44 of the 74 exported algorithms have no vector coverage** — they build
+  and export but are listed in each set's `exclude-algos` (or have no stored
+  vector), so a regression in any of them would go unnoticed. This includes
+  the whole `yespower_*` family, the cryptonight variants, scrypt/scryptjane,
+  kawpow and many of the X/lyra2 chains.
 - **Compiler warnings remain** in vendored C (e.g. `oaes_lib.c` unused const
   `_NR`, a `stringop-overflow` warning), inherited from upstream sources.
 - **NAN ties each build to the Node ABI** — switching Node versions requires
@@ -37,10 +41,10 @@ repo has its own `ROADMAP.md`.
 - Evaluate porting from NAN to N-API (node-addon-api) so the compiled binary
   is ABI-stable across Node major versions.
 - **Export Ethash as a standalone algorithm** — the ethash/progpow library is
-  already vendored and used by `kawpow` (`src/kawpow/ethash.cpp`), so exposing
-  an `ethash` function (and registering the existing `kawpow` export) would
-  extend coverage to the Ethash family. Note these algorithms need an epoch
-  height parameter, unlike the header-only hashers.
+  already vendored and used by the exported `kawpow` (`src/kawpow/ethash.cpp`),
+  so exposing an `ethash` function would extend coverage to the Ethash family.
+  Note these algorithms need an epoch/height parameter, unlike the header-only
+  hashers.
 - Add more memory-hard / modern algorithms on demand (e.g. RandomX, Equihash,
   Autolykos, KHeavyHash) for coins the stack wants to support.
 

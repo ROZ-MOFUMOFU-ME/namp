@@ -14,13 +14,13 @@ ZNY-NOMP official Discord Server
 
 ## Algorithms
 
-Supported algorithms: `quark, x11, x13, x15, x16r, x16rv2, x17, x25x, nist5, scrypt, scryptn, scryptjane, keccak, bcrypt, skein, groestl, blake, fugue, qubit, hefty1, shavite3, cryptonight, boolberry, sha256d, lbry, kawpow, allium, blake2s, gost, hsr, lyra2re, lyra2re2, lyra2rev2, lyra2z, m7, m7m, minotaur, odo, phi1612, sha1, skunk, skydoge, tribus, vipstar, whirlpoolx, xevan, zr5, yescrypt, yespower`, _**and more!**_
+Supported algorithms: `quark, x11, x13, x15, x16r, x16rv2, x17, x25x, c11, nist5, fresh, scrypt, scryptn, scryptjane, neoscrypt, keccak, bcrypt, skein, groestl, groestlmyriad, blake, blake2s, fugue, qubit, hefty1, shavite3, argon2d, argon2i, argon2id, cryptonight, cryptonightfast, boolberry, sha1, sha256d, lbry, kawpow, allium, gost, hsr, lyra2re, lyra2re2, lyra2rev2, lyra2rev3, lyra2z, lyra2z330, lyra2z16m330, m7, m7m, minotaur, odo, phi1612, skunk, skydoge, tribus, vipstar, whirlpoolx, xevan, zr5, yespower` (plus a family of `yespower_*` coin variants), _**and more!**_
 
-Note: `lyra2rev2` (Monacoin's Lyra2REv2) is finalized with the SHA-3 reference BMW (BlueMidnightWish), which is what the live network uses — `sph_bmw256` produces a different, incompatible digest. `vipstar` is the VIPSTARCOIN (HTMLcoin/qtum-style) sha256d over a 181-byte header.
+Note: `lyra2rev2` (Monacoin's Lyra2REv2) is finalized with the SHA-3 reference BMW (BlueMidnightWish), which is what the live network uses — `sph_bmw256` produces a different, incompatible digest. `vipstar` is the VIPSTARCOIN (HTMLcoin/qtum-style) sha256d over a 181-byte header. The exact set of exports is defined in `src/multihashing.cc`.
 
 ## Requirements
 
-- Node.js v18+ (tested on Node 18, 20, 22 and 24)
+- Node.js v18+ (exercised in CI on Node 16/18/20/22 via GitHub Actions and Node 20/22/24 via CircleCI)
 - A C/C++ toolchain with C++20 support (gcc 10+ or equivalent) — the addon is built with `-std=c++20`, which the V8 headers of Node 24 require
 - Python (used by node-gyp)
 
@@ -55,7 +55,7 @@ npm run build        # rebuild after source or Node version changes
 npm test             # run the known-answer test vectors
 ```
 
-This repository is developed on the `main` branch together with [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool) and [zny-nomp](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp), which consume it as a git dependency (`#main`).
+This repository is developed on the `develop` branch together with [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool) and [zny-nomp](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp); `main` holds tagged releases, which the consumers install as a git dependency (`#main`). The whole public API lives in the native layer — `index.js` is a single `require('bindings')('multihashing.node')` line, and it (along with `tests/*.js`) is intentionally kept as JavaScript: routing the `bindings` resolver through Node's ESM→CJS translation of a `.ts` entry stops it from locating the compiled `multihashing.node`.
 
 Note: the compiled addon is tied to the Node ABI it was built with. If you switch Node versions and see `Error: Module did not self-register`, run `npm run build` again (or `npm rebuild multi-hashing` in a consuming project).
 
