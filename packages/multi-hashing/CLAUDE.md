@@ -39,7 +39,7 @@ npm test             # mocha --require @babel/register --gc-global tests/test.ve
 
 ## アーキテクチャ
 
-- `index.js` は1行のみ: `require('bindings')('multihashing.node')` — API 全体がネイティブ側で定義されています。
+- `index.js` は1行のみ: `require('bindings')('multihashing.node')` — API 全体がネイティブ側で定義されています。**このリポジトリは `index.js`（と `tests/*.js`）を意図的に JavaScript のまま残しています**（兄弟の zny-nomp / node-stratum-pool は TypeScript へ移行済み）。エントリを `.ts` にすると、Node の ESM→CJS 変換を経由して読み込まれた `bindings` リゾルバが `bindings` パッケージのディレクトリを探索してしまい、ビルド済みの `multihashing.node` を見つけられず "Could not locate the bindings file" で失敗するためです。1行の CJS バインディングローダは `index.js` のまま維持してください。
 - `src/multihashing.cc` が NAN バインディング層です: アルゴリズムごとに1つの `NAN_METHOD` があり、ファイル末尾の `NAN_MODULE_INIT(init)` で登録されます（`NAN_MODULE_WORKER_ENABLED` によりワーカースレッド対応）。各メソッドは Buffer 引数を検証し、C のハッシュ関数を呼んで Buffer を返します。
 - アルゴリズム実装は `src/` にアルゴリズムごとに1ファイル（`x11.c`、`quark.c`、`neoscrypt.c`、…）で、共有プリミティブライブラリの上に構築されています:
   - `src/sha3/` — sph_* ハッシュプリミティブ（blake, bmw, cubehash, echo, groestl, jh, keccak, luffa, shavite, simd, skein, whirlpool, …）。チェーン型の X 系アルゴリズムが使用
