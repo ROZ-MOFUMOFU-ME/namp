@@ -11,6 +11,7 @@
         "type": "git",
         "url": "https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing.git"
     },
+    "files": ["index.js", "binding.gyp", "src"],
     "scripts": {
         "build": "node-gyp rebuild",
         "test": "mocha --require @babel/register --gc-global tests/test.vectors.js"
