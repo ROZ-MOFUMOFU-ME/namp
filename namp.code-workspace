@@ -1,0 +1,10 @@
+{
+    "folders": [
+        { "name": "zny-nomp (pool)", "path": "zny-nomp" },
+        { "name": "node-stratum-pool (stratum)", "path": "node-stratum-pool" },
+        { "name": "node-multi-hashing (hashing)", "path": "node-multi-hashing" }
+    ],
+    "settings": {
+        "git.autofetch": true
+    }
+}

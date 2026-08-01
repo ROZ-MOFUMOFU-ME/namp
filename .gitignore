@@ -1,0 +1,10 @@
+node_modules/
+*.log
+.DS_Store
+
+# Side-by-side clones of the source repos (kept until the
+# history-preserving merge lands in packages/; then delete the
+# clones and these entries)
+/zny-nomp/
+/node-stratum-pool/
+/node-multi-hashing/

@@ -1,0 +1,32 @@
+{
+    "name": "namp",
+    "version": "0.1.0",
+    "description": "NAMP - Node All-in-One Mining Portal",
+    "private": true,
+    "type": "module",
+    "license": "MIT",
+    "author": "ROZ-MOFUMOFU-ME",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ROZ-MOFUMOFU-ME/namp.git"
+    },
+    "workspaces": [
+        "packages/*"
+    ],
+    "engines": {
+        "node": ">=22.18.0",
+        "npm": ">=9"
+    },
+    "scripts": {
+        "typecheck": "npm run typecheck --workspaces --if-present",
+        "test": "npm test --workspaces --if-present",
+        "lint": "npm run lint --workspaces --if-present",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
+    "devDependencies": {
+        "@types/node": "^25.9.3",
+        "prettier": "^3.8.4",
+        "typescript": "^7.0.2"
+    }
+}

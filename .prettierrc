@@ -1,0 +1,13 @@
+{
+    "singleQuote": true,
+    "semi": true,
+    "tabWidth": 4,
+    "trailingComma": "none",
+    "endOfLine": "lf",
+    "overrides": [
+        {
+            "files": ["config.json", "config_example.json"],
+            "options": { "objectWrap": "collapse", "printWidth": 100 }
+        }
+    ]
+}
