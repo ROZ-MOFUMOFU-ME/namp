@@ -393,6 +393,11 @@ ie: Miner 1 mines at 0.1 difficulty and finds 10 shares, the pool sees it as 1 s
         "paymentInterval": 120, // Payment interval in seconds.
         "minimumPayment": 0.1, // Minimum amount of coins to be paid out.
         "maxBlocksPerPayment": 3, // Maximum number of blocks to include in a single payment.
+        // IMPORTANT: this is a SEPARATE daemon connection from the pool's
+        // top-level `daemons` array — the payment processor opens its own.
+        // Leaving the example credentials here while filling in `daemons`
+        // starts the pool normally but fails payment processing at setup,
+        // which is easy to miss because mining keeps working.
         "daemon": {
             "host": "127.0.0.1", // Coin daemon RPC server host.
             "port": 9252, // Coin daemon RPC server port.
