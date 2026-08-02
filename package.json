@@ -27,7 +27,7 @@
     "devDependencies": {
         "@types/node": "^25.9.3",
         "prettier": "^3.8.4",
-        "typescript": "^7.0.2"
+        "typescript": "^6.0.3"
     },
     "allowScripts": {
         "esbuild@0.28.1": true,

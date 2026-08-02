@@ -16,7 +16,8 @@ jobs:
               with:
                   node-version: 24.x
                   cache: npm
-            - run: npm ci
+            # No native build needed for lint/format/typecheck
+            - run: npm ci --ignore-scripts
             - run: npm run lint
             - run: npm run format:check
             - run: npm run typecheck
@@ -37,6 +38,16 @@ jobs:
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: npm
+            - name: Use GCC 12 for the native build
+              # Newer GCC (13+) miscompiles some vendored C — neoscrypt's
+              # known-answer vectors fail. GCC 12 matches the verified
+              # toolchain (the old CircleCI setup pinned GCC 10 for the
+              # same reason).
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y gcc-12 g++-12
+                  echo "CC=gcc-12" >> "$GITHUB_ENV"
+                  echo "CXX=g++-12" >> "$GITHUB_ENV"
             - run: npm ci
             - name: Check config files parse
               run: npm run check:config --workspace zny-nomp

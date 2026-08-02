@@ -5,7 +5,7 @@ It continues the NOMP (Node Open Mining Portal) lineage and provides the
 pool portal, the stratum layer and the hashing module all in one.
 
 - Written **NAMP**; the repository/package name is lowercase `namp`
-- TypeScript 7 (native compiler), ESM, Node 22.18+
+- TypeScript (TS7-ready config, buildless via Node type stripping), ESM, Node 22.18+
 
 ## Packages
 
@@ -24,15 +24,16 @@ imported with git filter-repo path rewrites (nothing squashed).
 The three source histories are fully imported under `packages/`
 (migration phase M1) — 2,700+ commits, blame/bisect intact. Development
 happens in this repository now; the source repos are frozen pending
-archive. The packages still reference each other through git URLs until
-M2 lands workspace references (see [ROADMAP.md](ROADMAP.md)).
+archive. The packages reference each other as npm workspaces behind a
+single root lockfile (see [ROADMAP.md](ROADMAP.md) for the migration
+state).
 
 ## Development
 
 ```bash
 nvm use            # Node 24 (.nvmrc)
 npm install
-npm run typecheck  # runs each workspace's typecheck (TS7)
+npm run typecheck  # runs each workspace's typecheck (tsc --noEmit)
 npm test           # runs each workspace's tests
 npm run format     # prettier
 ```
