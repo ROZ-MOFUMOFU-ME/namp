@@ -11,7 +11,8 @@
         "url": "git+https://github.com/ROZ-MOFUMOFU-ME/namp.git"
     },
     "workspaces": [
-        "packages/*"
+        "packages/*",
+        "packages/portal/web"
     ],
     "engines": {
         "node": ">=22.18.0",
@@ -20,19 +21,30 @@
     "scripts": {
         "typecheck": "npm run typecheck --workspaces --if-present",
         "test": "npm test --workspace multi-hashing --workspace stratum-pool && npm run test:unit --workspace namp-portal",
-        "lint": "eslint packages/portal/src/init.ts packages/stratum-pool/src packages/stratum-pool/test",
+        "lint": "eslint packages/portal/src/init.ts packages/stratum-pool/src packages/stratum-pool/test packages/portal/web/src",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "lint:fix": "eslint packages/portal/src/init.ts packages/stratum-pool/src packages/stratum-pool/test --fix"
+        "lint:fix": "eslint packages/portal/src/init.ts packages/stratum-pool/src packages/stratum-pool/test packages/portal/web/src --fix",
+        "check:config": "npm run check:config --workspace namp-portal",
+        "web:dev": "npm run dev --workspace namp-web",
+        "build": "npm run build --workspace namp-web"
     },
     "devDependencies": {
+        "@babel/core": "^8.0.1",
         "@babel/eslint-parser": "^8.0.1",
+        "@babel/plugin-syntax-jsx": "^8.0.1",
         "@babel/preset-typescript": "^8.0.1",
         "@eslint/js": "^10.0.1",
-        "@types/node": "^25.9.3",
-        "eslint": "^10.7.0",
+        "@types/async": "^3.2.25",
+        "@types/compression": "^1.8.1",
+        "@types/dateformat": "^5.0.3",
+        "@types/express": "^5.0.6",
+        "@types/extend": "^3.0.4",
+        "@types/node": "^26.1.2",
+        "eslint": "^10.8.0",
         "eslint-config-prettier": "^10.1.8",
-        "prettier": "^3.8.4",
+        "mocha": "^11.7.6",
+        "prettier": "^3.9.6",
         "typescript": "^7.0.2"
     },
     "allowScripts": {

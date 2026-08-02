@@ -23,15 +23,21 @@ imported with git filter-repo path rewrites (nothing squashed).
 
 ```
 namp/
-├── package.json          # workspaces root — install/typecheck/lint/test/format run here
+├── package.json          # workspaces root — every script and dependency lives here
+├── package-lock.json     #   the single lockfile for all four workspaces
 ├── tsconfig.base.json    # shared TS config; each package extends it
+├── eslint.config.js      # the one lint config (per-area rule blocks)
+├── .prettierrc / .editorconfig / .nvmrc / .npmrc
+├── types/shims.d.ts      # ambient declarations shared across packages
+├── Dockerfile            # portal image; build from here
+├── docker-compose.yml    # portal + Redis dev stack
 ├── .github/workflows/    # the one CI + release pipeline (ci.yml, release.yml)
 ├── ROADMAP.md            # migration state + stack-wide roadmap
 └── packages/
-    ├── portal/           # the mining portal (package: namp-portal, MIT)
-    │   ├── src/          #   backend: cluster master + pool/payment/web workers (buildless TS)
-    │   ├── web/          #   React/Vite SPA — separate npm project with its own lockfile
-    │   │                 #   (NOT a workspace; the stack's only build step)
+    ├── portal/           # the mining portal (namp-portal, MIT)
+    │   ├── src/          #   cluster master + pool/payment/web workers (buildless TS)
+    │   ├── web/          #   React/Vite SPA (namp-web) — a workspace too;
+    │   │                 #   the stack's only build step
     │   ├── coins/        #   coin definitions (examples committed, real configs gitignored)
     │   ├── pool_configs/ #   per-pool configs (same convention)
     │   └── docs/         #   operator guides (TLS, reverse proxy, payment schemes)
@@ -41,11 +47,10 @@ namp/
         └── src/          #   one file per algorithm + sha3/crypto/kawpow primitives
 ```
 
-Rules of thumb: run every command from the root (`npm install`,
-`npm run typecheck`, `npm run lint`, `npm test`, `npm run format`);
-each package's CLAUDE.md carries the deep dive for that layer; the only
-place with a second `npm install` is `packages/portal/web`
-(`--legacy-peer-deps`, see its README).
+Rule of thumb: **everything runs from the root** — one `npm install`,
+one lockfile, one lint/format/typecheck/test entry point. Packages hold
+code and their own CLAUDE.md deep dive; they carry no dev tooling,
+scripts or dependency pins of their own.
 
 ## Current state
 
@@ -60,9 +65,12 @@ state).
 
 ```bash
 nvm use            # Node 24 (.nvmrc)
-npm install
-npm run typecheck  # runs each workspace's typecheck (tsc --noEmit)
-npm test           # runs each workspace's tests
+npm install        # installs all four workspaces, builds the native addon
+npm run typecheck  # tsc --noEmit across the workspaces
+npm run lint       # eslint (backend + web)
+npm test           # hashing vectors + stratum smoke + portal unit tests
+npm run build      # build the web SPA (the only build step)
+npm run web:dev    # Vite dev server on :5173, proxying /api to the portal
 npm run format     # prettier
 ```
 

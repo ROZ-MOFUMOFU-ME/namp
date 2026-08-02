@@ -1,4 +1,5 @@
 # Reproducible dev/local stack: the NAMP portal + Redis.
+# Run from the repo root: docker compose up --build
 #
 # Coin daemons are NOT included — each coin needs its own synced daemon. Point
 # your pool_configs/*.json `daemons` at a reachable daemon (a host daemon via
@@ -43,9 +44,9 @@ services:
         # Mount your real configs (gitignored). Without config.json the portal
         # falls back to config_example.json baked into the image.
         volumes:
-            - ./config.json:/app/config.json:ro
-            - ./pool_configs:/app/pool_configs:ro
-            - ./coins:/app/coins:ro
+            - ./packages/portal/config.json:/app/packages/portal/config.json:ro
+            - ./packages/portal/pool_configs:/app/packages/portal/pool_configs:ro
+            - ./packages/portal/coins:/app/packages/portal/coins:ro
         ports:
             - '8080:8080' # website (portalConfig.website.port)
             # CLI listener — must match cliPort in the config you mount (17117 in

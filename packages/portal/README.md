@@ -86,7 +86,7 @@ sudo n stable
 sudo apt purge nodejs npm -y
 git clone https://github.com/ROZ-MOFUMOFU-ME/namp
 cd namp
-npm install
+npm install            # installs every workspace and builds the native addon
 ```
 
 ##### Frontend (`web/`)
@@ -97,12 +97,12 @@ backend runs buildless via Node's native type-stripping. Build it before
 starting the portal:
 
 ```bash
-cd web
-npm install --legacy-peer-deps
-npm run build          # outputs web/dist (use `npm run dev` for the Vite dev server on :5173)
+npm run build          # from the repo root; outputs web/dist
+npm run web:dev        # Vite dev server on :5173, proxying /api to the portal
 ```
 
-The Docker image builds `web/` automatically during the image build.
+The SPA is a workspace (`namp-web`), so the root `npm install` covers it.
+The Docker image builds it automatically.
 
 The SPA is **responsive** (fluid layouts down to 320px with a mobile hamburger
 nav) and ships **light/dark themes**: a header toggle persists the choice and
@@ -500,17 +500,16 @@ npm start          # = node --import tsx src/init.ts
 built-in type-stripping refuses `.ts` files under `node_modules`
 (`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`); `tsx` transforms them at
 runtime, and since the cluster master forks workers with the same `execArgv`,
-every worker inherits the loader. This means a plain `npm install` (or `npm ci`
-/ Docker) just works — no `npm link` needed. If startup instead fails with
-`Cannot find module .../stratum-pool/src/util.ts`, your lockfile is pinned to
-an older `stratum-pool` commit; run `npm update stratum-pool` to advance it.
+every worker inherits the loader. A plain root `npm install` (or `npm ci` /
+Docker) is all that is needed — the siblings are workspace symlinks.
 
 #### Running with Docker
 
-A `Dockerfile` and `docker-compose.yml` are provided to bring up the portal
-and Redis together:
+A `Dockerfile` and `docker-compose.yml` at the **repo root** bring up the
+portal and Redis together:
 
 ```bash
+cd ../..               # the repo root — the build context is the whole workspace
 docker compose up --build
 ```
 

@@ -21,6 +21,8 @@ jobs:
             - run: npm run lint
             - run: npm run format:check
             - run: npm run typecheck
+            - name: Build the web SPA
+              run: npm run build
 
     test:
         name: Test (Node ${{ matrix.node-version }})
@@ -50,6 +52,6 @@ jobs:
                   echo "CXX=g++-12" >> "$GITHUB_ENV"
             - run: npm ci
             - name: Check config files parse
-              run: npm run check:config --workspace namp-portal
+              run: npm run check:config
             - name: Run the workspace test suites
               run: npm test

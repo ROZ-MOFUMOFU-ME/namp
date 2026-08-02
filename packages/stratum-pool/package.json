@@ -1,6 +1,6 @@
 {
     "name": "stratum-pool",
-    "version": "0.4.0",
+    "version": "1.0.0",
     "type": "module",
     "description": "High performance Stratum poolserver in Node.js",
     "keywords": [
@@ -15,9 +15,9 @@
         "yespower",
         "lyra2re2"
     ],
-    "homepage": "https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool",
+    "homepage": "https://github.com/ROZ-MOFUMOFU-ME/namp",
     "bugs": {
-        "url": "https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool/issues"
+        "url": "https://github.com/ROZ-MOFUMOFU-ME/namp/issues"
     },
     "license": "GPL-2.0",
     "author": "Matthew Little",
@@ -42,22 +42,16 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool.git"
+        "url": "git+https://github.com/ROZ-MOFUMOFU-ME/namp.git",
+        "directory": "packages/stratum-pool"
     },
     "dependencies": {
-        "@exodus/bitcoinjs-lib-zcash": "^0.0.19",
+        "@exodus/bitcoinjs-lib-zcash": "^0.0.21",
         "async": "^3.2.6",
         "bitcoinjs-lib": "^7.0.1",
-        "multi-hashing": "*"
-    },
-    "devDependencies": {
-        "@types/async": "^3.2.25"
+        "multi-hashing": "^1.0.0"
     },
     "overrides": {
         "flatted": "^3.4.2"
-    },
-    "engines": {
-        "node": ">=22",
-        "npm": ">=9"
     }
 }

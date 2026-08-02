@@ -53,5 +53,40 @@ export default [
             'no-var': 'warn'
         }
     },
+    {
+        // Web SPA (React/TSX). Babel 8 does not auto-enable JSX, so the
+        // syntax plugin is explicit here.
+        files: ['packages/portal/web/src/**/*.{ts,tsx}'],
+        languageOptions: {
+            ...tsLanguage,
+            parserOptions: {
+                requireConfigFile: false,
+                babelOptions: {
+                    presets: ['@babel/preset-typescript'],
+                    plugins: ['@babel/plugin-syntax-jsx']
+                }
+            },
+            globals: {
+                window: 'readonly',
+                document: 'readonly',
+                navigator: 'readonly',
+                localStorage: 'readonly',
+                fetch: 'readonly',
+                console: 'readonly',
+                setTimeout: 'readonly',
+                clearTimeout: 'readonly',
+                setInterval: 'readonly',
+                clearInterval: 'readonly',
+                EventSource: 'readonly',
+                URLSearchParams: 'readonly'
+            }
+        },
+        rules: {
+            ...js.configs.recommended.rules,
+            'no-unused-vars': 'off',
+            'no-undef': 'off',
+            'no-redeclare': 'error'
+        }
+    },
     prettier
 ];

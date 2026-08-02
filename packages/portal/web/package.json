@@ -1,41 +1,31 @@
 {
-    "name": "zny-nomp-web",
+    "name": "namp-web",
     "private": true,
-    "version": "0.1.0",
+    "version": "1.0.0",
     "type": "module",
     "description": "zny-nomp pool frontend (Vite + React + TypeScript SPA)",
     "scripts": {
         "dev": "vite",
         "build": "tsc --noEmit && vite build",
         "typecheck": "tsc --noEmit",
-        "preview": "vite preview",
-        "lint": "eslint src",
-        "lint:fix": "eslint . --fix",
-        "format": "prettier --write .",
-        "format:check": "prettier --check ."
+        "preview": "vite preview"
     },
     "dependencies": {
-        "@tanstack/react-query": "^5.101.0",
-        "i18next": "^26.3.1",
-        "react": "^19.2.7",
-        "react-dom": "^19.2.7",
-        "react-i18next": "^17.0.8",
-        "react-is": "^19.2.7",
-        "react-router-dom": "^7.18.0",
-        "recharts": "^3.8.1"
+        "@tanstack/react-query": "^5.101.4",
+        "i18next": "^26.3.6",
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8",
+        "react-i18next": "^17.0.11",
+        "react-is": "^19.2.8",
+        "react-router-dom": "^7.18.2",
+        "recharts": "^3.10.1"
     },
     "devDependencies": {
-        "@eslint/js": "^10.0.1",
-        "@tailwindcss/vite": "^4.3.1",
-        "@types/react": "^19.2.17",
-        "@types/react-dom": "^19.2.3",
-        "@vitejs/plugin-react": "^6.0.2",
-        "eslint": "^10.5.0",
-        "eslint-config-prettier": "^10.1.8",
-        "prettier": "^3.8.4",
-        "tailwindcss": "^4.3.1",
-        "typescript": "^6.0.3",
-        "typescript-eslint": "^8.61.1",
-        "vite": "^8.0.16"
+        "@tailwindcss/vite": "^4.3.3",
+        "@types/react": "^19.2.18",
+        "@types/react-dom": "^19.2.4",
+        "@vitejs/plugin-react": "^6.0.5",
+        "tailwindcss": "^4.3.3",
+        "vite": "^8.2.0"
     }
 }

@@ -24,8 +24,10 @@ filter-repo path rewrites (blame/bisect work across the import).
 - `packages/multi-hashing` (from node-multi-hashing) — C++ native, not TS
 
 Dependency direction: portal → stratum-pool → multi-hashing, wired as
-**workspace references** (single root lockfile; `packages/portal/web`
-is a separate npm project, not a workspace, with its own lockfile).
+**workspace references**. Four workspaces total — the web SPA
+(`packages/portal/web`, package `namp-web`) is one of them — behind a
+single root lockfile. All dev tooling, scripts and shared config live
+at the root; packages declare only their own runtime dependencies.
 **Development happens in this repository now.** The source repos are
 frozen pending archive (M4); their main branches follow the TS develop
 line since 2026-08-02 (legacy JS mains survive as legacy-main).
