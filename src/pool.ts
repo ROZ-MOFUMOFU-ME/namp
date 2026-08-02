@@ -44,6 +44,12 @@ const pool = function pool(this: any, options: any, authorizeFn: any) {
         throw new Error();
     }
 
+    /** Stop the stratum server and release the pool's handles. */
+    this.stop = function (callback?: () => void) {
+        if (_this.stratumServer) _this.stratumServer.stop(callback);
+        else callback?.();
+    };
+
     this.start = function () {
         SetupVarDiff();
         SetupApi();

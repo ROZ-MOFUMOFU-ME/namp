@@ -1116,6 +1116,9 @@ const StratumServer = function StratumServer(
     const stratumClients: any = {};
     const subscriptionCounter = SubscriptionCounter();
     let rebroadcastTimeout: any;
+    // Listening servers, kept so the pool can shut them down (tests, and any
+    // graceful shutdown path); the pool itself runs them for its lifetime.
+    const listeners: any[] = [];
     const bannedIPs: any = {};
 
     function checkBan(client: any) {
@@ -1227,22 +1230,37 @@ const StratumServer = function StratumServer(
                     markStarted();
                     return;
                 }
-                tls.createServer(tlsServerOptions, onConnect).listen(
-                    parseInt(port),
-                    '0.0.0.0',
-                    markStarted
+                listeners.push(
+                    tls
+                        .createServer(tlsServerOptions, onConnect)
+                        .listen(parseInt(port), '0.0.0.0', markStarted)
                 );
             } else {
-                net.createServer({ allowHalfOpen: false }, onConnect).listen(
-                    parseInt(port),
-                    '0.0.0.0',
-                    markStarted
+                listeners.push(
+                    net
+                        .createServer({ allowHalfOpen: false }, onConnect)
+                        .listen(parseInt(port), '0.0.0.0', markStarted)
                 );
             }
         });
     })();
 
     //public members
+
+    /** Stop listening and release the rebroadcast timer. */
+    this.stop = function (callback?: () => void) {
+        clearTimeout(rebroadcastTimeout);
+        for (const id of Object.keys(stratumClients)) {
+            stratumClients[id]?.socket?.destroy();
+        }
+        let pending = listeners.length;
+        if (!pending) return callback?.();
+        for (const listener of listeners) {
+            listener.close(() => {
+                if (--pending === 0) callback?.();
+            });
+        }
+    };
 
     this.addBannedIP = function (ipAddress: any) {
         bannedIPs[ipAddress] = Date.now();
