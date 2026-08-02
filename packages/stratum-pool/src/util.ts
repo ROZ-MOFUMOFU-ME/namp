@@ -210,13 +210,30 @@ export function kotoAddressToScript(addr: string, network?: any): Buffer {
     }
 }
 
+/**
+ * Format a hashrate (H/s) for humans. This is the stack's single formatter —
+ * the portal re-exports it for the website, so the startup banner and the
+ * stats pages cannot disagree on units (they used to: binary "KH" here,
+ * SI "KH/s" there).
+ */
 export function getReadableHashRateString(hashrate: number): string {
-    let i = -1;
-    const byteUnits = [' KH', ' MH', ' GH', ' TH', ' PH', ' EH', ' ZH', ' YH'];
-    do {
-        hashrate = hashrate / 1024;
-        i++;
-    } while (hashrate > 1024);
+    hashrate = hashrate * 1000000;
+    if (hashrate < 1000000) {
+        return '0 H/s';
+    }
+    const byteUnits = [
+        ' H/s',
+        ' KH/s',
+        ' MH/s',
+        ' GH/s',
+        ' TH/s',
+        ' PH/s',
+        ' EH/s',
+        ' ZH/s',
+        ' YH/s',
+    ];
+    const i = Math.floor(Math.log(hashrate / 1000) / Math.log(1000) - 1);
+    hashrate = hashrate / 1000 / Math.pow(1000, i + 1);
     return hashrate.toFixed(2) + byteUnits[i];
 }
 

@@ -17,6 +17,7 @@ import {
     ppsPlusFeePart
 } from './feeRewardLogic.ts';
 import { esmppsAllocate, smppsAllocate, parseDebtEntry } from './smppsLogic.ts';
+import { createCoinAmounts } from './statsUtil.ts';
 import async from 'async';
 import * as Stratum from 'stratum-pool';
 import * as StratumUtil from 'stratum-pool/src/util.ts';
@@ -1887,27 +1888,11 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
         var opidTimeout = setTimeout(checkOpids, opid_interval);
     }
 
-    function roundTo(n: any, digits: any) {
-        if (digits === undefined) {
-            digits = 0;
-        }
-        var multiplicator = Math.pow(10, digits);
-        n = parseFloat((n * multiplicator).toFixed(11));
-        var test = Math.round(n) / multiplicator;
-        return +test.toFixed(digits);
-    }
-
-    var satoshisToCoins = function (satoshis: any) {
-        return roundTo(satoshis / magnitude, coinPrecision);
-    };
-
-    var coinsToSatoshies = function (coins: any) {
-        return Math.round(coins * magnitude);
-    };
-
-    function coinsRound(number: any) {
-        return roundTo(number, coinPrecision);
-    }
+    // magnitude is only known once getBalance() has probed the daemon, so the
+    // helpers read it lazily through the getter.
+    const { satoshisToCoins, coinsToSatoshies, coinsRound } = createCoinAmounts(
+        () => magnitude
+    );
 
     function checkForDuplicateBlockHeight(rounds: any, height: any) {
         var count = 0;

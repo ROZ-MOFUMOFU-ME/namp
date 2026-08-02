@@ -5,7 +5,7 @@ import { createRedisClient } from './redisUtil.ts';
 import { parsePriceHash } from './priceProviders.ts';
 import {
     sortObjectByProperty,
-    roundTo,
+    createCoinAmounts,
     readableSeconds,
     readableHashRateString,
     sortBlocks,
@@ -255,20 +255,8 @@ export default function (
         _this.statPoolHistory.push(data);
     }
 
-    var magnitude = 100000000;
-    var coinPrecision = magnitude.toString().length - 1;
-
-    var satoshisToCoins = function (satoshis: any) {
-        return roundTo(satoshis / magnitude, coinPrecision);
-    };
-
-    var coinsToSatoshies = function (coins: any) {
-        return Math.round(coins * magnitude);
-    };
-
-    function coinsRound(number: any) {
-        return roundTo(number, coinPrecision);
-    }
+    const { satoshisToCoins, coinsToSatoshies, coinsRound } =
+        createCoinAmounts(100000000);
 
     this.getCoins = function (cback: () => void) {
         _this.stats.coins = redisClients[0].coins;

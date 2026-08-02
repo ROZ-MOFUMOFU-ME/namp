@@ -5,7 +5,7 @@ import * as util from './util.ts';
 import blockTemplate from './blockTemplate.ts';
 
 // Import algos and diff1
-import algos, { diff1 } from './algoProperties.ts';
+import algos, { diff1, getBlockHasher, getCoinbaseHasher } from './algoProperties.ts';
 
 // Unique extranonce per subscriber
 const ExtraNonceCounter = function (this: any, configInstanceId?: number) {
@@ -55,78 +55,10 @@ const JobManager = function JobManager(this: any, options: any) {
 
     const hashDigest = algos[options.coin.algorithm].hash(options.coin);
 
-    const coinbaseHasher = (function () {
-        switch (options.coin.algorithm) {
-            case 'keccak':
-            case 'blake':
-            case 'fugue':
-            case 'groestl':
-                if (options.coin.normalHashing === true) return util.sha256d;
-                else return util.sha256;
-            default:
-                return util.sha256d;
-        }
-    })();
-
-    const blockHasher: any = (function () {
-        switch (options.coin.algorithm) {
-            case 'blake':
-            case 'blake2s':
-            case 'neoscrypt':
-            case 'lyra2':
-            case 'lyra2re2':
-            case 'allium':
-            case 'lyra2v2':
-            case 'lyra2v3':
-            case 'qubit':
-            case 'skein':
-            case 'x11':
-            case 'x16r':
-            case 'x16rv2':
-            case 'x17':
-            case 'odo':
-            case 'minotaur':
-            case 'groestl':
-            case 'groestlmyriad':
-                return function (this: any) {
-                    return util.reverseBuffer(util.sha256d.apply(this, arguments as any));
-                };
-            case 'lyra2rev2':
-                return function (this: any) {
-                    return util.reverseBuffer(hashDigest.apply(this, arguments as any));
-                };
-            case 'scrypt':
-            case 'scrypt-og':
-            case 'scrypt-jane':
-                if (options.coin.reward === 'POS') {
-                    return function (this: any, _d: any) {
-                        return util.reverseBuffer(hashDigest.apply(this, arguments as any));
-                    };
-                }
-                break;
-            case 'scrypt-n':
-            case 'sha1':
-            case 'yespowerSUGAR':
-            case 'yescryptR8G':
-            case 'yespowerLTNCG':
-            case 'yescryptR16':
-            case 'yespowerR16':
-            // vipstar (VIPSTARCOIN): both the PoW hash (algoProperties) and the
-            // block IDENTIFIER hash are sha256d of the full 181-byte qtum-style
-            // header — they're literally the same hash. Daemons compute
-            // CBlockHeader::GetHash via standard sha256d over the serialized
-            // header (incl. hashStateRoot/hashUTXORoot/prevoutStake), so
-            // submitblock's getblock lookup matches.
-            case 'vipstar':
-                return function (_d: any) {
-                    return util.reverseBuffer(util.sha256d(_d));
-                };
-            default:
-                return function (this: any) {
-                    return util.reverseBuffer(hashDigest.apply(this, arguments as any));
-                };
-        }
-    })();
+    // Both hashers are declared per algorithm in algoProperties (blockHasher /
+    // coinbaseHasher policies) rather than re-derived from switch statements here.
+    const coinbaseHasher = getCoinbaseHasher(options.coin);
+    const blockHasher: any = getBlockHasher(options.coin, hashDigest);
 
     const getKotoFoundersReward = function (rpcData: any, recipients: any) {
         if (!options.coin.kotoFoundersReward) {

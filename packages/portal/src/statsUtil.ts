@@ -1,5 +1,5 @@
 /**
- * Pure, dependency-free helpers extracted from libs/stats.js.
+ * Pure helpers extracted from libs/stats.js.
  *
  * stats.js imports stratum-pool (algoProperties), whose module graph keeps the
  * event loop alive and makes `node --test` hang. Mirroring the
@@ -107,27 +107,6 @@ export function readableSeconds(t: number): string {
  * string. Used for both pool/worker and network hashrates, which historically
  * shared an identical implementation.
  */
-export function readableHashRateString(hashrate: number): string {
-    hashrate = hashrate * 1000000;
-    if (hashrate < 1000000) {
-        return '0 H/s';
-    }
-    const byteUnits = [
-        ' H/s',
-        ' KH/s',
-        ' MH/s',
-        ' GH/s',
-        ' TH/s',
-        ' PH/s',
-        ' EH/s',
-        ' ZH/s',
-        ' YH/s'
-    ];
-    const i = Math.floor(Math.log(hashrate / 1000) / Math.log(1000) - 1);
-    hashrate = hashrate / 1000 / Math.pow(1000, i + 1);
-    return hashrate.toFixed(2) + byteUnits[i];
-}
-
 /** Comparator that orders Redis block keys ("...:...:height") by height, descending. */
 export function sortBlocks(a: string, b: string): number {
     const as = parseInt(a.split(':')[2]);
@@ -148,3 +127,41 @@ export function sortWorkersByHashrate(
         return a.hashrate < b.hashrate ? -1 : 1;
     }
 }
+
+/**
+ * Coin/satoshi conversions bound to a coin's magnitude (satoshis per coin).
+ *
+ * stats and paymentProcessor both need these, but they source the magnitude
+ * differently: stats assumes the usual 1e8, while paymentProcessor derives it
+ * at runtime from the daemon's `getbalance` precision and only knows it after
+ * that call returns. Passing a getter keeps that late binding intact — the
+ * helpers always read the current value — instead of each module carrying its
+ * own copy of the arithmetic.
+ */
+export function createCoinAmounts(magnitude: number | (() => number)) {
+    const current =
+        typeof magnitude === 'function' ? magnitude : () => magnitude;
+    const precision = () => current().toString().length - 1;
+
+    return {
+        /** Satoshis to coins, rounded to the coin's precision. */
+        satoshisToCoins(satoshis: number): number {
+            return roundTo(satoshis / current(), precision());
+        },
+        /** Coins to whole satoshis. */
+        coinsToSatoshies(coins: number): number {
+            return Math.round(coins * current());
+        },
+        /** Round a coin amount to the coin's precision. */
+        coinsRound(amount: number): number {
+            return roundTo(amount, precision());
+        }
+    };
+}
+
+/**
+ * Hashrate formatting lives in stratum-pool so the library's startup banner and
+ * the website render identical strings; re-exported here under the portal's
+ * historical name.
+ */
+export { getReadableHashRateString as readableHashRateString } from 'stratum-pool/src/util.ts';

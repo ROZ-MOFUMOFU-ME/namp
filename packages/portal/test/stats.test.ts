@@ -11,6 +11,7 @@ import {
     roundTo,
     readableSeconds,
     readableHashRateString,
+    createCoinAmounts,
     sortBlocks,
     sortWorkersByHashrate
 } from '../src/statsUtil.ts';
@@ -129,4 +130,33 @@ test('sortObjectByProperty rebuilds the object in sorted key order', () => {
         false
     );
     assert.deepEqual(Object.keys(pools), ['koto', 'zeny']);
+});
+
+test('createCoinAmounts converts against a fixed magnitude', () => {
+    const { satoshisToCoins, coinsToSatoshies, coinsRound } =
+        createCoinAmounts(100000000);
+
+    assert.equal(satoshisToCoins(100000000), 1);
+    assert.equal(satoshisToCoins(12345678), 0.12345678);
+    assert.equal(coinsToSatoshies(1), 100000000);
+    assert.equal(coinsToSatoshies(0.123456789), 12345679); // rounds to whole satoshis
+    assert.equal(coinsRound(1.2345678912), 1.23456789);
+});
+
+test('createCoinAmounts follows a magnitude discovered later', () => {
+    // paymentProcessor learns the magnitude from the daemon after startup, so
+    // the helpers must read the current value rather than capture it.
+    let magnitude = 0;
+    const { satoshisToCoins, coinsToSatoshies } = createCoinAmounts(
+        () => magnitude
+    );
+
+    magnitude = 100000000;
+    assert.equal(satoshisToCoins(250000000), 2.5);
+    assert.equal(coinsToSatoshies(2.5), 250000000);
+
+    // A coin whose daemon reports 6-decimal balances.
+    magnitude = 1000000;
+    assert.equal(satoshisToCoins(2500000), 2.5);
+    assert.equal(coinsToSatoshies(2.5), 2500000);
 });

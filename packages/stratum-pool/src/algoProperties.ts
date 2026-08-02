@@ -5,29 +5,55 @@ const diff1 = ((global as any).diff1 = BigInt(
     '0x00000000ffff0000000000000000000000000000000000000000000000000000'
 ));
 
+/*
+ * Every algorithm is declared here in one place: its hasher, its difficulty
+ * multiplier, and how jobManager must derive the coinbase and block-identifier
+ * hashes for it. jobManager reads those policies through getCoinbaseHasher /
+ * getBlockHasher below instead of re-deriving them from parallel switch
+ * statements — the two used to drift apart from this table.
+ *
+ * blockHasher (how the block IDENTIFIER hash is produced; the PoW hash is
+ * always `hash()`):
+ *   'digest'    — reverseBuffer(hashDigest(header, nTime))     [default]
+ *   'sha256d'   — reverseBuffer(sha256d(header)); the daemon computes
+ *                 CBlockHeader::GetHash as plain sha256d for these chains
+ *   'posDigest' — 'digest' on POS chains, 'sha256d' otherwise
+ *
+ * coinbaseHasher:
+ *   'sha256d'       — sha256d(coinbase)                        [default]
+ *   'normalHashing' — sha256d when coin.normalHashing is set, else sha256
+ */
+
+/** Algorithms whose hasher is a plain pass-through to a multi-hashing export. */
+function passthrough(fnName: string, props: any = {}) {
+    return {
+        ...props,
+        hash() {
+            return function (this: any, ...args: any[]) {
+                return (multiHashing as any)[fnName].apply(this, args);
+            };
+        },
+    };
+}
+
+const yescryptDiff = parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+
 const algos: any = ((global as any).algos = {
     sha256: {
         //Uncomment diff if you want to use hardcoded truncated diff
         //diff: '00000000ffff0000000000000000000000000000000000000000000000000000',
         hash() {
-            return function (this: any) {
-                return util.sha256d.apply(this, arguments as any);
+            return function (this: any, ...args: any[]) {
+                return (util.sha256d as any).apply(this, args);
             };
         },
     },
-    sha256d: {
-        //Uncomment diff if you want to use hardcoded truncated diff
-        //diff: '00000000ffff0000000000000000000000000000000000000000000000000000',
-        hash() {
-            return function (this: any) {
-                return multiHashing.sha256d.apply(this, arguments as any);
-            };
-        },
-    },
+    sha256d: passthrough('sha256d'),
     scrypt: {
         //Uncomment diff if you want to use hardcoded truncated diff
         //diff: '0000ffff00000000000000000000000000000000000000000000000000000000',
         multiplier: Math.pow(2, 16),
+        blockHasher: 'posDigest',
         hash(coinConfig: any) {
             const nValue = coinConfig.nValue || 1024;
             const rValue = coinConfig.rValue || 1;
@@ -41,6 +67,7 @@ const algos: any = ((global as any).algos = {
         //Uncomment diff if you want to use hardcoded truncated diff
         //diff: '0000ffff00000000000000000000000000000000000000000000000000000000',
         multiplier: Math.pow(2, 16),
+        blockHasher: 'posDigest',
         hash(coinConfig: any) {
             const nValue = coinConfig.nValue || 64;
             const rValue = coinConfig.rValue || 1;
@@ -51,6 +78,7 @@ const algos: any = ((global as any).algos = {
     },
     'scrypt-jane': {
         multiplier: Math.pow(2, 16),
+        blockHasher: 'posDigest',
         hash(coinConfig: any) {
             const nTimestamp = coinConfig.chainStartTime || 1367991200;
             const nMin = coinConfig.nMin || 4;
@@ -62,6 +90,7 @@ const algos: any = ((global as any).algos = {
     },
     'scrypt-n': {
         multiplier: Math.pow(2, 16),
+        blockHasher: 'sha256d',
         hash(coinConfig: any) {
             const timeTable: any = coinConfig.timeTable || {
                 2048: 1389306217,
@@ -92,87 +121,23 @@ const algos: any = ((global as any).algos = {
             };
         },
     },
-    sha1: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.sha1.apply(this, arguments as any);
-            };
-        },
-    },
-    x11: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.x11.apply(this, arguments as any);
-            };
-        },
-    },
-    x13: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.x13.apply(this, arguments as any);
-            };
-        },
-    },
-    x15: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.x15.apply(this, arguments as any);
-            };
-        },
-    },
-    x16r: {
+    sha1: passthrough('sha1', { blockHasher: 'sha256d' }),
+    x11: passthrough('x11', { blockHasher: 'sha256d' }),
+    x13: passthrough('x13'),
+    x15: passthrough('x15'),
+    x16r: passthrough('x16r', { multiplier: Math.pow(2, 8), blockHasher: 'sha256d' }),
+    x16rv2: passthrough('x16rv2', {
         multiplier: Math.pow(2, 8),
-        hash() {
-            return function (this: any) {
-                return multiHashing.x16r.apply(this, arguments as any);
-            };
-        },
-    },
-    x16rv2: {
-        multiplier: Math.pow(2, 8),
-        hash() {
-            return function (this: any) {
-                return multiHashing.x16rv2.apply(this, arguments as any);
-            };
-        },
-    },
-    x17: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.x17.apply(this, arguments as any);
-            };
-        },
-    },
-    skydoge: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.skydoge.apply(this, arguments as any);
-            };
-        },
-    },
-    x25x: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.x25x.apply(this, arguments as any);
-            };
-        },
-    },
-    nist5: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.nist5.apply(this, arguments as any);
-            };
-        },
-    },
-    quark: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.quark.apply(this, arguments as any);
-            };
-        },
-    },
+        blockHasher: 'sha256d',
+    }),
+    x17: passthrough('x17', { blockHasher: 'sha256d' }),
+    skydoge: passthrough('skydoge'),
+    x25x: passthrough('x25x'),
+    nist5: passthrough('nist5'),
+    quark: passthrough('quark'),
     keccak: {
         multiplier: Math.pow(2, 8),
+        coinbaseHasher: 'normalHashing',
         hash(coinConfig: any) {
             if (coinConfig.normalHashing === true) {
                 return function (data: Buffer, nTimeInt: number) {
@@ -183,135 +148,54 @@ const algos: any = ((global as any).algos = {
                     );
                 };
             } else {
-                return function (this: any) {
-                    return multiHashing.keccak.apply(this, arguments as any);
+                return function (this: any, ...args: any[]) {
+                    return (multiHashing.keccak as any).apply(this, args);
                 };
             }
         },
     },
-    allium: {
+    allium: passthrough('allium', { multiplier: Math.pow(2, 8), blockHasher: 'sha256d' }),
+    blake: passthrough('blake', {
         multiplier: Math.pow(2, 8),
-        hash() {
-            return function (this: any) {
-                return multiHashing.allium.apply(this, arguments as any);
-            };
-        },
-    },
-    blake: {
-        multiplier: Math.pow(2, 8),
-        hash() {
-            return function (this: any) {
-                return multiHashing.blake.apply(this, arguments as any);
-            };
-        },
-    },
-    blake2s: {
+        blockHasher: 'sha256d',
+        coinbaseHasher: 'normalHashing',
+    }),
+    blake2s: passthrough('blake2s', {
         multiplier: Math.pow(2, 0),
-        hash() {
-            return function (this: any) {
-                return multiHashing.blake2s.apply(this, arguments as any);
-            };
-        },
-    },
-    skein: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.skein.apply(this, arguments as any);
-            };
-        },
-    },
-    groestl: {
+        blockHasher: 'sha256d',
+    }),
+    skein: passthrough('skein', { blockHasher: 'sha256d' }),
+    groestl: passthrough('groestl', {
         multiplier: Math.pow(2, 8),
-        hash() {
-            return function (this: any) {
-                return multiHashing.groestl.apply(this, arguments as any);
-            };
-        },
-    },
-    groestlmyriad: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.groestlmyriad.apply(this, arguments as any);
-            };
-        },
-    },
-    fugue: {
+        blockHasher: 'sha256d',
+        coinbaseHasher: 'normalHashing',
+    }),
+    groestlmyriad: passthrough('groestlmyriad', { blockHasher: 'sha256d' }),
+    fugue: passthrough('fugue', {
         multiplier: Math.pow(2, 8),
-        hash() {
-            return function (this: any) {
-                return multiHashing.fugue.apply(this, arguments as any);
-            };
-        },
-    },
-    shavite3: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.shavite3.apply(this, arguments as any);
-            };
-        },
-    },
-    hefty1: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.hefty1.apply(this, arguments as any);
-            };
-        },
-    },
-    neoscrypt: {
+        coinbaseHasher: 'normalHashing',
+    }),
+    shavite3: passthrough('shavite3'),
+    hefty1: passthrough('hefty1'),
+    neoscrypt: passthrough('neoscrypt', {
         multiplier: Math.pow(2, 5),
-        hash() {
-            return function (this: any) {
-                return multiHashing.neoscrypt.apply(this, arguments as any);
-            };
-        },
-    },
-    minotaur: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.minotaur.apply(this, arguments as any);
-            };
-        },
-    },
-    lyra2: {
+        blockHasher: 'sha256d',
+    }),
+    minotaur: passthrough('minotaur', { blockHasher: 'sha256d' }),
+    lyra2: passthrough('lyra2re', { multiplier: Math.pow(2, 8), blockHasher: 'sha256d' }),
+    lyra2v2: passthrough('lyra2rev2', {
         multiplier: Math.pow(2, 8),
-        hash() {
-            return function (this: any) {
-                return multiHashing.lyra2re.apply(this, arguments as any);
-            };
-        },
-    },
-    lyra2v2: {
+        blockHasher: 'sha256d',
+    }),
+    lyra2v3: passthrough('lyra2rev3', {
         multiplier: Math.pow(2, 8),
-        hash() {
-            return function (this: any) {
-                return multiHashing.lyra2rev2.apply(this, arguments as any);
-            };
-        },
-    },
-    lyra2v3: {
+        blockHasher: 'sha256d',
+    }),
+    lyra2re: passthrough('lyra2re', { multiplier: Math.pow(2, 7) }),
+    lyra2re2: passthrough('lyra2rev2', {
         multiplier: Math.pow(2, 8),
-        hash() {
-            return function (this: any) {
-                return multiHashing.lyra2rev3.apply(this, arguments as any);
-            };
-        },
-    },
-    lyra2re: {
-        multiplier: Math.pow(2, 7),
-        hash() {
-            return function (this: any) {
-                return multiHashing.lyra2re.apply(this, arguments as any);
-            };
-        },
-    },
-    lyra2re2: {
-        multiplier: Math.pow(2, 8),
-        hash() {
-            return function (this: any) {
-                return multiHashing.lyra2rev2.apply(this, arguments as any);
-            };
-        },
-    },
+        blockHasher: 'sha256d',
+    }),
     lyra2rev2: {
         multiplier: Math.pow(2, 8),
         hash() {
@@ -330,22 +214,10 @@ const algos: any = ((global as any).algos = {
             };
         },
     },
-    lyra2z: {
-        multiplier: Math.pow(2, 8),
-        hash() {
-            return function (this: any) {
-                return multiHashing.lyra2z.apply(this, arguments as any);
-            };
-        },
-    },
-    qubit: {
-        hash() {
-            return function (this: any) {
-                return multiHashing.qubit.apply(this, arguments as any);
-            };
-        },
-    },
+    lyra2z: passthrough('lyra2z', { multiplier: Math.pow(2, 8) }),
+    qubit: passthrough('qubit', { blockHasher: 'sha256d' }),
     odo: {
+        blockHasher: 'sha256d',
         hash(coinConfig: any) {
             const odoKey = function (nTime: number) {
                 return nTime - (nTime % coinConfig.shapechangeInterval);
@@ -356,61 +228,32 @@ const algos: any = ((global as any).algos = {
             };
         },
     },
-    yescryptR8: {
+    yescryptR8: passthrough('yespower_0_5_R8', {
         multiplier: 65536,
-        diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
-        hash() {
-            return function (this: any) {
-                return multiHashing.yespower_0_5_R8.apply(this, arguments as any);
-            };
-        },
-    },
-    yescryptR8G: {
+        diff: yescryptDiff,
+    }),
+    yescryptR8G: passthrough('yespower_0_5_R8G', {
         multiplier: 65536,
-        diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
-        hash() {
-            return function (this: any) {
-                return multiHashing.yespower_0_5_R8G.apply(this, arguments as any);
-            };
-        },
-    },
-    yescryptR16: {
+        diff: yescryptDiff,
+        blockHasher: 'sha256d',
+    }),
+    yescryptR16: passthrough('yespower_0_5_R16', {
         multiplier: 65536,
-        diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
-        hash() {
-            return function (this: any) {
-                return multiHashing.yespower_0_5_R16.apply(this, arguments as any);
-            };
-        },
-    },
-    yescryptR24: {
+        diff: yescryptDiff,
+        blockHasher: 'sha256d',
+    }),
+    yescryptR24: passthrough('yespower_0_5_R24', {
         multiplier: 65536,
-        diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
-        hash() {
-            return function (this: any) {
-                return multiHashing.yespower_0_5_R24.apply(this, arguments as any);
-            };
-        },
-    },
-    yescryptR32: {
+        diff: yescryptDiff,
+    }),
+    yescryptR32: passthrough('yespower_0_5_R32', {
         multiplier: 65536,
-        diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
-        hash() {
-            return function (this: any) {
-                return multiHashing.yespower_0_5_R32.apply(this, arguments as any);
-            };
-        },
-    },
-    yespower: {
-        multiplier: 65536,
-        hash() {
-            return function (this: any) {
-                return multiHashing.yespower.apply(this, arguments as any);
-            };
-        },
-    },
+        diff: yescryptDiff,
+    }),
+    yespower: passthrough('yespower', { multiplier: 65536 }),
     yespowerSUGAR: {
         multiplier: Math.pow(2, 16),
+        blockHasher: 'sha256d',
         hash(coinConfig: any) {
             const nValue = coinConfig.nValue || 2048;
             const rValue = coinConfig.rValue || 32;
@@ -421,6 +264,7 @@ const algos: any = ((global as any).algos = {
     },
     yespowerLTNCG: {
         multiplier: Math.pow(2, 16),
+        blockHasher: 'sha256d',
         hash(coinConfig: any) {
             const nValue = coinConfig.nValue || 2048;
             const rValue = coinConfig.rValue || 32;
@@ -429,14 +273,10 @@ const algos: any = ((global as any).algos = {
             };
         },
     },
-    yespowerR16: {
+    yespowerR16: passthrough('yespower_r16', {
         multiplier: 65536,
-        hash() {
-            return function (this: any) {
-                return multiHashing.yespower_r16.apply(this, arguments as any);
-            };
-        },
-    },
+        blockHasher: 'sha256d',
+    }),
     yespowerURX: {
         multiplier: Math.pow(2, 16),
         hash(coinConfig: any) {
@@ -448,6 +288,7 @@ const algos: any = ((global as any).algos = {
         },
     },
     vipstar: {
+        blockHasher: 'sha256d',
         hash() {
             return function (this: any, data: Buffer) {
                 // VIPSTARCOIN's daemon validates PoW as standard sha256d
@@ -469,6 +310,39 @@ const algos: any = ((global as any).algos = {
 
 for (const algo in algos) {
     if (!algos[algo].multiplier) algos[algo].multiplier = 1;
+}
+
+/** Coinbase hasher for a coin, per its algorithm's declared policy. */
+export function getCoinbaseHasher(coin: any): (data: Buffer) => Buffer {
+    if (algos[coin.algorithm]?.coinbaseHasher === 'normalHashing') {
+        return coin.normalHashing === true ? util.sha256d : util.sha256;
+    }
+    return util.sha256d;
+}
+
+/**
+ * Block-identifier hasher for a coin, per its algorithm's declared policy.
+ * `hashDigest` is the algorithm's PoW hasher (`algos[algo].hash(coin)`).
+ */
+export function getBlockHasher(
+    coin: any,
+    hashDigest: (...args: any[]) => Buffer
+): (...args: any[]) => Buffer {
+    const sha256dHasher = function (this: any, ...args: any[]) {
+        return util.reverseBuffer((util.sha256d as any).apply(this, args));
+    };
+    const digestHasher = function (this: any, ...args: any[]) {
+        return util.reverseBuffer(hashDigest.apply(this, args));
+    };
+
+    switch (algos[coin.algorithm]?.blockHasher) {
+        case 'sha256d':
+            return sha256dHasher;
+        case 'posDigest':
+            return coin.reward === 'POS' ? digestHasher : sha256dHasher;
+        default:
+            return digestHasher;
+    }
 }
 
 export { diff1 };
