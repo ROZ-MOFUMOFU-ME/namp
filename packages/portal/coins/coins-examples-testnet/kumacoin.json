@@ -1,0 +1,15 @@
+{
+    "name": "KumaCoin_testnet",
+    "symbol": "KUMA",
+    "algorithm": "quark",
+
+    "peerMagic": "c3d4d2fe",
+    "peerMagicTestnet": "cdf2c0ef",
+    "txfee": 0.03,
+    "blockTime": 90,
+
+    "getInfo": true,
+    "noNetworkInfo": true,
+    "noGetnetworkhashps": true,
+    "subVersion": "/Antenna:{version}/"
+}

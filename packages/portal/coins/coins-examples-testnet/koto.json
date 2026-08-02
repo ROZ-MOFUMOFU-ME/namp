@@ -1,0 +1,36 @@
+{
+    "name": "Koto_testnet",
+    "symbol": "TOKO",
+    "algorithm": "yescryptR8G",
+
+    "peerMagic": "4b6f746f",
+    "peerMagicTestnet": "546f6b6f",
+    "txfee": 0.0001,
+    "blockTime": 60,
+
+    "getInfo": false,
+    "noNetworkInfo": false,
+    "noGetnetworkhashps": true,
+
+    "explorer": {
+        "txURL": "https://test-koto.blockbook.ovh//tx/",
+        "blockURL": "https://test-koto.blockbook.ovh//block/"
+    },
+
+    "requireShielding": true,
+    "nSubsidySlowStartInterval": 43200,
+    "nSubsidyHalvingInterval": 1051200,
+    "payFoundersReward": false,
+    "percentFoundersReward": 20,
+    "maxFoundersRewardBlockHeight": 849999,
+    "foundersRewardAddressChangeInterval": 17709.3125,
+    "vFoundersRewardAddress": [],
+    "kotoFoundersReward": [
+        {
+            "comment": "for testnet",
+            "address": "k2A4ArX2YAQJ6Qiut7tNNWUhq3Np7Et525K",
+            "start": 93500,
+            "last": 2123999
+        }
+    ]
+}

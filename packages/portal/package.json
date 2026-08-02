@@ -1,0 +1,81 @@
+{
+    "name": "zny-nomp",
+    "version": "2.0.0",
+    "description": "BitZeny (yescrypt) stratum mining pool based on NOMP",
+    "keywords": [
+        "stratum",
+        "mining",
+        "pool",
+        "server",
+        "poolserver",
+        "bitzeny",
+        "zny",
+        "yescrypt",
+        "yespower"
+    ],
+    "homepage": "https://github.com/ROZ-MOFUMOFU-ME/zny-nomp",
+    "bugs": {
+        "url": "https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/issues"
+    },
+    "license": "MIT",
+    "author": "ROZ",
+    "contributors": [
+        "Joshua Yabut",
+        "aayanl",
+        "sennevb",
+        "Matthew Little",
+        "vekexasia",
+        "TheSeven",
+        "Yoshuki43"
+    ],
+    "main": "src/init.ts",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ROZ-MOFUMOFU-ME/zny-nomp.git"
+    },
+    "scripts": {
+        "start": "node --import tsx src/init.ts",
+        "lint": "eslint src/init.ts",
+        "lint:fix": "eslint src/init.ts --fix",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "test": "node --import tsx src/init.ts",
+        "test:unit": "node --test test/*.test.ts test/*.test.mjs",
+        "check:config": "node --test test/config.test.ts",
+        "typecheck": "tsc --noEmit",
+        "build": "npm --prefix web install --legacy-peer-deps && npm --prefix web run build",
+        "web:dev": "npm --prefix web run dev"
+    },
+    "dependencies": {
+        "async": "^3.2.6",
+        "colors": "^1.4.0",
+        "compression": "^1.8.1",
+        "dateformat": "^5.0.3",
+        "express": "^5.2.1",
+        "extend": "^3.0.2",
+        "node-json-minify": "^3.0.0",
+        "node-watch": "^0.7.4",
+        "redis": "^6.0.0",
+        "stratum-pool": "https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool.git#develop",
+        "tsx": "^4.22.4"
+    },
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@types/async": "^3.2.25",
+        "@types/compression": "^1.8.1",
+        "@types/dateformat": "^5.0.3",
+        "@types/express": "^5.0.6",
+        "@types/extend": "^3.0.4",
+        "@types/node": "^25.9.3",
+        "eslint": "^10.5.0",
+        "eslint-config-prettier": "^10.1.8",
+        "prettier": "^3.8.4",
+        "typescript": "^6.0.3",
+        "typescript-eslint": "^8.61.1"
+    },
+    "engines": {
+        "node": ">=22.18.0",
+        "npm": ">=9"
+    }
+}

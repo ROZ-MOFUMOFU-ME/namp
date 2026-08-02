@@ -1,0 +1,38 @@
+{
+    "name": "Yenten",
+    "symbol": "YTN",
+    "algorithm": "yespowerR16",
+
+    "peerMagic": "ad5aeb9f",
+    "peerMagicTestnet": "9554e495",
+    "txfee": 0.001,
+    "blockTime": 120,
+
+    "getInfo": false,
+    "noNetworkInfo": false,
+    "noGetnetworkhashps": true,
+
+    "explorer": {
+        "txURL": "https://explorer.yentencoin.info/tx/",
+        "blockURL": "https://explorer.yentencoin.info/block/",
+        "address": "https://explorer.yentencoin.info/address/"
+    },
+    "miningTools": [
+        {
+            "name": "cpuminer-opt-rplant",
+            "url": "https://github.com/rplant8/cpuminer-opt-rplant/releases"
+        },
+        {
+            "name": "cpuminer-opt (JayDDee)",
+            "url": "https://github.com/JayDDee/cpuminer-opt/releases"
+        }
+    ],
+
+    "mainnet": {
+        "bip32": {
+            "public": "0488b21e"
+        },
+        "pubKeyHash": "4e",
+        "scriptHash": "0a"
+    }
+}

@@ -1,0 +1,123 @@
+{
+    "enabled": true,
+    "coin": "kumacoin.json",
+
+    "blockIdentifier": "",
+    "_comment_blockIdentifier1": "a string embedded in the block to be mined. Used to identify the pool in Insight etc etc.",
+    "_comment_blockIdentifire2": "If this value equals null string, website.stratumHost in 'config.json' is used.",
+    "address": "",
+
+    "rewardRecipients": {
+        "": 1.0
+    },
+
+    "paymentProcessing": {
+        "minConf": 10,
+        "enabled": true,
+        "paymentMode": "prop",
+        "_comment_paymentMode": "prop, pplnt, pplns, solo, pps, dpps, fpps, ppsplus, smpps, esmpps",
+        "_comment_pps": "paymentMode=pps only (share-based; the pool fronts block-find variance from a pre-funded float - see docs/payment-schemes.md). blockReward = current block subsidy in coins (0 DISABLES accrual; set it from your daemon's getblocktemplate coinbasevalue or getblocksubsidy); minFloat = kill-switch float floor, operator-tunable; feePercent = pool cut taken off each share; accrualInterval = seconds (min 10).",
+        "pps": {
+            "blockReward": 1.034375,
+            "minFloat": 40,
+            "feePercent": 0.5,
+            "accrualInterval": 60
+        },
+        "_comment_dpps": "paymentMode=dpps only (dynamic PPS; the per-share rate auto-throttles on the pool's realized luck, floored at rateMin and capped at full PPS - see docs/payment-schemes.md section 5). blockReward as in pps; targetMargin = solvency cushion taken off the rate (0.02 = 2%); rateMin = floor on the per-share rate vs full PPS; smoothingWindow = accrual cycles over which realized luck is EMA-smoothed; minFloat / accrualInterval as in pps.",
+        "dpps": {
+            "blockReward": 1.034375,
+            "targetMargin": 0.02,
+            "rateMin": 0.5,
+            "smoothingWindow": 100,
+            "minFloat": 40,
+            "accrualInterval": 60
+        },
+        "_comment_fpps": "paymentMode=fpps only (Full PPS; share-based - same float/kill-switch risk as pps). Pays a per-share rate over (blockReward + smoothed average tx fee), so miners get an even slice of expected fees regardless of which block carried them. blockReward = block subsidy in coins; feePercent = pool cut; minFloat = kill-switch floor; feeWindow = blocks over which the avg tx fee is EMA-smoothed; accrualInterval = seconds (min 10). See docs/payment-schemes.md.",
+        "fpps": {
+            "blockReward": 1.034375,
+            "feePercent": 0.5,
+            "minFloat": 40,
+            "feeWindow": 100,
+            "accrualInterval": 60
+        },
+        "_comment_ppsplus": "paymentMode=ppsplus only (PPS+; the block SUBSIDY is paid via PPS accrual from the float, the TX-FEE portion of each block is distributed PPLNS-style to recent shares). blockReward = block subsidy in coins (kept in the wallet to back accrual); feePercent = pool cut on the subsidy; minFloat = kill-switch floor; n = fee window as a multiple of network difficulty; maxLogLength = cap on the rolling share log in entries; accrualInterval = seconds (min 10). See docs/payment-schemes.md.",
+        "ppsplus": {
+            "blockReward": 1.034375,
+            "feePercent": 0.5,
+            "minFloat": 40,
+            "n": 2,
+            "maxLogLength": 100000,
+            "accrualInterval": 60
+        },
+        "_comment_smpps": "paymentMode=smpps only (Shared Maximum PPS; bounded pool risk). Miners accrue PPS per share into an owed ledger, but balances are only released up to the pool's realized income (matured block rewards) - so the pool can carry deferred debt but never an unbacked liability. smpps pays OLDEST debt first (FIFO). blockReward = block subsidy in coins; feePercent = pool cut; minFloat = kill-switch floor; accrualInterval = seconds (min 10). See docs/payment-schemes.md.",
+        "smpps": {
+            "blockReward": 1.034375,
+            "feePercent": 0.5,
+            "minFloat": 40,
+            "accrualInterval": 60
+        },
+        "_comment_esmpps": "paymentMode=esmpps only (Equalized SMPPS; same bounded-risk income cap as smpps, but when underfunded every miner gets the SAME fraction of their owed instead of oldest-first). Fields as in smpps. See docs/payment-schemes.md.",
+        "esmpps": {
+            "blockReward": 1.034375,
+            "feePercent": 0.5,
+            "minFloat": 40,
+            "accrualInterval": 60
+        },
+        "_comment_pplns": "paymentMode=pplns only (pay-per-last-N-shares; block-based, no float/liability - see docs/payment-schemes.md). Each matured block is shared among the contributors to the last N shares before it, where the window is a multiple of the network difficulty (windowDiff = n * networkDiff) and slides across round boundaries. n = window size as a multiple of network difficulty; maxLogLength = cap on the rolling share log in entries (must comfortably exceed the shares the window covers).",
+        "pplns": {
+            "n": 2,
+            "maxLogLength": 100000
+        },
+        "paymentInterval": 120,
+        "minimumPayment": 0.1,
+        "maxBlocksPerPayment": 3,
+        "daemon": {
+            "host": "127.0.0.1",
+            "port": 7585,
+            "user": "username",
+            "password": "password",
+            "rpcPath": "/"
+        }
+    },
+
+    "tlsOptions": {
+        "enabled": false,
+        "serverKey": "",
+        "serverCert": "",
+        "ca": ""
+    },
+
+    "ports": {
+        "3361": {
+            "diff": 0.5,
+            "tls": false,
+            "varDiff": {
+                "minDiff": 0.0,
+                "maxDiff": 16,
+                "targetTime": 15,
+                "retargetTime": 60,
+                "variancePercent": 30
+            }
+        }
+    },
+
+    "poolId": "main",
+    "_comment_poolId": "use it for region identification: eu, us, asia or keep default if you have one stratum instance for one coin",
+
+    "daemons": [
+        {
+            "host": "127.0.0.1",
+            "port": 7585,
+            "user": "username",
+            "password": "password",
+            "rpcPath": "/"
+        }
+    ],
+
+    "p2p": {
+        "enabled": true,
+        "host": "127.0.0.1",
+        "port": 7586,
+        "disableTransactions": true
+    }
+}

@@ -1,0 +1,129 @@
+{
+    "logLevel": "debug",
+    "logColors": true,
+    "cliPort": 17117,
+    "clustering": { "enabled": true, "forks": "auto" },
+    "defaultPoolConfigs": {
+        "blockRefreshInterval": 500,
+        "jobRebroadcastTimeout": 55,
+        "connectionTimeout": 600,
+        "emitInvalidBlockHashes": false,
+        "validateWorkerUsername": true,
+        "tcpProxyProtocol": false,
+        "banning": {
+            "enabled": true,
+            "time": 600,
+            "invalidPercent": 50,
+            "checkThreshold": 500,
+            "purgeInterval": 300
+        }
+    },
+    "website": {
+        "enabled": true,
+        "host": "0.0.0.0",
+        "port": 8080,
+        "stratumHost": "cryppit.com",
+        "branding": {
+            "_comment_branding": "Per-deployment branding. siteName/logo/favicon accept absolute URLs (CDN ok). logo = header logo; home.logo = hero logo (separate).",
+            "siteName": "zny-nomp",
+            "logo": "/logo.svg",
+            "favicon": "/favicon.ico",
+            "tagline": "",
+            "_comment_navLinks": "Extra header links (JSON array). Link = { label, url, icon }. Dropdown/toggle = { label, icon, children: [ { label, url, icon } ] }. Example: [ { \"label\": \"Map\", \"url\": \"https://example.com/map\", \"icon\": \"fas fa-map-marker-alt\" }, { \"label\": \"Pools\", \"icon\": \"fas fa-coins\", \"children\": [ { \"label\": \"KOTO\", \"url\": \"https://koto.example.com\" }, { \"label\": \"MONA\", \"url\": \"https://mona.example.com\" } ] } ]",
+            "navLinks": [],
+            "showTabStats": true,
+            "_comment_showTabStats": "Show the 'Tab Stats' nav entry + /tbs page (a per-pool comparison table). Omit for auto (shown only when more than one pool is configured; hidden for a single coin). Set true/false to force.",
+            "home": {
+                "logo": "",
+                "_comment_title": "Free-form hero heading (multi-coin). Leave empty to use the {{coin}} template below.",
+                "title": "",
+                "coin": "",
+                "minPayout": "",
+                "paymentInterval": "",
+                "poolFee": "",
+                "paymentMethod": "",
+                "_comment_highlights": "Hero badges. Omit for defaults (No KYC / Anonymous Mining / No Registration); set [] to hide; or override: [ \"Instant Payout\", { \"icon\": \"fas fa-bolt\", \"text\": \"Fast Payout\" } ].",
+                "_comment_sections": "Custom HTML blocks under the hero. Example: [ { \"title\": \"Mining Settings\", \"html\": \"<ul><li>stratum+tcp://stratum.example.com:3333 (diff 0.1)</li><li>Username: &lt;your-address&gt;.&lt;worker&gt;, Password: x</li></ul>\" } ]",
+                "sections": [],
+                "_comment_servers": "Server cards with live ping. flag = ISO 3166-1 alpha-2 (flag-icons). pingUrl must be CORS-enabled (latency measured in-browser). features: string, or { \"icon\": \"fas fa-shield-alt\", \"text\": \"DDoS Protected\" }.",
+                "servers": { "title": "", "list": [] }
+            },
+            "_comment_analytics": "GA4: set googleAnalyticsId to a G-XXXXXXXXXX id. Custom tags via scripts: [ { \"src\": \"https://plausible.io/js/script.js\", \"defer\": true, \"attributes\": { \"data-domain\": \"example.com\" } } ]",
+            "analytics": { "googleAnalyticsId": "", "scripts": [] }
+        },
+        "stats": { "updateInterval": 300, "historicalRetention": 28800, "hashrateWindow": 600 },
+        "adminCenter": { "enabled": false, "password": "password" },
+        "tlsOptions": { "enabled": false, "cert": "", "key": "" }
+    },
+    "_comment_redis": "Single Redis config for the whole portal (master, website, and every pool). Pools inherit this unless a pool_config overrides it with its own 'redis'. password is optional (leave \"\" for none); env REDIS_HOST / REDIS_PORT / REDIS_PASSWORD override it.",
+    "redis": { "host": "127.0.0.1", "port": 6379, "password": "" },
+    "switching": {
+        "switch1": {
+            "enabled": false,
+            "algorithm": "sha256",
+            "ports": {
+                "3333": {
+                    "diff": 10,
+                    "varDiff": {
+                        "minDiff": 16,
+                        "maxDiff": 512,
+                        "targetTime": 15,
+                        "retargetTime": 90,
+                        "variancePercent": 30
+                    }
+                }
+            }
+        },
+        "switch2": {
+            "enabled": false,
+            "algorithm": "scrypt",
+            "ports": {
+                "4444": {
+                    "diff": 10,
+                    "varDiff": {
+                        "minDiff": 16,
+                        "maxDiff": 512,
+                        "targetTime": 15,
+                        "retargetTime": 90,
+                        "variancePercent": 30
+                    }
+                }
+            }
+        },
+        "switch3": {
+            "enabled": false,
+            "algorithm": "x11",
+            "ports": {
+                "5555": {
+                    "diff": 0.001,
+                    "varDiff": {
+                        "minDiff": 0.001,
+                        "maxDiff": 1,
+                        "targetTime": 15,
+                        "retargetTime": 60,
+                        "variancePercent": 30
+                    }
+                }
+            }
+        }
+    },
+    "profitSwitch": { "enabled": false, "updateInterval": 600, "threshold": 1.05 },
+    "priceFeed": {
+        "enabled": false,
+        "providers": ["coingecko", "coinpaprika"],
+        "vsCurrency": "usd",
+        "updateInterval": 300,
+        "timeout": 15000,
+        "coingecko": {
+            "apiBase": "https://api.coingecko.com/api/v3",
+            "apiKey": "",
+            "apiKeyHeader": "x-cg-demo-api-key"
+        },
+        "coinpaprika": { "apiBase": "https://api.coinpaprika.com/v1" },
+        "coins": {
+            "BTC": { "coingecko": "bitcoin", "coinpaprika": "btc-bitcoin" },
+            "MONA": { "coingecko": "monacoin", "coinpaprika": "mona-monacoin" }
+        }
+    },
+    "balanceLog": { "enabled": false, "interval": 300, "historyRetention": 86400 }
+}
