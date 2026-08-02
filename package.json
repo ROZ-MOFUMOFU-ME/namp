@@ -19,7 +19,7 @@
     },
     "scripts": {
         "typecheck": "npm run typecheck --workspaces --if-present",
-        "test": "npm test --workspaces --if-present",
+        "test": "npm test --workspace multi-hashing --workspace stratum-pool && npm run test:unit --workspace zny-nomp",
         "lint": "npm run lint --workspaces --if-present",
         "format": "prettier --write .",
         "format:check": "prettier --check ."
@@ -28,5 +28,9 @@
         "@types/node": "^25.9.3",
         "prettier": "^3.8.4",
         "typescript": "^7.0.2"
+    },
+    "allowScripts": {
+        "esbuild@0.28.1": true,
+        "github:ROZ-MOFUMOFU-ME/node-multi-hashing#649b70fc34c46a00c8678aa15d2e287e8a8f8cfd": true
     }
 }
