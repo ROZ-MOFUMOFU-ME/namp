@@ -27,6 +27,18 @@ jobs:
     test:
         name: Test (Node ${{ matrix.node-version }})
         runs-on: ubuntu-latest
+        services:
+            # The portal's share/payment persistence is tested against a real
+            # Redis; those tests skip themselves when none is reachable.
+            redis:
+                image: redis:7
+                ports:
+                    - 6399:6379
+                options: >-
+                    --health-cmd "redis-cli ping"
+                    --health-interval 10s
+                    --health-timeout 5s
+                    --health-retries 5
         strategy:
             fail-fast: false
             matrix:

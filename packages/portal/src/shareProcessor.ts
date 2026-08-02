@@ -65,6 +65,10 @@ export default function (this: any, logger: Logger, poolConfig: any) {
             'Redis client had an error: ' + JSON.stringify(err.message)
         );
     });
+    // Exposed so a caller can close it (tests, and any future graceful
+    // shutdown); the pool worker itself keeps it open for the process lifetime.
+    this.connection = connection;
+
     connection.on('ready', function () {
         logger.debug(
             logSystem,
