@@ -10,23 +10,20 @@
         "type": "git",
         "url": "git+https://github.com/ROZ-MOFUMOFU-ME/namp.git"
     },
-    "workspaces": [
-        "web"
-    ],
     "engines": {
         "node": ">=22.18.0",
         "npm": ">=9"
     },
     "scripts": {
-        "typecheck": "tsc --noEmit && npm run typecheck --workspaces --if-present",
+        "typecheck": "tsc --noEmit && tsc -p web",
         "test": "node --test test/*.test.cjs test/*.test.ts",
         "lint": "eslint src/init.ts src/stratum test web/src",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "lint:fix": "eslint src/init.ts src/stratum test web/src --fix",
         "check:config": "node --test test/config.test.ts",
-        "web:dev": "npm run dev --workspace namp-web",
-        "build": "npm run build --workspace namp-web",
+        "web:dev": "vite --config web/vite.config.ts",
+        "build": "tsc -p web && vite build --config web/vite.config.ts",
         "install": "node-gyp rebuild",
         "rebuild:native": "node-gyp rebuild",
         "start": "node --import tsx src/init.ts"
@@ -37,22 +34,29 @@
         "@babel/plugin-syntax-jsx": "^8.0.1",
         "@babel/preset-typescript": "^8.0.1",
         "@eslint/js": "^10.0.1",
+        "@tailwindcss/vite": "^4.3.3",
         "@types/async": "^3.2.25",
         "@types/compression": "^1.8.1",
         "@types/dateformat": "^5.0.3",
         "@types/express": "^5.0.6",
         "@types/extend": "^3.0.4",
         "@types/node": "^26.1.2",
+        "@types/react": "^19.2.18",
+        "@types/react-dom": "^19.2.4",
+        "@vitejs/plugin-react": "^6.0.5",
         "eslint": "^10.8.0",
         "eslint-config-prettier": "^10.1.8",
         "prettier": "^3.9.6",
-        "typescript": "^7.0.2"
+        "tailwindcss": "^4.3.3",
+        "typescript": "^7.0.2",
+        "vite": "^8.2.0"
     },
     "allowScripts": {
         "esbuild@0.28.1": true
     },
     "dependencies": {
         "@exodus/bitcoinjs-lib-zcash": "^0.0.21",
+        "@tanstack/react-query": "^5.101.4",
         "async": "^3.2.6",
         "bindings": "^1.5.0",
         "bitcoinjs-lib": "^7.0.1",
@@ -61,9 +65,16 @@
         "dateformat": "^5.0.3",
         "express": "^5.2.1",
         "extend": "^3.0.2",
+        "i18next": "^26.3.6",
         "nan": "^2.28.0",
         "node-json-minify": "^3.0.0",
         "node-watch": "^0.7.4",
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8",
+        "react-i18next": "^17.0.11",
+        "react-is": "^19.2.8",
+        "react-router-dom": "^7.18.2",
+        "recharts": "^3.10.1",
         "redis": "^6.2.0",
         "tsx": "^4.23.1"
     },
