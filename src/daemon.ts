@@ -63,6 +63,12 @@ function DaemonInterface(this: any, daemons: any, logger: any) {
             method: 'POST',
             auth: `${instance.user}:${instance.password}`,
             headers: {
+                // Bitcoin-family daemons accept any content type, but
+                // geth-family ones (Ethash chains: Ethereum, Ethereum
+                // Classic, VirBiCoin) reject the request outright without
+                // this — "invalid content type, only application/json is
+                // supported".
+                'Content-Type': 'application/json',
                 'Content-Length': jsonData.length
             },
             agent: instance.myagent
