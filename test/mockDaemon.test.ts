@@ -32,7 +32,10 @@ interface DaemonState {
 }
 
 /** A coin daemon that answers exactly what pool startup and mining need. */
-function startMockDaemon(state: DaemonState): Promise<http.Server> {
+function startMockDaemon(
+    state: DaemonState,
+    overrides: Record<string, (params: any[]) => any> = {}
+): Promise<http.Server> {
     const handlers: Record<string, (params: any[]) => any> = {
         validateaddress: () => ({
             isvalid: true,
@@ -95,6 +98,8 @@ function startMockDaemon(state: DaemonState): Promise<http.Server> {
             return { hash, tx: ['mock-coinbase-txid'], confirmations: 1 };
         }
     };
+
+    Object.assign(handlers, overrides);
 
     const server = http.createServer((req, res) => {
         let body = '';
@@ -377,4 +382,147 @@ test('mines a block end to end against a mock daemon', async () => {
         submitted.includes(coinbase.toString('hex')),
         'the submitted block carries the coinbase the miner committed to'
     );
+});
+
+/*
+ * VIPSTARCOIN is the awkward shape in the fleet, and the pool has dedicated
+ * code paths for it. Every response below was verified against the live
+ * mainnet daemon (VIPSTARCOIN 1.0.2.7, block 3768158) on 2026-08-03:
+ *
+ *   - getdifficulty / getmininginfo.difficulty are OBJECTS carrying
+ *     proof-of-work and proof-of-stake, not a number
+ *   - networkhashps reports the PoS-inflated figure (410 TH/s against a PoW
+ *     difficulty of 3.28e-05), which is why the coin config sets
+ *     networkHashFromDiff
+ *   - getaddressinfo does not exist (-32601), so address checks must fall
+ *     back to validateaddress
+ *   - getblocktemplate carries hashstateroot and hashutxoroot, giving the
+ *     181-byte qtum-style header
+ */
+test('starts against a VIPSTARCOIN-shaped daemon and serves qtum jobs', async () => {
+    const state: DaemonState = {
+        calls: [],
+        submittedBlocks: [],
+        confirmedHashes: []
+    };
+    const posDifficulty = {
+        'proof-of-work': 3.284198246339667e-5,
+        'proof-of-stake': 17664554.25606092,
+        'search-interval': 0
+    };
+    const stateRoot = '1a'.repeat(32);
+    const utxoRoot = '35'.repeat(32);
+
+    const daemon = await startMockDaemon(state, {
+        getdifficulty: () => posDifficulty,
+        getmininginfo: () => ({
+            blocks: 3768158,
+            difficulty: posDifficulty,
+            networkhashps: 410204105691890.2,
+            chain: 'main'
+        }),
+        getnetworkinfo: () => ({
+            version: 1000207,
+            subversion: '/VIPSTARCOIN:1.0.2.7/',
+            protocolversion: 70018,
+            connections: 3
+        }),
+        getaddressinfo: () => ({
+            __error: { code: -32601, message: 'Method not found' }
+        }),
+        getblocktemplate: () => ({
+            version: 536870912,
+            previousblockhash: '00'.repeat(32),
+            bits: EASY_BITS,
+            height: 3768159,
+            curtime: Math.floor(Date.now() / 1000) - 10,
+            coinbasevalue: 10000000000,
+            target: '7fffff' + '00'.repeat(29),
+            transactions: [],
+            hashstateroot: stateRoot,
+            hashutxoroot: utxoRoot
+        })
+    });
+    cleanup.push(() => daemon.close());
+    const daemonPort = (daemon.address() as net.AddressInfo).port;
+
+    const stratumPort = 3500 + Math.floor(process.pid % 100);
+    const pool: any = createPool(
+        {
+            coin: {
+                name: 'vipstarcoin',
+                symbol: 'VIPS',
+                algorithm: 'vipstar',
+                networkHashFromDiff: true
+            },
+            address: POOL_ADDRESS,
+            rewardRecipients: {},
+            blockRefreshInterval: 0,
+            jobRebroadcastTimeout: 3600,
+            connectionTimeout: 60,
+            p2p: { enabled: false },
+            ports: { [stratumPort]: { diff: 0.0001 } },
+            daemons: [
+                { host: HOST, port: daemonPort, user: 'mock', password: 'mock' }
+            ]
+        },
+        (_ip: any, _port: any, _worker: any, _password: any, callback: any) =>
+            callback({ error: null, authorized: true, disconnect: false })
+    );
+    cleanup.push(() => pool.stop());
+    pool.on('log', () => {});
+
+    pool.start();
+    await new Promise<void>((resolve, reject) => {
+        pool.once('started', resolve);
+        setTimeout(() => reject(new Error('pool did not start')), 15000);
+    });
+
+    // A PoS/PoW hybrid must not stop the pool from starting: the object-shaped
+    // difficulty and the missing getaddressinfo are both handled.
+    assert.ok(state.calls.includes('getdifficulty'));
+    assert.ok(state.calls.includes('getblocktemplate'));
+
+    const client = new StratumClient(stratumPort);
+    cleanup.push(() => client.close());
+    await client.connected();
+    await client.call('mining.subscribe', ['namp-test/1.0']);
+    await client.call('mining.authorize', ['miner.rig1', 'x']);
+
+    const params = await client.job();
+    // The qtum roots ride along after the standard notify parameters, sent
+    // word-swapped so the miner's le32dec rebuilds the canonical header.
+    const swapWords = (hex: string) => {
+        const b = Buffer.from(hex, 'hex');
+        const out = Buffer.alloc(b.length);
+        for (let i = 0; i + 4 <= b.length; i += 4)
+            b.subarray(i, i + 4).copy(out, b.length - 4 - i);
+        return out.toString('hex');
+    };
+    // Order matters: ccminer reads both roots straight after nTime and only
+    // then the cleanJobs flag — swapping them makes it parse the boolean as a
+    // state root.
+    const [stateParam, utxoParam, cleanJobs, reward] = params.slice(8);
+    assert.equal(
+        swapWords(stateParam),
+        stateRoot,
+        'hashStateRoot must round-trip'
+    );
+    assert.equal(
+        swapWords(utxoParam),
+        utxoRoot,
+        'hashUTXORoot must round-trip'
+    );
+    assert.equal(cleanJobs, true, 'cleanJobs follows the roots');
+    assert.equal(typeof reward, 'string', 'the trailing reward field is sent');
+
+    // The job builds the 181-byte header the daemon hashes.
+    const job = pool.jobManager.currentJob;
+    const header = job.serializeHeader(
+        '22'.repeat(32),
+        params[7],
+        'deadbeef',
+        undefined
+    );
+    assert.equal(header.length, 181);
 });
