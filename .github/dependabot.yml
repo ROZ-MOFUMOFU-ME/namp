@@ -1,0 +1,18 @@
+version: 2
+updates:
+    # Root workspace tree (portal, stratum-pool, multi-hashing)
+    - package-ecosystem: npm
+      directory: /
+      schedule:
+          interval: weekly
+      open-pull-requests-limit: 5
+    # The web SPA is a separate npm project (not a workspace)
+    - package-ecosystem: npm
+      directory: /packages/portal/web
+      schedule:
+          interval: weekly
+      open-pull-requests-limit: 5
+    - package-ecosystem: github-actions
+      directory: /
+      schedule:
+          interval: weekly
