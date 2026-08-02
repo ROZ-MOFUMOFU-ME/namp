@@ -12,9 +12,9 @@ export default function (
     portalConfig: any,
     poolConfigs: any
 ) {
-    var _this = this;
+    const _this = this;
 
-    var portalStats = (this.stats = new (stats as any)(
+    const portalStats = (this.stats = new (stats as any)(
         logger,
         portalConfig,
         poolConfigs
@@ -25,7 +25,7 @@ export default function (
     // Redis client for the API: reads the price feed the priceFeed worker
     // publishes (priceFeed:prices / priceFeed:lastUpdated) and reads/writes the
     // admin-editable site announcement ('announcement').
-    var priceClient = createRedisClient(
+    const priceClient = createRedisClient(
         portalConfig.redis,
         function (err: any) {
             logger.error(
@@ -40,7 +40,7 @@ export default function (
         priceClient
             .hGetAll('priceFeed:prices')
             .then(function (raw: any) {
-                var prices = parsePriceHash(raw);
+                const prices = parsePriceHash(raw);
                 return priceClient.get('priceFeed:lastUpdated').then(function (
                     ts: any
                 ) {
@@ -78,8 +78,8 @@ export default function (
             case 'config': {
                 // Public runtime config the SPA needs (stratum host, enabled
                 // switching ports, per-pool coin/ports/explorer). No secrets.
-                var swCfg: any = portalConfig.switching || {};
-                var switching: any = {};
+                const swCfg: any = portalConfig.switching || {};
+                const switching: any = {};
                 Object.keys(swCfg).forEach(function (k) {
                     if (swCfg[k] && swCfg[k].enabled)
                         switching[k] = {
@@ -89,10 +89,10 @@ export default function (
                             diff: swCfg[k].diff
                         };
                 });
-                var pools: any = {};
+                const pools: any = {};
                 Object.keys(poolConfigs).forEach(function (name) {
-                    var pc: any = poolConfigs[name];
-                    var coin: any = pc.coin || {};
+                    const pc: any = poolConfigs[name];
+                    const coin: any = pc.coin || {};
                     pools[name] = {
                         coin: {
                             name: coin.name,
@@ -128,15 +128,15 @@ export default function (
                 });
                 // Operator branding (site name / logo / home-hero copy) so a
                 // deployment can rebrand from config.json without code changes.
-                var brandCfg: any =
+                const brandCfg: any =
                     (portalConfig.website && portalConfig.website.branding) ||
                     {};
-                var brandHome: any = brandCfg.home || {};
-                var brandAnalytics: any = brandCfg.analytics || {};
+                const brandHome: any = brandCfg.home || {};
+                const brandAnalytics: any = brandCfg.analytics || {};
                 // Only emit array values of the expected shape so a config typo
                 // (e.g. navLinks/sections written as a string) can't crash the
                 // SPA. Also drops any _comment_* helper keys.
-                var arr = function (v: any) {
+                const arr = function (v: any) {
                     return Array.isArray(v) ? v : undefined;
                 };
                 res.header('Content-Type', 'application/json');
@@ -210,11 +210,11 @@ export default function (
                 res.end(renderMetrics(portalStats.stats));
                 return;
             case 'health': {
-                var statsInterval =
+                const statsInterval =
                     portalConfig.website &&
                     portalConfig.website.stats &&
                     portalConfig.website.stats.updateInterval;
-                var health = buildHealth(
+                const health = buildHealth(
                     portalStats.stats,
                     Date.now(),
                     process.uptime(),
@@ -234,7 +234,7 @@ export default function (
                 break;
             case 'payments':
                 var poolBlocks = [];
-                for (var pool in portalStats.stats.pools) {
+                for (const pool in portalStats.stats.pools) {
                     poolBlocks.push({
                         name: pool,
                         pending: portalStats.stats.pools[pool].pending,
@@ -247,11 +247,11 @@ export default function (
             case 'worker_stats':
                 res.header('Content-Type', 'application/json');
                 if (req.url.indexOf('?') > 0) {
-                    var url_parms = req.url.split('?');
+                    const url_parms = req.url.split('?');
                     if (url_parms.length > 0) {
-                        var history: any = {};
-                        var workers: any = {};
-                        var address: any = url_parms[1] || null;
+                        const history: any = {};
+                        const workers: any = {};
+                        let address: any = url_parms[1] || null;
                         //res.end(portalStats.getWorkerStats(address));
                         if (address != null && address.length > 0) {
                             // make sure it is just the miners address
@@ -264,12 +264,12 @@ export default function (
                                     portalStats.getTotalSharesByAddress(
                                         address,
                                         function (shares: any) {
-                                            var totalHash = parseFloat(
+                                            let totalHash = parseFloat(
                                                 0.0 as any
                                             );
-                                            var totalShares = shares;
-                                            var networkHash = 0;
-                                            for (var h in portalStats.statHistory) {
+                                            const totalShares = shares;
+                                            let networkHash = 0;
+                                            for (const h in portalStats.statHistory) {
                                                 for (var pool in portalStats
                                                     .statHistory[h].pools) {
                                                     for (var w in portalStats
@@ -331,7 +331,7 @@ export default function (
                                                             portalStats.stats.pools[
                                                                 pool
                                                             ].workers[w];
-                                                        for (var b in balances.balances) {
+                                                        for (const b in balances.balances) {
                                                             if (
                                                                 w ==
                                                                 balances
@@ -473,7 +473,7 @@ export default function (
             case 'announcement': {
                 // Set/clear the home-page announcement (password already checked
                 // by the /api/admin route). Plain text, capped, rendered escaped.
-                var text =
+                const text =
                     typeof req.body.announcement === 'string'
                         ? req.body.announcement.slice(0, 2000)
                         : '';

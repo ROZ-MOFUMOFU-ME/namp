@@ -8,18 +8,18 @@ import ShareProcessor from './shareProcessor.ts';
 import type { Logger } from './logUtil.ts';
 
 export default function (this: any, logger: Logger) {
-    var _this = this;
+    const _this = this;
 
-    var poolConfigs = JSON.parse(process.env.pools as string);
-    var portalConfig = JSON.parse(process.env.portalConfig as string);
+    const poolConfigs = JSON.parse(process.env.pools as string);
+    const portalConfig = JSON.parse(process.env.portalConfig as string);
 
-    var forkId = process.env.forkId;
+    const forkId = process.env.forkId;
 
-    var pools: any = {};
+    const pools: any = {};
 
-    var proxySwitch: any = {};
+    const proxySwitch: any = {};
 
-    var redisClient = createRedisClient(
+    const redisClient = createRedisClient(
         portalConfig.redis,
         function (err: any) {
             logger.error(
@@ -34,7 +34,7 @@ export default function (this: any, logger: Logger) {
     process.on('message', function (message: any) {
         switch (message.type) {
             case 'banIP':
-                for (var p in pools) {
+                for (const p in pools) {
                     if (pools[p].stratumServer)
                         pools[p].stratumServer.addBannedIP(message.ip);
                 }
@@ -135,20 +135,20 @@ export default function (this: any, logger: Logger) {
     });
 
     Object.keys(poolConfigs).forEach(function (coin) {
-        var poolOptions = poolConfigs[coin];
+        const poolOptions = poolConfigs[coin];
 
-        var logSystem = 'Pool';
-        var logComponent = coin;
-        var logSubCat = 'Thread ' + (parseInt(forkId as string) + 1);
+        const logSystem = 'Pool';
+        const logComponent = coin;
+        const logSubCat = 'Thread ' + (parseInt(forkId as string) + 1);
 
-        var handlers: any = {
+        const handlers: any = {
             auth: function () {},
             share: function () {},
             diff: function () {}
         };
 
         //Internal share / payment processing (shares are written to Redis).
-        var shareProcessor = new (ShareProcessor as any)(logger, poolOptions);
+        const shareProcessor = new (ShareProcessor as any)(logger, poolOptions);
 
         handlers.auth = function (
             port: any,
@@ -162,7 +162,7 @@ export default function (this: any, logger: Logger) {
                     'validateaddress',
                     [String(workerName).split('.')[0]],
                     function (results: any) {
-                        var isValid =
+                        const isValid =
                             results.filter(function (r: any) {
                                 if (r.response) return r.response.isvalid;
                                 return false;
@@ -181,7 +181,7 @@ export default function (this: any, logger: Logger) {
             shareProcessor.handleShare(isValidShare, isValidBlock, data);
         };
 
-        var authorizeFN = function (
+        const authorizeFN = function (
             ip: any,
             port: any,
             workerName: any,
@@ -193,7 +193,7 @@ export default function (this: any, logger: Logger) {
                 workerName,
                 password,
                 function (authorized: any) {
-                    var authString = authorized
+                    const authString = authorized
                         ? 'Authorized'
                         : 'Unauthorized ';
 
@@ -228,7 +228,7 @@ export default function (this: any, logger: Logger) {
                 if (data.worker != undefined)
                     data.worker = data.worker.replace(/:/g, '-');
 
-                var shareData = JSON.stringify(data);
+                const shareData = JSON.stringify(data);
 
                 if (data.blockHash && !isValidBlock)
                     logger.debug(
@@ -337,9 +337,9 @@ export default function (this: any, logger: Logger) {
     if (portalConfig.switching) {
         var logSystem = 'Switching';
         var logComponent = 'Setup';
-        var logSubCat = 'Thread ' + (parseInt(forkId as string) + 1);
+        const logSubCat = 'Thread ' + (parseInt(forkId as string) + 1);
 
-        var proxyState: any = {};
+        let proxyState: any = {};
 
         //
         // Load proxy state for each algorithm from redis which allows NOMP to resume operation
@@ -382,12 +382,12 @@ export default function (this: any, logger: Logger) {
                 //
                 Object.keys(portalConfig.switching).forEach(
                     function (switchName) {
-                        var algorithm =
+                        const algorithm =
                             portalConfig.switching[switchName].algorithm;
 
                         if (!portalConfig.switching[switchName].enabled) return;
 
-                        var initalPool = proxyState.hasOwnProperty(algorithm)
+                        const initalPool = proxyState.hasOwnProperty(algorithm)
                             ? proxyState[algorithm]
                             : _this.getFirstPoolForAlgorithm(algorithm);
                         proxySwitch[switchName] = {
@@ -399,9 +399,9 @@ export default function (this: any, logger: Logger) {
 
                         Object.keys(proxySwitch[switchName].ports).forEach(
                             function (port) {
-                                var f = net
+                                const f = net
                                     .createServer(function (socket) {
-                                        var currentPool =
+                                        const currentPool =
                                             proxySwitch[switchName].currentPool;
 
                                         logger.debug(
@@ -452,7 +452,7 @@ export default function (this: any, logger: Logger) {
     }
 
     this.getFirstPoolForAlgorithm = function (algorithm: any) {
-        var foundCoin = '';
+        let foundCoin = '';
         Object.keys(poolConfigs).forEach(function (coinName) {
             if (poolConfigs[coinName].coin.algorithm == algorithm) {
                 if (foundCoin === '') foundCoin = coinName;
@@ -480,12 +480,12 @@ export default function (this: any, logger: Logger) {
         Object.keys(portalConfig.switching).forEach(function (switchName) {
             if (!portalConfig.switching[switchName].enabled) return;
 
-            var switchAlgo = portalConfig.switching[switchName].algorithm;
+            const switchAlgo = portalConfig.switching[switchName].algorithm;
             if (pool.options.coin.algorithm !== switchAlgo) return;
 
             // we know the switch configuration matches the pool's algo, so setup the diff and
             // vardiff for each of the switch's ports
-            for (var port in portalConfig.switching[switchName].ports) {
+            for (const port in portalConfig.switching[switchName].ports) {
                 if (portalConfig.switching[switchName].ports[port].varDiff)
                     pool.setVarDiff(
                         port,

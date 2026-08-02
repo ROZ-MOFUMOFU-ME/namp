@@ -34,12 +34,12 @@ declare const util: any;
 declare const callback: any;
 
 export default function (logger: Logger) {
-    var poolConfigs: any = JSON.parse(process.env.pools as string);
+    const poolConfigs: any = JSON.parse(process.env.pools as string);
 
-    var enabledPools: any = [];
+    const enabledPools: any = [];
 
     Object.keys(poolConfigs).forEach(function (coin) {
-        var poolOptions = poolConfigs[coin];
+        const poolOptions = poolConfigs[coin];
         if (
             poolOptions.paymentProcessing &&
             poolOptions.paymentProcessing.enabled
@@ -60,10 +60,10 @@ export default function (logger: Logger) {
         },
         function (err: any, results: any) {
             results.forEach(function (coin: any) {
-                var poolOptions = poolConfigs[coin];
-                var processingConfig = poolOptions.paymentProcessing;
-                var logSystem = 'Payments';
-                var logComponent = coin;
+                const poolOptions = poolConfigs[coin];
+                const processingConfig = poolOptions.paymentProcessing;
+                const logSystem = 'Payments';
+                const logComponent = coin;
 
                 logger.debug(
                     logSystem,
@@ -86,21 +86,21 @@ export default function (logger: Logger) {
 }
 
 function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
-    var coin = poolOptions.coin.name;
-    var processingConfig = poolOptions.paymentProcessing;
+    const coin = poolOptions.coin.name;
+    const processingConfig = poolOptions.paymentProcessing;
 
-    var logSystem = 'Payments';
-    var logComponent = coin;
+    const logSystem = 'Payments';
+    const logComponent = coin;
 
     // default tx fee
-    var txFee = 1000;
+    const txFee = 1000;
 
-    var opidCount = 0;
-    var opids: any = [];
+    let opidCount = 0;
+    let opids: any = [];
 
     // zcash team recommends 10 confirmations for safety from orphaned blocks
-    var minConfShield = Math.max(processingConfig.minConf || 10, 1); // Don't allow 0 conf transactions.
-    var minConfPayout = Math.max(processingConfig.minConf || 10, 1);
+    const minConfShield = Math.max(processingConfig.minConf || 10, 1); // Don't allow 0 conf transactions.
+    const minConfPayout = Math.max(processingConfig.minConf || 10, 1);
     if (minConfPayout < 3) {
         logger.warning(
             logSystem,
@@ -110,7 +110,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     }
 
     // minimum paymentInterval of 60 seconds
-    var paymentIntervalSecs = Math.max(
+    const paymentIntervalSecs = Math.max(
         processingConfig.paymentInterval || 120,
         30
     );
@@ -122,7 +122,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
         );
     }
 
-    var maxBlocksPerPayment = Math.max(
+    const maxBlocksPerPayment = Math.max(
         processingConfig.maxBlocksPerPayment || 3,
         1
     );
@@ -131,7 +131,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // (whole block reward to the finder), pps (fixed pay-per-share, share-based),
     // or dpps (dynamic PPS — PPS whose per-share rate auto-throttles on the pool's
     // realized luck, floored at rateMin; see docs/payment-schemes.md §5).
-    var paymentMode = processingConfig.paymentMode || 'prop';
+    const paymentMode = processingConfig.paymentMode || 'prop';
     if (
         [
             'prop',
@@ -155,8 +155,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
         );
     }
     // pplnt - pay per last N time shares
-    var pplntEnabled = paymentMode === 'pplnt';
-    var pplntTimeQualify = processingConfig.pplnt || 0.51; // 51%
+    const pplntEnabled = paymentMode === 'pplnt';
+    const pplntTimeQualify = processingConfig.pplnt || 0.51; // 51%
     // pplns - pay per last N shares. BLOCK-BASED (no float / liability, like
     // prop/pplnt/solo): each matured block is shared among the contributors to
     // the last N shares before it, where the window N is a multiple of the
@@ -166,25 +166,25 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // coin:shares:pplnsRound<height> at find time, rather than the per-round
     // coin:shares:round<height> hash. See docs/payment-schemes.md and
     // src/pplnsLogic.ts.
-    var pplnsEnabled = paymentMode === 'pplns';
-    var pplnsConfig = (pplnsEnabled && processingConfig.pplns) || {};
-    var pplnsN = parseFloat(pplnsConfig.n) || 2; // window = N x networkDiff
+    const pplnsEnabled = paymentMode === 'pplns';
+    const pplnsConfig = (pplnsEnabled && processingConfig.pplns) || {};
+    const pplnsN = parseFloat(pplnsConfig.n) || 2; // window = N x networkDiff
     // solo - the block finder (round.minedby) takes the whole block reward
-    var soloEnabled = paymentMode === 'solo';
+    const soloEnabled = paymentMode === 'solo';
     // pps - pay-per-share. SHARE-BASED: the pool fronts variance from a float so
     // this carries real financial liability (see docs/payment-schemes.md).
     // Miners accrue `(blockReward / networkDiff) * shareDiff` continuously into
     // coin:balances (accruePPS, below); matured block rewards are routed to the
     // pool float instead of miners. HIGH RISK — keep behind float monitoring
     // (/api/metrics) and the minFloat kill-switch.
-    var ppsEnabled = paymentMode === 'pps';
-    var ppsConfig = (ppsEnabled && processingConfig.pps) || {};
-    var ppsBlockReward = parseFloat(ppsConfig.blockReward) || 0;
-    var ppsFeePercent = parseFloat(ppsConfig.feePercent) || 0;
-    var ppsMinFloat = parseFloat(ppsConfig.minFloat) || 0;
+    const ppsEnabled = paymentMode === 'pps';
+    const ppsConfig = (ppsEnabled && processingConfig.pps) || {};
+    const ppsBlockReward = parseFloat(ppsConfig.blockReward) || 0;
+    const ppsFeePercent = parseFloat(ppsConfig.feePercent) || 0;
+    const ppsMinFloat = parseFloat(ppsConfig.minFloat) || 0;
     // Accrual cannot run without a positive per-block reward basis; if pps is
     // selected but misconfigured we log and behave as prop (block-based, safe).
-    var ppsActive = ppsEnabled && ppsBlockReward > 0;
+    const ppsActive = ppsEnabled && ppsBlockReward > 0;
     if (ppsEnabled && !ppsActive) {
         logger.error(
             logSystem,
@@ -204,20 +204,20 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // expectedReward) so payouts auto-throttle when the pool runs underwater,
     // floored at rateMin and capped at full PPS. Shares the entire PPS accrual
     // path (shareBuffer drain + float kill-switch); only the per-share rate differs.
-    var dppsEnabled = paymentMode === 'dpps';
-    var dppsConfig = (dppsEnabled && processingConfig.dpps) || {};
-    var dppsBlockReward = parseFloat(dppsConfig.blockReward) || 0;
-    var dppsTargetMargin = parseFloat(dppsConfig.targetMargin);
+    const dppsEnabled = paymentMode === 'dpps';
+    const dppsConfig = (dppsEnabled && processingConfig.dpps) || {};
+    const dppsBlockReward = parseFloat(dppsConfig.blockReward) || 0;
+    let dppsTargetMargin = parseFloat(dppsConfig.targetMargin);
     if (!(dppsTargetMargin >= 0 && dppsTargetMargin < 1))
         dppsTargetMargin = 0.02;
-    var dppsRateMin = parseFloat(dppsConfig.rateMin);
+    let dppsRateMin = parseFloat(dppsConfig.rateMin);
     if (!(dppsRateMin >= 0 && dppsRateMin <= 1)) dppsRateMin = 0.5;
-    var dppsSmoothingWindow = Math.max(
+    const dppsSmoothingWindow = Math.max(
         parseInt(dppsConfig.smoothingWindow) || 100,
         1
     );
-    var dppsMinFloat = parseFloat(dppsConfig.minFloat) || 0;
-    var dppsActive = dppsEnabled && dppsBlockReward > 0;
+    const dppsMinFloat = parseFloat(dppsConfig.minFloat) || 0;
+    const dppsActive = dppsEnabled && dppsBlockReward > 0;
     if (dppsEnabled && !dppsActive) {
         logger.error(
             logSystem,
@@ -239,13 +239,13 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // (feePending/feeBlocksPending -> feeEma in coin:pps:stats, rolled by
     // accruePPS); like PPS the whole matured reward goes to the float. SHARE-
     // BASED — same float / kill-switch risk as pps. See docs/payment-schemes.md.
-    var fppsEnabled = paymentMode === 'fpps';
-    var fppsConfig = (fppsEnabled && processingConfig.fpps) || {};
-    var fppsBlockReward = parseFloat(fppsConfig.blockReward) || 0;
-    var fppsFeePercent = parseFloat(fppsConfig.feePercent) || 0;
-    var fppsMinFloat = parseFloat(fppsConfig.minFloat) || 0;
-    var fppsFeeWindow = Math.max(parseInt(fppsConfig.feeWindow) || 100, 1);
-    var fppsActive = fppsEnabled && fppsBlockReward > 0;
+    const fppsEnabled = paymentMode === 'fpps';
+    const fppsConfig = (fppsEnabled && processingConfig.fpps) || {};
+    const fppsBlockReward = parseFloat(fppsConfig.blockReward) || 0;
+    const fppsFeePercent = parseFloat(fppsConfig.feePercent) || 0;
+    const fppsMinFloat = parseFloat(fppsConfig.minFloat) || 0;
+    const fppsFeeWindow = Math.max(parseInt(fppsConfig.feeWindow) || 100, 1);
+    const fppsActive = fppsEnabled && fppsBlockReward > 0;
     if (fppsEnabled && !fppsActive) {
         logger.error(
             logSystem,
@@ -267,13 +267,13 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // PPS accrual path (subsidy) and the PPLNS rolling-window path (fees). The
     // subsidy stays in the wallet to back the accrual. SHARE-BASED on the
     // subsidy leg — same float / kill-switch risk as pps.
-    var ppsplusEnabled = paymentMode === 'ppsplus';
-    var ppsplusConfig = (ppsplusEnabled && processingConfig.ppsplus) || {};
-    var ppsplusBlockReward = parseFloat(ppsplusConfig.blockReward) || 0;
-    var ppsplusFeePercent = parseFloat(ppsplusConfig.feePercent) || 0;
-    var ppsplusMinFloat = parseFloat(ppsplusConfig.minFloat) || 0;
-    var ppsplusN = parseFloat(ppsplusConfig.n) || 2; // fee window = N x networkDiff
-    var ppsplusActive = ppsplusEnabled && ppsplusBlockReward > 0;
+    const ppsplusEnabled = paymentMode === 'ppsplus';
+    const ppsplusConfig = (ppsplusEnabled && processingConfig.ppsplus) || {};
+    const ppsplusBlockReward = parseFloat(ppsplusConfig.blockReward) || 0;
+    const ppsplusFeePercent = parseFloat(ppsplusConfig.feePercent) || 0;
+    const ppsplusMinFloat = parseFloat(ppsplusConfig.minFloat) || 0;
+    const ppsplusN = parseFloat(ppsplusConfig.n) || 2; // fee window = N x networkDiff
+    const ppsplusActive = ppsplusEnabled && ppsplusBlockReward > 0;
     if (ppsplusEnabled && !ppsplusActive) {
         logger.error(
             logSystem,
@@ -297,18 +297,18 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // of plain PPS. smpps pays oldest debt first (FIFO, coin:smpps:debt list);
     // esmpps equalizes (every miner the same fraction of owed, coin:smpps:owed
     // hash). See docs/payment-schemes.md and src/smppsLogic.ts.
-    var smppsEnabled = paymentMode === 'smpps';
-    var esmppsEnabled = paymentMode === 'esmpps';
-    var smppsFamilyConfig =
+    const smppsEnabled = paymentMode === 'smpps';
+    const esmppsEnabled = paymentMode === 'esmpps';
+    const smppsFamilyConfig =
         ((smppsEnabled || esmppsEnabled) &&
             (processingConfig.smpps || processingConfig.esmpps)) ||
         {};
-    var smppsBlockReward = parseFloat(smppsFamilyConfig.blockReward) || 0;
-    var smppsFeePercent = parseFloat(smppsFamilyConfig.feePercent) || 0;
-    var smppsMinFloat = parseFloat(smppsFamilyConfig.minFloat) || 0;
-    var smppsActive = smppsEnabled && smppsBlockReward > 0;
-    var esmppsActive = esmppsEnabled && smppsBlockReward > 0;
-    var smppsFamilyActive = smppsActive || esmppsActive;
+    const smppsBlockReward = parseFloat(smppsFamilyConfig.blockReward) || 0;
+    const smppsFeePercent = parseFloat(smppsFamilyConfig.feePercent) || 0;
+    const smppsMinFloat = parseFloat(smppsFamilyConfig.minFloat) || 0;
+    const smppsActive = smppsEnabled && smppsBlockReward > 0;
+    const esmppsActive = esmppsEnabled && smppsBlockReward > 0;
+    const smppsFamilyActive = smppsActive || esmppsActive;
     if ((smppsEnabled || esmppsEnabled) && !smppsFamilyActive) {
         logger.error(
             logSystem,
@@ -326,8 +326,9 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // ppsplus, dynamic rateScalar for dpps; fpps adds the smoothed fee to the
     // reward basis; ppsplus accrues only the subsidy). smpps/esmpps accrue per
     // share too but via a separate ledger path (accrueSMPPS), not this one.
-    var accrualActive = ppsActive || dppsActive || fppsActive || ppsplusActive;
-    var shareBlockReward = ppsActive
+    const accrualActive =
+        ppsActive || dppsActive || fppsActive || ppsplusActive;
+    const shareBlockReward = ppsActive
         ? ppsBlockReward
         : dppsActive
           ? dppsBlockReward
@@ -336,7 +337,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
             : ppsplusActive
               ? ppsplusBlockReward
               : 0;
-    var shareMinFloat = ppsActive
+    const shareMinFloat = ppsActive
         ? ppsMinFloat
         : dppsActive
           ? dppsMinFloat
@@ -345,14 +346,14 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
             : ppsplusActive
               ? ppsplusMinFloat
               : 0;
-    var shareFeePercent = ppsActive
+    const shareFeePercent = ppsActive
         ? ppsFeePercent
         : fppsActive
           ? fppsFeePercent
           : ppsplusActive
             ? ppsplusFeePercent
             : 0;
-    var shareAccrualConfig: any = ppsActive
+    const shareAccrualConfig: any = ppsActive
         ? ppsConfig
         : dppsActive
           ? dppsConfig
@@ -366,15 +367,15 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // (reward -> float) and for smpps/esmpps (reward -> income budget ledger).
     // ppsplus distributes the fee portion to miners (only the subsidy backs the
     // float), so it is NOT in this group.
-    var blockToFloat =
+    const blockToFloat =
         ppsActive || dppsActive || fppsActive || smppsFamilyActive;
     // Whether the PPLNS rolling window is maintained / consumed: pure pplns and
     // ppsplus (the latter uses it only to split tx fees).
-    var pplnsWindowActive = pplnsEnabled || ppsplusActive;
+    const pplnsWindowActive = pplnsEnabled || ppsplusActive;
     // Fee window multiplier used by the active window consumer.
-    var pplnsWindowN = ppsplusActive ? ppsplusN : pplnsN;
+    const pplnsWindowN = ppsplusActive ? ppsplusN : pplnsN;
     // Human label for the active share-based accrual mode (logs only).
-    var shareModeLabel = ppsActive
+    const shareModeLabel = ppsActive
         ? 'PPS'
         : dppsActive
           ? 'D-PPS'
@@ -391,14 +392,14 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // 65536x on yespower/yescrypt, where getmininginfo difficulty 0.000061 is
     // really stratum difficulty ~4. multiplier-1 algos (sha256d, quark) are
     // unaffected. Used by accruePPS / accrueSMPPS.
-    var algoMultiplier =
+    const algoMultiplier =
         (algos[poolOptions.coin.algorithm] &&
             algos[poolOptions.coin.algorithm].multiplier) ||
         1;
 
-    var requireShielding = poolOptions.coin.requireShielding === true;
-    var fee = parseFloat(poolOptions.coin.txfee) || parseFloat(0.0004 as any);
-    var maxUnshieldAmount = processingConfig.maxUnshieldAmount || 100.0;
+    const requireShielding = poolOptions.coin.requireShielding === true;
+    const fee = parseFloat(poolOptions.coin.txfee) || parseFloat(0.0004 as any);
+    const maxUnshieldAmount = processingConfig.maxUnshieldAmount || 100.0;
     logger.debug(
         logSystem,
         logComponent,
@@ -435,26 +436,29 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
             pplntTimeQualify
     );
 
-    var daemon = new (daemonModule as any).interface(
+    const daemon = new (daemonModule as any).interface(
         [processingConfig.daemon],
         function (severity: any, message: any) {
             (logger as any)[severity](logSystem, logComponent, message);
         }
     );
-    var redisClient = createRedisClient(poolOptions.redis, function (err: any) {
-        logger.error(
-            logSystem,
-            logComponent,
-            'Redis client had an error: ' + JSON.stringify(err.message)
-        );
-    });
+    const redisClient = createRedisClient(
+        poolOptions.redis,
+        function (err: any) {
+            logger.error(
+                logSystem,
+                logComponent,
+                'Redis client had an error: ' + JSON.stringify(err.message)
+            );
+        }
+    );
 
-    var magnitude: any;
-    var minPaymentSatoshis: any;
-    var coinPrecision: any;
+    let magnitude: any;
+    let minPaymentSatoshis: any;
+    let coinPrecision: any;
 
-    var paymentInterval: any;
-    var disablePeymentProcessing = false;
+    let paymentInterval: any;
+    let disablePeymentProcessing = false;
 
     // Bitcoin Core 0.17+ moved the wallet fields (ismine, etc.) off
     // `validateaddress` onto the new `getaddressinfo` RPC. Rather than trust a
@@ -464,11 +468,11 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // version-based, because these altcoin forks carry their own version
     // numbers that do not map onto Bitcoin Core's. The resolved command is
     // shared by validateAddress and validateTAddress (both need `ismine`).
-    var addressInfoCmd: string | null = null;
+    let addressInfoCmd: string | null = null;
 
     function resolveAddressInfoCmd(callback: any) {
         if (addressInfoCmd !== null) return callback();
-        var probeAddress =
+        const probeAddress =
             poolOptions.address != false
                 ? poolOptions.address
                 : poolOptions.tAddress;
@@ -482,8 +486,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
             'getaddressinfo',
             [probeAddress],
             function (result: any) {
-                var err = result.error;
-                var methodMissing =
+                const err = result.error;
+                const methodMissing =
                     !!err &&
                     (err.code === -32601 ||
                         /method not found/i.test(err.message || ''));
@@ -504,7 +508,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     }
 
     function validateAddress(callback: any) {
-        var cmd = addressInfoCmd || 'validateaddress';
+        const cmd = addressInfoCmd || 'validateaddress';
         if (poolOptions.address != false) {
             daemon.cmd(
                 cmd,
@@ -599,7 +603,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                     return callback(true);
                 }
                 try {
-                    var d = result.data
+                    const d = result.data
                         .split('result":')[1]
                         .split(',')[0]
                         .split('.')[1];
@@ -685,13 +689,13 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                 callback = function () {};
                 callback(true);
             } else {
-                var tBalance = parseFloat(0 as any);
+                let tBalance = parseFloat(0 as any);
                 if (
                     result[0].response != null &&
                     result[0].response.length > 0
                 ) {
                     for (
-                        var i = 0, len = result[0].response.length;
+                        let i = 0, len = result[0].response.length;
                         i < len;
                         i++
                     ) {
@@ -738,7 +742,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                 callback = function () {};
                 callback(true);
             } else {
-                var zBalance = parseFloat(0 as any);
+                let zBalance = parseFloat(0 as any);
                 if (result[0].response != null) {
                     zBalance = coinsRound(result[0].response);
                 }
@@ -788,8 +792,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
             return;
         }
 
-        var amount = satoshisToCoins(tBalance - txFee);
-        var params = [
+        const amount = satoshisToCoins(tBalance - txFee);
+        const params = [
             poolOptions.address,
             [{ address: poolOptions.zAddress, amount: amount }],
             minConf,
@@ -814,7 +818,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                 callback = function () {};
                 callback(true);
             } else {
-                var opid = result.response || result[0].response;
+                const opid = result.response || result[0].response;
                 opidCount++;
                 opids.push(opid);
                 logger.debug(
@@ -856,11 +860,11 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
             return;
         }
 
-        var amount = satoshisToCoins(zBalance - txFee);
+        let amount = satoshisToCoins(zBalance - txFee);
         // unshield no more than 100 KOTO at a time
         if (amount > maxUnshieldAmount) amount = maxUnshieldAmount;
 
-        var params = [
+        const params = [
             poolOptions.zAddress,
             [{ address: poolOptions.tAddress, amount: amount }],
             minConf,
@@ -883,7 +887,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                 callback = function () {};
                 callback(true);
             } else {
-                var opid = result.response || result[0].response;
+                const opid = result.response || result[0].response;
                 opidCount++;
                 opids.push(opid);
                 logger.debug(
@@ -898,7 +902,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     }
 
     function cacheNetworkStats() {
-        var params: any = null;
+        const params: any = null;
         daemon.cmd('getmininginfo', params, function (result: any) {
             if (
                 !result ||
@@ -915,8 +919,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                 return;
             }
 
-            var coin = logComponent;
-            var finalRedisCommands: any = [];
+            const coin = logComponent;
+            const finalRedisCommands: any = [];
 
             if (result[0].response.blocks !== null) {
                 finalRedisCommands.push([
@@ -929,7 +933,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
             // Raw PoW network difficulty: PoS/PoW hybrid daemons return
             // difficulty as an object {proof-of-work, proof-of-stake}; take the
             // PoW value. Pure-PoW daemons return a scalar.
-            var _networkDiff =
+            const _networkDiff =
                 result[0].response.difficulty !== null
                     ? typeof result[0].response.difficulty == 'object'
                         ? result[0].response.difficulty['proof-of-work']
@@ -952,7 +956,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
             //   networkHash = rawPoWDiff * 2^32 / blockTime
             // (algo-multiplier independent). Pure-PoW coins are untouched.
             if (poolOptions.coin.networkHashFromDiff && _networkDiff !== null) {
-                var _blockTime = poolOptions.coin.blockTime || 90;
+                const _blockTime = poolOptions.coin.blockTime || 90;
                 finalRedisCommands.push([
                     'hset',
                     coin + ':stats',
@@ -1031,7 +1035,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                         // Rebuild the P2P user-agent the daemon reports
                         // ("/Antenna:0.8.9.9/") from the coin's `subVersion`
                         // template, with {version} = the cleaned version.
-                        var cleanVersion = String(result[0].response.version)
+                        const cleanVersion = String(result[0].response.version)
                             .replace(/^v/i, '')
                             .replace(/-.*$/, '');
                         finalRedisCommands.push([
@@ -1087,7 +1091,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                 );
                 return;
             }
-            var floatBalance = parseFloat(result[0].response) || 0;
+            const floatBalance = parseFloat(result[0].response) || 0;
             if (shareMinFloat > 0 && floatBalance < shareMinFloat) {
                 logger.warning(
                     logSystem,
@@ -1109,7 +1113,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                 ]).catch(function () {});
                 return;
             }
-            var statsKey = coin + ':pps:stats';
+            const statsKey = coin + ':pps:stats';
             Promise.all([
                 redisClient.hGet(coin + ':stats', 'networkDiff'),
                 // dpps needs the luck EMAs; fpps needs the fee EMA + pending fee
@@ -1119,8 +1123,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                     : Promise.resolve({})
             ])
                 .then(function (reads: any) {
-                    var networkDiff = parseFloat(reads[0]) || 0;
-                    var statsHash = reads[1] || {};
+                    const networkDiff = parseFloat(reads[0]) || 0;
+                    const statsHash = reads[1] || {};
                     if (networkDiff <= 0) {
                         logger.warning(
                             logSystem,
@@ -1133,11 +1137,11 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                     // matured-block samples (feePending over feeBlocksPending,
                     // accumulated in Step 3), and add the smoothed fee to the
                     // reward basis so each share is paid its even slice of fees.
-                    var feeEma = parseFloat(statsHash.feeEma) || 0;
-                    var feePending = parseFloat(statsHash.feePending) || 0;
-                    var feeBlocksPending =
+                    const feeEma = parseFloat(statsHash.feeEma) || 0;
+                    const feePending = parseFloat(statsHash.feePending) || 0;
+                    const feeBlocksPending =
                         parseFloat(statsHash.feeBlocksPending) || 0;
-                    var newFeeEma = feeEma;
+                    let newFeeEma = feeEma;
                     if (fppsActive && feeBlocksPending > 0) {
                         newFeeEma = emaNext(
                             feeEma,
@@ -1145,14 +1149,14 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                             fppsFeeWindow
                         );
                     }
-                    var rewardBasis = fppsActive
+                    const rewardBasis = fppsActive
                         ? fppsEffectiveReward(shareBlockReward, newFeeEma)
                         : shareBlockReward;
                     // basePPS: full value of one difficulty unit of work, in
                     // coins. networkDiff x algoMultiplier puts the cached raw
                     // daemon difficulty onto the same (stratum) scale as the
                     // accumulated shareDiff (see algoMultiplier note above).
-                    var basePPS = basePPSOf(
+                    const basePPS = basePPSOf(
                         rewardBasis,
                         networkDiff,
                         algoMultiplier
@@ -1161,18 +1165,18 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                     // dpps: dynamic rateScalar from smoothed realized luck
                     // (actualReward EMA / expectedReward EMA), floored at rateMin
                     // and capped at 1.0.
-                    var expectedEma = parseFloat(statsHash.expectedEma) || 0;
-                    var actualEma = parseFloat(statsHash.actualEma) || 0;
-                    var actualPending =
+                    const expectedEma = parseFloat(statsHash.expectedEma) || 0;
+                    const actualEma = parseFloat(statsHash.actualEma) || 0;
+                    const actualPending =
                         parseFloat(statsHash.actualPending) || 0;
-                    var rateScalar = dppsActive
+                    const rateScalar = dppsActive
                         ? dppsRateScalar(
                               realizedLuck(actualEma, expectedEma),
                               dppsTargetMargin,
                               dppsRateMin
                           )
                         : 1;
-                    var effectiveRate = dppsActive
+                    const effectiveRate = dppsActive
                         ? rateScalar
                         : 1 - shareFeePercent / 100;
                     // Atomically snapshot+drain: RENAME moves the live hash aside
@@ -1187,13 +1191,15 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                             return redisClient.hGetAll(coin + ':pps:draining');
                         })
                         .then(function (buffer: any) {
-                            var cmds: Array<Array<string | number>> = [];
-                            var totalOwed = 0;
-                            var totalDiff = 0;
-                            for (var worker in buffer) {
-                                var shareDiff = parseFloat(buffer[worker]) || 0;
+                            const cmds: Array<Array<string | number>> = [];
+                            let totalOwed = 0;
+                            let totalDiff = 0;
+                            for (const worker in buffer) {
+                                const shareDiff =
+                                    parseFloat(buffer[worker]) || 0;
                                 if (shareDiff <= 0) continue;
-                                var owed = basePPS * effectiveRate * shareDiff;
+                                const owed =
+                                    basePPS * effectiveRate * shareDiff;
                                 if (owed <= 0) continue;
                                 cmds.push([
                                     'hincrbyfloat',
@@ -1261,12 +1267,12 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                 // cycle (actualPending, accrued in Step 3). Reset
                                 // pending by subtracting the snapshot so a block
                                 // maturing mid-cycle is not lost.
-                                var newExpectedEma = emaNext(
+                                const newExpectedEma = emaNext(
                                     expectedEma,
                                     basePPS * totalDiff,
                                     dppsSmoothingWindow
                                 );
-                                var newActualEma = emaNext(
+                                const newActualEma = emaNext(
                                     actualEma,
                                     actualPending,
                                     dppsSmoothingWindow
@@ -1382,8 +1388,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                 );
                 return;
             }
-            var floatBalance = parseFloat(result[0].response) || 0;
-            var statsKey = coin + ':smpps:stats';
+            const floatBalance = parseFloat(result[0].response) || 0;
+            const statsKey = coin + ':smpps:stats';
             if (smppsMinFloat > 0 && floatBalance < smppsMinFloat) {
                 logger.warning(
                     logSystem,
@@ -1404,8 +1410,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                 redisClient.hGet(statsKey, 'budget')
             ])
                 .then(function (reads: any) {
-                    var networkDiff = parseFloat(reads[0]) || 0;
-                    var budget = parseFloat(reads[1]) || 0;
+                    const networkDiff = parseFloat(reads[0]) || 0;
+                    const budget = parseFloat(reads[1]) || 0;
                     if (networkDiff <= 0) {
                         logger.warning(
                             logSystem,
@@ -1417,12 +1423,12 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                     // networkDiff x algoMultiplier → same scale as shareDiff
                     // (see algoMultiplier note); without it basePPS over-credits
                     // by the multiplier on yespower/yescrypt etc.
-                    var basePPS = basePPSOf(
+                    const basePPS = basePPSOf(
                         smppsBlockReward,
                         networkDiff,
                         algoMultiplier
                     );
-                    var rate = 1 - smppsFeePercent / 100;
+                    const rate = 1 - smppsFeePercent / 100;
                     // Drain this cycle's shares (RENAME+HGETALL); "no such key"
                     // just means no new shares — we still release budget against
                     // any existing debt (backpay).
@@ -1442,11 +1448,11 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                             throw err;
                         })
                         .then(function (buffer: any) {
-                            var newOwed: Record<string, number> = {};
-                            for (var w in buffer) {
-                                var d = parseFloat(buffer[w]) || 0;
+                            const newOwed: Record<string, number> = {};
+                            for (const w in buffer) {
+                                const d = parseFloat(buffer[w]) || 0;
                                 if (d <= 0) continue;
-                                var owed = basePPS * rate * d;
+                                const owed = basePPS * rate * d;
                                 if (owed > 0)
                                     newOwed[w] = (newOwed[w] || 0) + owed;
                             }
@@ -1496,20 +1502,20 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
         return redisClient.hGetAll(coin + ':smpps:owed').then(function (
             prev: any
         ) {
-            var owedMap: Record<string, number> = {};
-            for (var w in prev) {
-                var v = parseFloat(prev[w]) || 0;
+            const owedMap: Record<string, number> = {};
+            for (const w in prev) {
+                const v = parseFloat(prev[w]) || 0;
                 if (v > 0) owedMap[w] = v;
             }
-            for (var nw in newOwed)
+            for (const nw in newOwed)
                 owedMap[nw] = (owedMap[nw] || 0) + newOwed[nw];
-            var alloc = esmppsAllocate(owedMap, budget);
-            var cmds: Array<Array<string | number>> = [];
+            const alloc = esmppsAllocate(owedMap, budget);
+            const cmds: Array<Array<string | number>> = [];
             cmds.push(['del', coin + ':smpps:draining']);
             cmds.push(['del', coin + ':smpps:owed']);
-            var totalPaid = 0;
-            for (var w2 in owedMap) {
-                var paid = alloc.paid[w2] || 0;
+            let totalPaid = 0;
+            for (const w2 in owedMap) {
+                const paid = alloc.paid[w2] || 0;
                 if (paid > 0) {
                     cmds.push([
                         'hincrbyfloat',
@@ -1519,7 +1525,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                     ]);
                     totalPaid += paid;
                 }
-                var rem = owedMap[w2] - paid;
+                const rem = owedMap[w2] - paid;
                 if (rem > 1e-12)
                     cmds.push([
                         'hset',
@@ -1549,16 +1555,17 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
         return redisClient.lRange(coin + ':smpps:debt', 0, -1).then(function (
             entries: any
         ) {
-            var queue = (entries || [])
+            const queue = (entries || [])
                 .map(parseDebtEntry)
                 .filter(Boolean) as Array<{ worker: string; owed: number }>;
-            for (var w in newOwed) queue.push({ worker: w, owed: newOwed[w] });
-            var alloc = smppsAllocate(queue, budget);
-            var cmds: Array<Array<string | number>> = [];
+            for (const w in newOwed)
+                queue.push({ worker: w, owed: newOwed[w] });
+            const alloc = smppsAllocate(queue, budget);
+            const cmds: Array<Array<string | number>> = [];
             cmds.push(['del', coin + ':smpps:draining']);
-            var totalPaid = 0;
-            for (var pw in alloc.paid) {
-                var paid = alloc.paid[pw];
+            let totalPaid = 0;
+            for (const pw in alloc.paid) {
+                const paid = alloc.paid[pw];
                 if (paid > 0) {
                     cmds.push([
                         'hincrbyfloat',
@@ -1641,12 +1648,12 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // just spams tiny shields and the code below even warns when the interval is
     // shorter than an operation's execution time. Override per coin in the
     // pool config (the koto example uses 2.5).
-    var shieldIntervalState = 0; // do not send ZtoT and TtoZ and same time, this results in operation failed!
-    var shielding_interval =
+    let shieldIntervalState = 0; // do not send ZtoT and TtoZ and same time, this results in operation failed!
+    const shielding_interval =
         Math.max(parseInt(poolOptions.walletInterval || 10), 1) * 60 * 1000; // run every x minutes
     // shielding not required for some equihash coins
     if (requireShielding === true) {
-        var shieldInterval = setInterval(function () {
+        const shieldInterval = setInterval(function () {
             shieldIntervalState++;
             switch (shieldIntervalState) {
                 case 1:
@@ -1672,8 +1679,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     }
 
     // network stats caching every 58 seconds
-    var stats_interval = 58 * 1000;
-    var statsInterval = setInterval(function () {
+    const stats_interval = 58 * 1000;
+    const statsInterval = setInterval(function () {
         // update network stats using coin daemon
         cacheNetworkStats();
     }, stats_interval);
@@ -1683,7 +1690,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // into coin:balances decoupled from block finds. Default 60s; override with
     // {pps|dpps|fpps|ppsplus}.accrualInterval (min 10s).
     if (accrualActive) {
-        var ppsAccrualMs =
+        const ppsAccrualMs =
             Math.max(parseInt(shareAccrualConfig.accrualInterval) || 60, 10) *
             1000;
         setInterval(accruePPS, ppsAccrualMs);
@@ -1715,7 +1722,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     // releases owed -> balances bounded by realized income. Default 60s; override
     // with {smpps|esmpps}.accrualInterval (min 10s).
     if (smppsFamilyActive) {
-        var smppsAccrualMs =
+        const smppsAccrualMs =
             Math.max(parseInt(smppsFamilyConfig.accrualInterval) || 60, 10) *
             1000;
         setInterval(accrueSMPPS, smppsAccrualMs);
@@ -1736,13 +1743,13 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     }
 
     // check operation statuses every 57 seconds
-    var opid_interval = 57 * 1000;
+    const opid_interval = 57 * 1000;
     // shielding not required for some equihash coins
     if (requireShielding === true) {
-        var checkOpids = function () {
+        const checkOpids = function () {
             clearTimeout(opidTimeout);
-            var checkOpIdSuccessAndGetResult = function (ops: any) {
-                var batchRPC: any = [];
+            const checkOpIdSuccessAndGetResult = function (ops: any) {
+                const batchRPC: any = [];
                 // if there are no op-ids
                 if (ops.length == 0) {
                     // and we think there is
@@ -1762,7 +1769,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                     // check operation id status
                     if (op.status == 'success' || op.status == 'failed') {
                         // clear operation id result
-                        var opid_index = opids.indexOf(op.id);
+                        const opid_index = opids.indexOf(op.id);
                         if (opid_index > -1) {
                             // clear operation id count
                             batchRPC.push(['z_getoperationresult', [[op.id]]]);
@@ -1849,7 +1856,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                 'z_getoperationstatus',
                 null,
                 function (result: any) {
-                    var err = false;
+                    let err = false;
                     if (result.error) {
                         err = true;
                         logger.error(
@@ -1895,8 +1902,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     );
 
     function checkForDuplicateBlockHeight(rounds: any, height: any) {
-        var count = 0;
-        for (var i = 0; i < rounds.length; i++) {
+        let count = 0;
+        for (let i = 0; i < rounds.length; i++) {
             if (rounds[i].height == height) count++;
         }
         return count > 1;
@@ -1906,25 +1913,25 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
        when rounding and whatnot. When we are storing numbers for only humans to see, store in whole coin units. */
 
     var processPayments = function () {
-        var startPaymentProcess = Date.now();
+        const startPaymentProcess = Date.now();
 
-        var timeSpentRPC = 0;
-        var timeSpentRedis = 0;
+        let timeSpentRPC = 0;
+        let timeSpentRedis = 0;
 
-        var startTimeRedis: any;
-        var startTimeRPC: any;
+        let startTimeRedis: any;
+        let startTimeRPC: any;
 
-        var startRedisTimer = function () {
+        const startRedisTimer = function () {
             startTimeRedis = Date.now();
         };
-        var endRedisTimer = function () {
+        const endRedisTimer = function () {
             timeSpentRedis += Date.now() - startTimeRedis;
         };
 
-        var startRPCTimer = function () {
+        const startRPCTimer = function () {
             startTimeRPC = Date.now();
         };
-        var endRPCTimer = function () {
+        const endRPCTimer = function () {
             timeSpentRPC += Date.now() - startTimeRedis;
         };
 
@@ -1935,9 +1942,9 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
         // networkDiff; an off-by-a-little network difficulty only shifts which
         // shares fall in the window, never the total reward paid (the full block
         // reward is always distributed proportionally among the window).
-        var loadPplnsTotals = function (rounds: any, cb: any) {
+        const loadPplnsTotals = function (rounds: any, cb: any) {
             if (!pplnsWindowActive) return cb(null);
-            var pm = redisClient.multi();
+            const pm = redisClient.multi();
             pm.hGet(coin + ':stats', 'networkDiff');
             rounds.forEach(function (r: any) {
                 pm.lRange(coin + ':shares:pplnsRound' + r.height, 0, -1);
@@ -1946,7 +1953,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
             pm.exec().then(
                 function (res: any) {
                     endRedisTimer();
-                    var networkDiff = parseFloat(res[0]) || 0;
+                    const networkDiff = parseFloat(res[0]) || 0;
                     // windowDiff must be on the same (stratum) scale as the
                     // shareData.difficulty stored in the window log, i.e. raw
                     // daemon networkDiff x the algo multiplier — same scaling as
@@ -1954,14 +1961,14 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                     // too small on non-sha256 algos (e.g. 65536x on yespower),
                     // collapsing to just the newest share and paying ~the whole
                     // block to one miner.
-                    var windowDiff = pplnsWindowDiff(
+                    const windowDiff = pplnsWindowDiff(
                         pplnsWindowN,
                         networkDiff,
                         algoMultiplier
                     );
-                    var byHeight: any = {};
+                    const byHeight: any = {};
                     rounds.forEach(function (r: any, i: any) {
-                        var entries = (res[i + 1] || [])
+                        const entries = (res[i + 1] || [])
                             .map(parsePplnsEntry)
                             .filter(Boolean);
                         byHeight[r.height] = pplnsShareTotals(
@@ -2001,8 +2008,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                             function (results: any) {
                                 endRedisTimer();
                                 // build workers object from :balances
-                                var workers: any = {};
-                                for (var w in results[0]) {
+                                const workers: any = {};
+                                for (const w in results[0]) {
                                     workers[w] = {
                                         balance: coinsToSatoshies(
                                             parseFloat(results[0][w])
@@ -2010,10 +2017,10 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                     };
                                 }
                                 // build rounds object from :blocksPending
-                                var rounds: any = results[1].map(function (
+                                let rounds: any = results[1].map(function (
                                     r: any
                                 ) {
-                                    var details = r.split(':');
+                                    const details = r.split(':');
                                     return {
                                         blockHash: details[0],
                                         txHash: details[1],
@@ -2030,8 +2037,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                 });
                                 // find duplicate blocks by height
                                 // this can happen when two or more solutions are submitted at the same block height
-                                var duplicateFound = false;
-                                for (var i = 0; i < rounds.length; i++) {
+                                let duplicateFound = false;
+                                for (let i = 0; i < rounds.length; i++) {
                                     if (
                                         checkForDuplicateBlockHeight(
                                             rounds,
@@ -2044,7 +2051,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                 }
                                 // handle duplicates if needed
                                 if (duplicateFound) {
-                                    var dups = rounds.filter(function (
+                                    const dups = rounds.filter(function (
                                         round: any
                                     ) {
                                         return round.duplicate;
@@ -2056,7 +2063,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                             JSON.stringify(dups)
                                     );
                                     // attempt to find the invalid duplicates
-                                    var rpcDupCheck = dups.map(function (
+                                    const rpcDupCheck = dups.map(function (
                                         r: any
                                     ) {
                                         return ['getblock', [r.blockHash]];
@@ -2076,8 +2083,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                 return;
                                             }
                                             // look for the invalid duplicate block
-                                            var validBlocks: any = {}; // hashtable for unique look up
-                                            var invalidBlocks: any = []; // array for redis work
+                                            const validBlocks: any = {}; // hashtable for unique look up
+                                            const invalidBlocks: any = []; // array for redis work
                                             blocks.forEach(function (
                                                 block: any,
                                                 i: any
@@ -2257,7 +2264,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
             */
                 function (workers: any, rounds: any, callback: any) {
                     // get pending block tx details
-                    var batchRPCcommand = rounds.map(function (r: any) {
+                    const batchRPCcommand = rounds.map(function (r: any) {
                         return ['gettransaction', [r.txHash]];
                     });
                     // get account address (not implemented at this time)
@@ -2279,7 +2286,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                 return;
                             }
 
-                            var addressAccount = '';
+                            let addressAccount = '';
 
                             // check for transaction errors and generated coins
                             txDetails.forEach(function (tx: any, i: any) {
@@ -2292,7 +2299,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                     }
                                     return;
                                 }
-                                var round = rounds[i];
+                                const round = rounds[i];
                                 // update confirmations for round
                                 //round.confirmations = parseInt((tx.result.confirmations || 0));
                                 // look for transaction errors
@@ -2334,7 +2341,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                     tx.result.confirmations || 0
                                 );
                                 // get the coin base generation tx
-                                var generationTx = tx.result.details.filter(
+                                let generationTx = tx.result.details.filter(
                                     function (tx: any) {
                                         return (
                                             tx.address === poolOptions.address
@@ -2372,9 +2379,9 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                 }
                             });
 
-                            var canDeleteShares = function (r: any) {
-                                for (var i = 0; i < rounds.length; i++) {
-                                    var compareR = rounds[i];
+                            const canDeleteShares = function (r: any) {
+                                for (let i = 0; i < rounds.length; i++) {
+                                    const compareR = rounds[i];
                                     if (
                                         compareR.height === r.height &&
                                         compareR.category !== 'kicked' &&
@@ -2388,7 +2395,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                             };
 
                             // only pay max blocks at a time
-                            var payingBlocks = 0;
+                            let payingBlocks = 0;
                             rounds = rounds.filter(function (r: any) {
                                 switch (r.category) {
                                     case 'orphan':
@@ -2444,7 +2451,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                     callback: any
                 ) {
                     // pplnt times lookup
-                    var timesMulti = redisClient.multi();
+                    const timesMulti = redisClient.multi();
                     rounds.forEach(function (r: any) {
                         timesMulti.hGetAll(coin + ':shares:times' + r.height);
                     });
@@ -2453,7 +2460,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                         function (allWorkerTimes: any) {
                             endRedisTimer();
                             // shares lookup
-                            var sharesMulti = redisClient.multi();
+                            const sharesMulti = redisClient.multi();
                             rounds.forEach(function (r: any) {
                                 sharesMulti.hGetAll(
                                     coin + ':shares:round' + r.height
@@ -2484,7 +2491,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                 r.category !== 'immature'
                                             )
                                                 return;
-                                            var totals = pplnsTotals[r.height];
+                                            const totals =
+                                                pplnsTotals[r.height];
                                             if (
                                                 totals &&
                                                 Object.keys(totals).length > 0
@@ -2503,18 +2511,18 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                     }
 
                                     // error detection
-                                    var err: any = null;
-                                    var performPayment = false;
+                                    let err: any = null;
+                                    let performPayment = false;
 
-                                    var notAddr = null;
+                                    let notAddr = null;
                                     if (requireShielding === true) {
                                         notAddr = poolOptions.address;
                                     }
 
                                     // calculate what the pool owes its miners
-                                    var feeSatoshi = coinsToSatoshies(fee);
-                                    var totalOwed: any = parseInt(0 as any);
-                                    for (var i = 0; i < rounds.length; i++) {
+                                    const feeSatoshi = coinsToSatoshies(fee);
+                                    let totalOwed: any = parseInt(0 as any);
+                                    for (let i = 0; i < rounds.length; i++) {
                                         // only pay generated blocks, not orphaned, kicked, immature.
                                         // The full block reward is counted (conservative): under
                                         // pps/dpps/fpps it stays in the float and under ppsplus the
@@ -2530,8 +2538,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                         }
                                     }
                                     // also include balances owed
-                                    for (var w in workers) {
-                                        var worker = workers[w];
+                                    for (const w in workers) {
+                                        const worker = workers[w];
                                         totalOwed =
                                             totalOwed + (worker.balance || 0);
                                     }
@@ -2597,7 +2605,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                 round: any,
                                                 i: any
                                             ) {
-                                                var workerShares =
+                                                const workerShares =
                                                     allWorkerShares[i];
                                                 if (!workerShares) {
                                                     err = true;
@@ -2609,7 +2617,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                             ' blockHash: ' +
                                                             round.blockHash
                                                     );
-                                                    var noWorkerSharesMoveCommand =
+                                                    const noWorkerSharesMoveCommand =
                                                         [
                                                             'smove',
                                                             coin +
@@ -2645,7 +2653,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                     );
                                                     return;
                                                 }
-                                                var workerTimes =
+                                                const workerTimes =
                                                     allWorkerTimes[i];
 
                                                 switch (round.category) {
@@ -2831,7 +2839,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                                         ) /
                                                                         totalShares;
                                                             // calculate workers immature for this round
-                                                            var workerImmatureTotal =
+                                                            const workerImmatureTotal =
                                                                 Math.round(
                                                                     immature *
                                                                         percent
@@ -2921,7 +2929,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                             fppsActive &&
                                                             round.reward > 0
                                                         ) {
-                                                            var fppsFee =
+                                                            const fppsFee =
                                                                 Math.max(
                                                                     0,
                                                                     round.reward -
@@ -3160,7 +3168,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                                 return;
                                                             }
                                                             // calculate workers reward for this round
-                                                            var workerRewardTotal =
+                                                            const workerRewardTotal =
                                                                 Math.round(
                                                                     reward *
                                                                         percent
@@ -3221,15 +3229,15 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                     addressAccount: any,
                     callback: any
                 ) {
-                    var tries = 0;
-                    var trySend = function (withholdPercent: any) {
-                        var addressAmounts: any = {};
-                        var balanceAmounts: any = {};
-                        var shareAmounts: any = {};
-                        var timePeriods: any = {};
-                        var minerTotals: any = {};
-                        var totalSent = 0;
-                        var totalShares = 0;
+                    let tries = 0;
+                    const trySend = function (withholdPercent: any) {
+                        const addressAmounts: any = {};
+                        const balanceAmounts: any = {};
+                        const shareAmounts: any = {};
+                        const timePeriods: any = {};
+                        const minerTotals: any = {};
+                        let totalSent = 0;
+                        let totalShares = 0;
 
                         // track attempts made, calls to trySend...
                         tries++;
@@ -3337,7 +3345,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
 
                         // do final rounding of payments per address
                         // this forces amounts to be valid (0.12345678)
-                        for (var a in addressAmounts) {
+                        for (const a in addressAmounts) {
                             addressAmounts[a] = coinsRound(addressAmounts[a]);
                         }
 
@@ -3345,7 +3353,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                         // WE ARE SENDING PAYMENT CMD TO DAEMON
 
                         // perform the sendmany operation .. addressAccount
-                        var rpccallTracking =
+                        const rpccallTracking =
                             'sendmany "" ' + JSON.stringify(addressAmounts);
                         //console.log(rpccallTracking);
 
@@ -3366,7 +3374,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                         if (tries < 5) {
                                             // we thought we had enough funds to send payments, but apparently not...
                                             // try decreasing payments by a small percent to cover unexpected tx fees?
-                                            var higherPercent =
+                                            const higherPercent =
                                                 withholdPercent + 0.001; // 0.1%
                                             logger.warning(
                                                 logSystem,
@@ -3461,7 +3469,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                     return;
                                 } else {
                                     // make sure sendmany gives us back a txid
-                                    var txid = null;
+                                    let txid = null;
                                     if (result.response) {
                                         txid = result.response;
                                     }
@@ -3491,7 +3499,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                         }
 
                                         // save payments data to redis
-                                        var paymentBlocks = rounds
+                                        const paymentBlocks = rounds
                                             .filter(function (r: any) {
                                                 return r.category == 'generate';
                                             })
@@ -3499,8 +3507,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                 return parseInt(r.height);
                                             });
 
-                                        var paymentsUpdate: any = [];
-                                        var paymentsData = {
+                                        const paymentsUpdate: any = [];
+                                        const paymentsData = {
                                             time: Date.now(),
                                             txid: txid,
                                             shares: totalShares,
@@ -3561,15 +3569,15 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                     paymentsUpdate: any,
                     callback: any
                 ) {
-                    var totalPaid: any = parseFloat(0 as any);
+                    let totalPaid: any = parseFloat(0 as any);
 
-                    var immatureUpdateCommands: any = [];
-                    var balanceUpdateCommands: any = [];
-                    var workerPayoutsCommand: any = [];
+                    const immatureUpdateCommands: any = [];
+                    const balanceUpdateCommands: any = [];
+                    const workerPayoutsCommand: any = [];
 
                     // update worker paid/balance stats
-                    for (var w in workers) {
-                        var worker = workers[w];
+                    for (const w in workers) {
+                        const worker = workers[w];
                         // update balances
                         if ((worker.balanceChange || 0) !== 0) {
                             balanceUpdateCommands.push([
@@ -3607,15 +3615,15 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                         }
                     }
 
-                    var movePendingCommands: any = [];
-                    var roundsToDelete: any = [];
-                    var orphanMergeCommands: any = [];
+                    const movePendingCommands: any = [];
+                    const roundsToDelete: any = [];
+                    const orphanMergeCommands: any = [];
 
-                    var confirmsUpdate: any = [];
-                    var confirmsToDelete: any = [];
+                    const confirmsUpdate: any = [];
+                    const confirmsToDelete: any = [];
 
-                    var moveSharesToCurrent = function (r: any) {
-                        var workerShares = r.workerShares;
+                    const moveSharesToCurrent = function (r: any) {
+                        const workerShares = r.workerShares;
                         if (workerShares != null) {
                             logger.warning(
                                 logSystem,
@@ -3702,7 +3710,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                         }
                     });
 
-                    var finalRedisCommands: any = [];
+                    let finalRedisCommands: any = [];
 
                     if (movePendingCommands.length > 0)
                         finalRedisCommands =
@@ -3799,7 +3807,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                     );
                 }
 
-                var paymentProcessTime = Date.now() - startPaymentProcess;
+                const paymentProcessTime = Date.now() - startPaymentProcess;
                 logger.debug(
                     logSystem,
                     logComponent,
@@ -3828,7 +3836,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
         if (address != false) {
             return handleAddress(address);
         } else {
-            var addressToPay = '';
+            let addressToPay = '';
 
             daemon.cmd(
                 'getnewaddress',

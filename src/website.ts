@@ -13,26 +13,26 @@ const SPA_DIR = path.resolve('web/dist');
 const SPA_INDEX = path.join(SPA_DIR, 'index.html');
 
 export default function (this: any, logger: Logger) {
-    var portalConfig: any = JSON.parse(process.env.portalConfig as string);
-    var poolConfigs: any = JSON.parse(process.env.pools as string);
+    const portalConfig: any = JSON.parse(process.env.portalConfig as string);
+    const poolConfigs: any = JSON.parse(process.env.pools as string);
 
-    var websiteConfig = portalConfig.website;
+    const websiteConfig = portalConfig.website;
 
-    var portalApi: any = new (api as any)(logger, portalConfig, poolConfigs);
-    var portalStats = portalApi.stats;
+    const portalApi: any = new (api as any)(logger, portalConfig, poolConfigs);
+    const portalStats = portalApi.stats;
 
-    var logSystem = 'Website';
+    const logSystem = 'Website';
 
     // Populate the stats snapshot once at startup so /api/stats has data before
     // the first SSE tick, then push the live object to SSE clients on a timer.
     portalStats.getGlobalStats(function () {});
 
-    var buildUpdatedWebsite = function () {
+    const buildUpdatedWebsite = function () {
         portalStats.getGlobalStats(function () {
-            var statData =
+            const statData =
                 'data: ' + JSON.stringify(portalStats.stats) + '\n\n';
-            for (var uid in portalApi.liveStatConnections) {
-                var res = portalApi.liveStatConnections[uid];
+            for (const uid in portalApi.liveStatConnections) {
+                const res = portalApi.liveStatConnections[uid];
                 res.write(statData);
             }
         });
@@ -40,7 +40,7 @@ export default function (this: any, logger: Logger) {
 
     setInterval(buildUpdatedWebsite, websiteConfig.stats.updateInterval * 1000);
 
-    var app = express();
+    const app = express();
 
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
@@ -82,7 +82,7 @@ export default function (this: any, logger: Logger) {
             portalConfig.website.tlsOptions &&
             portalConfig.website.tlsOptions.enabled === true
         ) {
-            var TLSoptions = {
+            const TLSoptions = {
                 key: fs.readFileSync(portalConfig.website.tlsOptions.key),
                 cert: fs.readFileSync(portalConfig.website.tlsOptions.cert)
             };

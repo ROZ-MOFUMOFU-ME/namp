@@ -18,12 +18,12 @@ export default function (
     portalConfig: any,
     poolConfigs: any
 ) {
-    var _this: any = this;
+    const _this: any = this;
 
-    var logSystem = 'Stats';
+    const logSystem = 'Stats';
 
-    var redisClients: any[] = [];
-    var redisStats: any;
+    const redisClients: any[] = [];
+    let redisStats: any;
 
     this.statHistory = [];
     this.statPoolHistory = [];
@@ -46,7 +46,7 @@ export default function (
                 return redisStats.get('priceFeed:lastUpdated').then(function (
                     ts: any
                 ) {
-                    var prices = parsePriceHash(raw);
+                    const prices = parsePriceHash(raw);
                     _this.priceData = {
                         updated: ts ? parseInt(ts, 10) : null,
                         count: Object.keys(prices).length,
@@ -74,16 +74,16 @@ export default function (
         ) * 1000
     );
 
-    var canDoStats = true;
+    const canDoStats = true;
 
     Object.keys(poolConfigs).forEach(function (coin) {
         if (!canDoStats) return;
 
-        var poolConfig = poolConfigs[coin];
-        var redisConfig = poolConfig.redis;
+        const poolConfig = poolConfigs[coin];
+        const redisConfig = poolConfig.redis;
 
-        for (var i = 0; i < redisClients.length; i++) {
-            var client = redisClients[i];
+        for (let i = 0; i < redisClients.length; i++) {
+            const client = redisClients[i];
             if (
                 client.port === redisConfig.port &&
                 client.host === redisConfig.host
@@ -117,7 +117,7 @@ export default function (
     }
 
     this.getBlocks = function (cback: (data: any) => void) {
-        var allBlocks: any = {};
+        const allBlocks: any = {};
         async.each(
             _this.stats.pools,
             function (pool: any, pcb: any) {
@@ -165,7 +165,7 @@ export default function (
     };
 
     function gatherStatHistory() {
-        var retentionTime = (
+        const retentionTime = (
             (Date.now() / 1000 -
                 portalConfig.website.stats.historicalRetention) |
             0
@@ -173,7 +173,7 @@ export default function (
         redisStats
             .zRangeByScore('statHistory', retentionTime, '+inf')
             .then(function (replies: any) {
-                for (var i = 0; i < replies.length; i++) {
+                for (let i = 0; i < replies.length; i++) {
                     _this.statHistory.push(JSON.parse(replies[i]));
                 }
                 _this.statHistory = _this.statHistory.sort(function (
@@ -201,16 +201,16 @@ export default function (
         // below but never declared in scope — this function is dead code (never
         // assigned to `this`/called). Declared here as `any` so the file
         // type-checks under strict mode without altering runtime behavior.
-        var statHistory: any, history: any, workers: any, stats: any;
+        let statHistory: any, history: any, workers: any, stats: any;
         address = address.split('.')[0];
         if (address.length > 0 && address.startsWith('t')) {
-            for (var h in statHistory) {
-                for (var pool in statHistory[h].pools) {
+            for (const h in statHistory) {
+                for (const pool in statHistory[h].pools) {
                     statHistory[h].pools[pool].workers.sort(
                         sortWorkersByHashrate
                     );
 
-                    for (var w in statHistory[h].pools[pool].workers) {
+                    for (const w in statHistory[h].pools[pool].workers) {
                         if (w.startsWith(address)) {
                             if (history[w] == null) {
                                 history[w] = [];
@@ -241,11 +241,11 @@ export default function (
     }
 
     function addStatPoolHistory(stats: any) {
-        var data: any = {
+        const data: any = {
             time: stats.time,
             pools: {}
         };
-        for (var pool in stats.pools) {
+        for (const pool in stats.pools) {
             data.pools[pool] = {
                 hashrate: stats.pools[pool].hashrate,
                 workerCount: stats.pools[pool].workerCount,
@@ -282,28 +282,28 @@ export default function (
         address: any,
         cback: (data: any) => void
     ) {
-        var a = address.split('.')[0];
-        var client = redisClients[0].client;
+        const a = address.split('.')[0];
+        const client = redisClients[0].client;
 
-        var pools = _this.stats.pools;
+        const pools = _this.stats.pools;
         if (!pools || Object.keys(pools).length === 0) {
             // Stats not gathered yet (e.g. just after startup) — nothing to sum.
             cback(0);
             return;
         }
 
-        var totalShares = parseFloat('0' as any);
+        let totalShares = parseFloat('0' as any);
         async.each(
             pools,
             function (pool: any, pcb: any) {
-                var coin = String(pools[pool.name].name);
+                const coin = String(pools[pool.name].name);
                 client
                     .hScan(coin + ':shares:roundCurrent', '0', {
                         MATCH: a + '*',
                         COUNT: 1000
                     })
                     .then(function (result: any) {
-                        var shares = 0;
+                        let shares = 0;
                         result.entries.forEach(function (entry: any) {
                             shares += parseFloat(entry.value);
                         });
@@ -329,16 +329,16 @@ export default function (
         address: any,
         cback: (data: any) => void
     ) {
-        var a = address.split('.')[0];
+        const a = address.split('.')[0];
 
-        var client = redisClients[0].client,
+        const client = redisClients[0].client,
             balances: any[] = [];
 
-        var totalHeld = parseFloat('0' as any);
-        var totalPaid = parseFloat('0' as any);
-        var totalImmature = parseFloat('0' as any);
+        let totalHeld = parseFloat('0' as any);
+        let totalPaid = parseFloat('0' as any);
+        let totalImmature = parseFloat('0' as any);
 
-        var pools = _this.stats.pools;
+        const pools = _this.stats.pools;
         if (!pools || Object.keys(pools).length === 0) {
             // Stats not gathered yet — still set the address so the page renders.
             _this.stats.address = address;
@@ -354,8 +354,8 @@ export default function (
         async.each(
             pools,
             function (pool: any, pcb: any) {
-                var coin = String(pools[pool.name].name);
-                var scanOptions = { MATCH: a + '*', COUNT: 10000 };
+                const coin = String(pools[pool.name].name);
+                const scanOptions = { MATCH: a + '*', COUNT: 10000 };
                 Promise.all([
                     // immature balances, balances and payouts for address
                     client.hScan(coin + ':immature', '0', scanOptions),
@@ -363,36 +363,36 @@ export default function (
                     client.hScan(coin + ':payouts', '0', scanOptions)
                 ])
                     .then(function (results: any) {
-                        var pends = results[0].entries;
-                        var bals = results[1].entries;
-                        var pays = results[2].entries;
+                        const pends = results[0].entries;
+                        const bals = results[1].entries;
+                        const pays = results[2].entries;
 
-                        var workers: any = {};
+                        const workers: any = {};
 
                         pays.forEach(function (entry: any) {
-                            var workerName = String(entry.field);
+                            const workerName = String(entry.field);
                             workers[workerName] = workers[workerName] || {};
-                            var paidAmount = parseFloat(entry.value);
+                            const paidAmount = parseFloat(entry.value);
                             workers[workerName].paid = coinsRound(paidAmount);
                             totalPaid += paidAmount;
                         });
                         bals.forEach(function (entry: any) {
-                            var workerName = String(entry.field);
+                            const workerName = String(entry.field);
                             workers[workerName] = workers[workerName] || {};
-                            var balAmount = parseFloat(entry.value);
+                            const balAmount = parseFloat(entry.value);
                             workers[workerName].balance = coinsRound(balAmount);
                             totalHeld += balAmount;
                         });
                         pends.forEach(function (entry: any) {
-                            var workerName = String(entry.field);
+                            const workerName = String(entry.field);
                             workers[workerName] = workers[workerName] || {};
-                            var pendingAmount = parseFloat(entry.value);
+                            const pendingAmount = parseFloat(entry.value);
                             workers[workerName].immature =
                                 coinsRound(pendingAmount);
                             totalImmature += pendingAmount;
                         });
 
-                        for (var w in workers) {
+                        for (const w in workers) {
                             balances.push({
                                 worker: String(w),
                                 balance: workers[w].balance,
@@ -437,23 +437,23 @@ export default function (
     };
 
     this.getGlobalStats = function (callback: () => void) {
-        var statGatherTime = (Date.now() / 1000) | 0;
+        const statGatherTime = (Date.now() / 1000) | 0;
 
-        var allCoinStats: any = {};
+        let allCoinStats: any = {};
 
         async.each(
             redisClients,
             function (client: any, callback: any) {
-                var windowTime = (
+                const windowTime = (
                     (Date.now() / 1000 -
                         portalConfig.website.stats.hashrateWindow) |
                     0
                 ).toString();
                 /* 13 commands per coin; the reply offsets (i + 0 .. i + 12)
                    below depend on this exact order */
-                var commandsPerCoin = 15;
+                const commandsPerCoin = 15;
 
-                var multi = client.client.multi();
+                const multi = client.client.multi();
                 client.coins.forEach(function (coin: any) {
                     multi
                         .zRemRangeByScore(
@@ -498,13 +498,13 @@ export default function (
                     .then(function (replies: any) {
                         if (replies) {
                             for (
-                                var i = 0;
+                                let i = 0;
                                 i < replies.length;
                                 i += commandsPerCoin
                             ) {
-                                var coinName =
+                                const coinName =
                                     client.coins[(i / commandsPerCoin) | 0];
-                                var marketStats: any = {};
+                                let marketStats: any = {};
                                 if (replies[i + 2]) {
                                     if (replies[i + 2].coinmarketcap) {
                                         marketStats = replies[i + 2]
@@ -520,7 +520,7 @@ export default function (
                                 // Pool fee (%) = sum of reward-recipient shares,
                                 // surfaced in /api/stats so aggregators
                                 // (MiningPoolStats etc.) can show the fee.
-                                var poolFeePercent = Object.keys(
+                                const poolFeePercent = Object.keys(
                                     rewardRecipients
                                 ).reduce(function (sum: number, addr: string) {
                                     return (
@@ -528,7 +528,7 @@ export default function (
                                         (Number(rewardRecipients[addr]) || 0)
                                     );
                                 }, 0);
-                                var coinStats: any = {
+                                const coinStats: any = {
                                     name: coinName,
                                     fee: poolFeePercent,
                                     blockTime:
@@ -607,7 +607,7 @@ export default function (
                                     shareCount: 0
                                 };
                                 for (
-                                    var j = replies[i + 10].length;
+                                    let j = replies[i + 10].length;
                                     j > 0;
                                     j--
                                 ) {
@@ -630,7 +630,7 @@ export default function (
                                 // dpps, also the dynamic rate scalar and smoothed
                                 // realized luck. Zero for other modes. Liability =
                                 // live balances total, already surfaced via balances.
-                                var ppsReply = replies[i + 12] || {};
+                                const ppsReply = replies[i + 12] || {};
                                 coinStats.pps = {
                                     mode:
                                         (
@@ -650,7 +650,7 @@ export default function (
                                 };
                                 // i+13: latest wallet balance (optional balanceLog
                                 // module); null when balance logging is disabled.
-                                var balanceReply = replies[i + 13] || {};
+                                const balanceReply = replies[i + 13] || {};
                                 coinStats.walletBalance =
                                     balanceReply.balance != null
                                         ? parseFloat(balanceReply.balance) || 0
@@ -660,7 +660,7 @@ export default function (
                                 // yet released; paidTotal = lifetime released;
                                 // paused = minFloat kill-switch. Zero/empty for
                                 // other modes.
-                                var smppsReply = replies[i + 14] || {};
+                                const smppsReply = replies[i + 14] || {};
                                 coinStats.smpps = {
                                     mode:
                                         (
@@ -696,7 +696,7 @@ export default function (
                     return;
                 }
 
-                var portalStats: any = {
+                const portalStats: any = {
                     time: statGatherTime,
                     global: {
                         workers: 0,
@@ -707,16 +707,16 @@ export default function (
                 };
 
                 Object.keys(allCoinStats).forEach(function (coin) {
-                    var coinStats = allCoinStats[coin];
+                    const coinStats = allCoinStats[coin];
                     coinStats.workers = {};
                     coinStats.miners = {};
                     coinStats.shares = 0;
                     coinStats.hashrates.forEach(function (ins: any) {
-                        var parts = ins.split(':');
-                        var workerShares = parseFloat(parts[0]);
-                        var miner = parts[1].split('.')[0];
-                        var worker = parts[1];
-                        var diff = Math.round(parts[0] * 8192);
+                        const parts = ins.split(':');
+                        const workerShares = parseFloat(parts[0]);
+                        const miner = parts[1].split('.')[0];
+                        const worker = parts[1];
+                        const diff = Math.round(parts[0] * 8192);
                         if (workerShares > 0) {
                             coinStats.shares += workerShares;
                             // build worker stats
@@ -806,7 +806,7 @@ export default function (
                         true
                     );
 
-                    var shareMultiplier =
+                    const shareMultiplier =
                         Math.pow(2, 32) /
                         (algos as any)[coinStats.algorithm].multiplier;
                     coinStats.hashrate =
@@ -816,12 +816,12 @@ export default function (
                         coinStats.hashrate
                     );
 
-                    var _blocktime = coinStats.blockTime || 90;
+                    const _blocktime = coinStats.blockTime || 90;
                     // networkHash is already PoW-correct at the source
                     // (paymentProcessor.cacheNetworkStats derives it from the
                     // raw PoW difficulty for coins with coin.networkHashFromDiff,
                     // e.g. VIPSTARCOIN / KumaCoin); read it as-is.
-                    var _networkHashRate = parseFloat(
+                    const _networkHashRate = parseFloat(
                         coinStats.poolStats.networkHash
                     );
                     coinStats.luckDays = (
@@ -844,7 +844,7 @@ export default function (
                     // Add this pool's hashrate to the global total.
                     portalStats.global.hashrate += coinStats.hashrate;
                     /* algorithm specific global stats */
-                    var algo = coinStats.algorithm;
+                    const algo = coinStats.algorithm;
                     if (!portalStats.algos.hasOwnProperty(algo)) {
                         portalStats.algos[algo] = {
                             workers: 0,
@@ -857,8 +857,8 @@ export default function (
                         coinStats.workers
                     ).length;
 
-                    var _shareTotal = parseFloat('0' as any);
-                    var _maxTimeShare = parseFloat('0' as any);
+                    let _shareTotal = parseFloat('0' as any);
+                    let _maxTimeShare = parseFloat('0' as any);
                     for (var worker in coinStats.currentRoundShares) {
                         var miner = worker.split('.')[0];
                         if (miner in coinStats.miners) {
@@ -878,7 +878,7 @@ export default function (
                         );
                     }
                     for (var worker in coinStats.currentRoundTimes) {
-                        var time = parseFloat(
+                        const time = parseFloat(
                             coinStats.currentRoundTimes[worker]
                         );
                         if (_maxTimeShare < time) _maxTimeShare = time;
@@ -951,7 +951,7 @@ export default function (
                 });
 
                 Object.keys(portalStats.algos).forEach(function (algo) {
-                    var algoStats = portalStats.algos[algo];
+                    const algoStats = portalStats.algos[algo];
                     algoStats.hashrateString = _this.getReadableHashRateString(
                         algoStats.hashrate
                     );
@@ -960,7 +960,7 @@ export default function (
                 _this.stats = portalStats;
 
                 // save historical hashrate, not entire stats!
-                var saveStats = JSON.parse(JSON.stringify(portalStats));
+                const saveStats = JSON.parse(JSON.stringify(portalStats));
                 Object.keys(saveStats.pools).forEach(function (pool) {
                     delete saveStats.pools[pool].pending;
                     delete saveStats.pools[pool].confirmed;
@@ -979,12 +979,12 @@ export default function (
 
                 addStatPoolHistory(portalStats);
 
-                var retentionTime =
+                const retentionTime =
                     (Date.now() / 1000 -
                         portalConfig.website.stats.historicalRetention) |
                     0;
 
-                for (var i = 0; i < _this.statHistory.length; i++) {
+                for (let i = 0; i < _this.statHistory.length; i++) {
                     if (retentionTime < _this.statHistory[i].time) {
                         if (i > 0) {
                             _this.statHistory = _this.statHistory.slice(i);

@@ -25,7 +25,7 @@ imported with git filter-repo path rewrites (nothing squashed).
 namp/
 ├── package.json          # THE package.json — deps, scripts, everything
 ├── binding.gyp           # native addon build (node-gyp, runs on install)
-├── tsconfig.json         # backend project (extends tsconfig.base.json)
+├── tsconfig.json         # backend compiler project (web/ has its own)
 ├── eslint.config.js      # the one lint config (per-area rule blocks)
 ├── src/                  # the whole backend: portal workers + stratum protocol modules
 ├── native/               # C/C++ hashing sources + CJS loader
@@ -61,9 +61,10 @@ npm run web:dev    # Vite dev server on :5173, proxying /api to the portal
 npm run format     # prettier
 ```
 
-The shared TypeScript config is [tsconfig.base.json](tsconfig.base.json);
-each package extends it. `erasableSyntaxOnly` keeps the code runnable
-as-is under Node's native type stripping (tsc is typecheck-only).
+The backend compiler project is [tsconfig.json](tsconfig.json);
+`erasableSyntaxOnly` keeps the code runnable as-is under Node's native
+type stripping (tsc is typecheck-only). The SPA has its own tsconfig
+under `web/`.
 
 ## Community
 
