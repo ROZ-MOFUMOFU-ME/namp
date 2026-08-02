@@ -40,8 +40,7 @@ namp/
 Everything runs from the root: `npm install` (builds the addon),
 `npm start` (plain Node — buildless TS via native type stripping),
 `npm test`, `npm run lint / typecheck / format`, `npm run build` (the
-SPA, the stack's only build step). Layer guides live next to the code ([src/CLAUDE.md](src/CLAUDE.md),
-[native/CLAUDE.md](native/CLAUDE.md)); operator documentation lives in
+SPA, the stack's only build step). Operator documentation lives in
 [docs/](docs/): [guide.md](docs/guide.md) (full setup),
 [payment-schemes.md](docs/payment-schemes.md),
 [reverse-proxy.md](docs/reverse-proxy.md),

@@ -6,8 +6,6 @@ This is a Yescrypt, YesPoWer, YesPoWerSUGAR, YescryptR8G, Lyra2REv2, sha256d, Qu
 
 The backend is written in **TypeScript** and runs **buildless** — `.ts` runs directly with no compile step, launched through the **`tsx`** loader (Node's built-in type-stripping refuses the TypeScript `stratum-pool`/`multi-hashing` git dependencies that sit under `node_modules`, so `tsx` transforms them at runtime). The web frontend is a **React + Vite** single-page app (in `web/`) that consumes the portal's JSON API.
 
-**Roadmap:** see [ROADMAP.md](ROADMAP.md) for current status, known issues, and planned improvements (this portal is developed together with [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool) and [node-multi-hashing](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing), which have their own roadmaps).
-
 #### Production Usage Notice
 
 This is beta software. All of the following are things that can change and break an existing NAMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then _DO NOT_ pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data. _Only tagged releases are considered stable._

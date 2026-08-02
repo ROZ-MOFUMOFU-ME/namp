@@ -6,8 +6,6 @@
 
 Cryptocurrency hashing functions for node.js.
 
-**Roadmap:** see the root [ROADMAP.md](../../ROADMAP.md) for current status, known issues, and planned improvements.
-
 ## Algorithms
 
 Supported algorithms: `quark, x11, x13, x15, x16r, x16rv2, x17, x25x, c11, nist5, fresh, scrypt, scryptn, scryptjane, neoscrypt, keccak, bcrypt, skein, groestl, groestlmyriad, blake, blake2s, fugue, qubit, hefty1, shavite3, argon2d, argon2i, argon2id, cryptonight, cryptonightfast, boolberry, sha1, sha256d, lbry, kawpow, allium, gost, hsr, lyra2re, lyra2re2, lyra2rev2, lyra2rev3, lyra2z, lyra2z330, lyra2z16m330, m7, m7m, minotaur, odo, phi1612, skunk, skydoge, tribus, vipstar, whirlpoolx, xevan, zr5, yespower` (plus a family of `yespower_*` coin variants), _**and more!**_

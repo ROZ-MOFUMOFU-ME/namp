@@ -376,7 +376,7 @@ esmpps}: { blockReward, feePercent, minFloat, accrualInterval }`. **Effort: M.**
 'solo'|'pplns'|'pps'|'dpps'|'fpps'|'ppsplus'|'smpps'|'esmpps'. Update the `_comment_paymentMode`
 in every `pool_configs/examples/*` (additive, valid JSON → `npm run check:config`
 passes). A runtime guard near the `paymentMode` parse warns on unknown modes
-(and warns if a share-based mode lacks `minFloat`). Per CLAUDE.md the keys are
+(and warns if a share-based mode lacks `minFloat`). The keys are
 additive and default-off (`prop` stays default), so existing deployments are
 unaffected.
 
