@@ -31,6 +31,6 @@
     },
     "allowScripts": {
         "esbuild@0.28.1": true,
-        "github:ROZ-MOFUMOFU-ME/node-multi-hashing#649b70fc34c46a00c8678aa15d2e287e8a8f8cfd": true
+        "multi-hashing@1.2.0": true
     }
 }
