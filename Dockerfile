@@ -15,9 +15,8 @@ RUN apt-get update \
 # the workspace graph from the manifests, and the native addon compiles during
 # install, so its sources come along; .npmrc carries the legacy-peer-deps
 # setting the web SPA needs.
-COPY package.json package-lock.json .npmrc ./
-COPY packages/multi-hashing/package.json packages/multi-hashing/binding.gyp ./packages/multi-hashing/
-COPY packages/multi-hashing/src ./packages/multi-hashing/src
+COPY package.json package-lock.json .npmrc binding.gyp ./
+COPY native/ ./native/
 COPY packages/stratum-pool/package.json ./packages/stratum-pool/
 COPY packages/portal/package.json ./packages/portal/
 COPY packages/portal/web/package.json ./packages/portal/web/

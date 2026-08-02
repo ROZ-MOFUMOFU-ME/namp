@@ -1,4 +1,4 @@
-import multiHashing from 'multi-hashing';
+import multiHashing from '../../../native/index.cjs';
 import * as util from './util.ts';
 
 const diff1 = ((global as any).diff1 = BigInt(

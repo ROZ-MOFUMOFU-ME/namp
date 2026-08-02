@@ -98,6 +98,38 @@ merges. Nothing is squashed; blame and bisect keep working.
       repos' updates stop once archived
 - [ ] Optional (owner action): branch protection on namp main
 
+### M5 — Dissolve the packages
+
+The workspaces exist only for historical reasons — nothing is published
+(decided in M3), so the package boundaries, the four package.json files
+and the `import 'stratum-pool'` indirection are pure overhead. The end
+state is one flat application with a single package.json:
+
+```
+namp/
+├── package.json      # the only one
+├── binding.gyp       # native addon build (was multi-hashing's)
+├── native/           # C/C++ hashing sources + the bindings loader
+├── src/              # the portal (was packages/portal/src)
+│   └── stratum/      # the stratum library (was packages/stratum-pool/src)
+├── web/              # the SPA (was packages/portal/web)
+├── coins/ pool_configs/ docs/ test/ types/
+```
+
+Dissolution order (most-depended-on first, green at every step):
+
+- [x] multi-hashing → `native/` + root binding.gyp (done 2026-08-03);
+      the KAT tests run from root `test/` on node:test (mocha retired),
+      the loader is `native/index.cjs` (CJS under the ESM root) with a
+      `.d.cts` type surface, and stratum imports it by relative path
+- [ ] stratum-pool → `src/stratum/`; the portal's `'stratum-pool'` /
+      deep imports become relative; its tests join root `test/`
+- [ ] portal → root `src/` (+ `coins/`, `pool_configs/`, `docs/`,
+      `config_example.json`); web → root `web/`
+- [ ] drop `workspaces`, merge the four package.json files into one,
+      re-point Docker/CI/docs; verify tsx is still needed (no more .ts
+      under node_modules — Node's native type stripping may suffice)
+
 ## Inherited stack roadmap
 
 Condensed from the source repos' roadmaps (absorbed in M2; their full

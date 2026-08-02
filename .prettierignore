@@ -2,6 +2,7 @@ node_modules/
 package-lock.json
 packages/portal/web/dist/
 
-# multi-hashing predates prettier (native addon, vendored C, generated
-# test vectors) — keep it out of the formatter
-packages/multi-hashing/
+# The native addon predates prettier (vendored C, CJS loader, changelog);
+# its generated test vectors moved with the tests
+native/
+test/vectors/

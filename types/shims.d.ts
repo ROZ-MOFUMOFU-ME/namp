@@ -8,6 +8,3 @@
 // koto/zcash address handling (used by stratum-pool, type-checked by the
 // portal through its deep imports).
 declare module '@exodus/bitcoinjs-lib-zcash';
-
-// multi-hashing is an intentionally JS-only NAN native addon (no .d.ts).
-declare module 'multi-hashing';

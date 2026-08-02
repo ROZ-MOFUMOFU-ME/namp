@@ -48,8 +48,7 @@
     "dependencies": {
         "@exodus/bitcoinjs-lib-zcash": "^0.0.21",
         "async": "^3.2.6",
-        "bitcoinjs-lib": "^7.0.1",
-        "multi-hashing": "^1.0.0"
+        "bitcoinjs-lib": "^7.0.1"
     },
     "overrides": {
         "flatted": "^3.4.2"
