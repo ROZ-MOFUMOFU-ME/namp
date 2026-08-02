@@ -9,9 +9,11 @@ repos' roadmaps, which this file supersedes once the merge lands.
 ## Where we are (2026-08-02)
 
 - Monorepo live: npm workspaces (`packages/*`), TypeScript 7 (native
-  compiler), prettier, MIT, Node 22.18+/ESM. **M1 done (2026-08-02)** —
-  the three source histories (2,706 commits) are imported under
-  `packages/` and the root install/typecheck/test gate is green.
+  compiler), prettier, MIT, Node 22.18+/ESM. **M1 and M2 done
+  (2026-08-02)** — the three source histories (2,706 commits) are
+  imported under `packages/`, the packages reference each other as
+  workspaces behind a single lockfile, CI/release run as one root
+  pipeline, and the root install/typecheck/test gate is green.
 - **All three source repos' main now follows the TypeScript develop line**
   (replaced 2026-08-02 via `-s ours` merges; the legacy JS mains survive
   as `legacy-main`). Releases so far: zny-nomp v1.4.0 (develop is v2.0.0
@@ -38,18 +40,22 @@ merges. Nothing is squashed; blame and bisect keep working.
 - [x] Drop the side-by-side clones and their .gitignore entries;
       retire manage.sh / namp.code-workspace (done 2026-08-02)
 
-### M2 — One workspace
+### M2 — One workspace (done: 2026-08-02)
 
-- [ ] Replace the git-URL dependency chain
+- [x] Replace the git-URL dependency chain
       (`portal → stratum-pool#develop → multi-hashing#develop`) with
-      workspace references; single root lockfile
-- [ ] One CI pipeline: lint / typecheck / prettier / unit tests /
-      config checks / native build (GCC 10+), replacing the per-repo
-      workflows
-- [ ] Merge the three ROADMAP.md / CLAUDE.md files into the root ones;
-      keep per-package READMEs
-- [ ] Single release flow: one `vX.Y.Z` tag releases the stack
-      (replaces "tag downstream, pin upstream, npm link chain")
+      workspace references; single root lockfile (zero git URLs; the
+      per-package lockfiles are gone, `packages/portal/web` keeps its
+      own as a non-workspace project)
+- [x] One CI pipeline (.github/workflows/ci.yml): lint / prettier /
+      typecheck + Node 22/24 test matrix incl. the native build and
+      config checks, replacing the per-repo workflows and CircleCI
+- [x] Per-package ROADMAPs absorbed here (full text survives in git
+      history); per-package CLAUDE.mds rewritten in English for the
+      monorepo (multi-repo/npm-link workflow notes dropped); READMEs
+      kept
+- [x] Single release flow (.github/workflows/release.yml): one
+      `vX.Y.Z` tag matching the root package.json releases the stack
 
 ### M3 — TS7 alignment and rebranding
 
@@ -71,8 +77,8 @@ merges. Nothing is squashed; blame and bisect keep working.
 
 ## Inherited stack roadmap
 
-Condensed from the source repos' roadmaps; the detailed histories live in
-each package's ROADMAP.md until M2 merges them here.
+Condensed from the source repos' roadmaps (absorbed in M2; their full
+text survives in each package's git history).
 
 ### Verification debt (can proceed before/during migration)
 

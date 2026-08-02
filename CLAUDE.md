@@ -23,16 +23,19 @@ filter-repo path rewrites (blame/bisect work across the import).
 - `packages/stratum-pool` (from node-stratum-pool) — stratum protocol layer
 - `packages/multi-hashing` (from node-multi-hashing) — C++ native, not TS
 
-Dependency direction: portal → stratum-pool → multi-hashing.
+Dependency direction: portal → stratum-pool → multi-hashing, wired as
+**workspace references** (single root lockfile; `packages/portal/web`
+is a separate npm project, not a workspace, with its own lockfile).
 **Development happens in this repository now.** The source repos are
 frozen pending archive (M4); their main branches follow the TS develop
 line since 2026-08-02 (legacy JS mains survive as legacy-main).
 ROADMAP.md is the source of truth for migration steps and progress.
 
-Until M2 lands workspace references, package.json deps still use git
-URLs (`stratum-pool#develop`, `multi-hashing#develop`), so npm installs
-duplicate copies inside packages/*/node_modules; the root node_modules
-symlinks are the workspace-local versions.
+Each package has its own CLAUDE.md with package-specific guidance
+(architecture, commands, caveats) — read it before working inside that
+package. CI is one root pipeline (.github/workflows/ci.yml); releases
+are one vX.Y.Z tag matching the root package.json version
+(.github/workflows/release.yml).
 
 ## Toolchain
 
