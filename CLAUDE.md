@@ -49,7 +49,8 @@ symlinks are the workspace-local versions.
 
 conventional commits (`fix(stats): ...` / `feat:` / `chore:` / `docs:`).
 Explain what changed and why in the body (zny-nomp's main history is the
-model). Branching: develop for work, merged into main.
+model). Single-branch flow: everything lands on main (no develop
+branch in this repo; the frozen source repos keep theirs).
 
 **Never add `Co-Authored-By: Claude` or other AI trailers to commits**
 (owner policy: Claude showing up in the contributor list makes the repo
