@@ -8,7 +8,7 @@ updates:
       open-pull-requests-limit: 5
     # The web SPA is a separate npm project (not a workspace)
     - package-ecosystem: npm
-      directory: /packages/portal/web
+      directory: /web
       schedule:
           interval: weekly
       open-pull-requests-limit: 5

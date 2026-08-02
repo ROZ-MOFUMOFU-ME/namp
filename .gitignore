@@ -4,3 +4,12 @@ node_modules/
 
 # node-gyp output of the native hashing addon
 build/
+
+# Real operator configuration (only the examples are committed)
+config.json
+pool_configs/*.json
+coins/*.json
+coins/regtest/
+coins/testnet/
+.bootlog
+logs/

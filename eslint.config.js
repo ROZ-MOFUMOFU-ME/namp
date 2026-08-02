@@ -26,7 +26,7 @@ export default [
     {
         // Portal entry point only (the rest of the portal is covered by
         // tsc --noEmit + prettier).
-        files: ['packages/portal/src/init.ts'],
+        files: ['src/init.ts'],
         languageOptions: tsLanguage,
         rules: {
             ...js.configs.recommended.rules,
@@ -56,7 +56,7 @@ export default [
     {
         // Web SPA (React/TSX). Babel 8 does not auto-enable JSX, so the
         // syntax plugin is explicit here.
-        files: ['packages/portal/web/src/**/*.{ts,tsx}'],
+        files: ['web/src/**/*.{ts,tsx}'],
         languageOptions: {
             ...tsLanguage,
             parserOptions: {

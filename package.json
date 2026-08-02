@@ -12,24 +12,25 @@
     },
     "workspaces": [
         "packages/*",
-        "packages/portal/web"
+        "web"
     ],
     "engines": {
         "node": ">=22.18.0",
         "npm": ">=9"
     },
     "scripts": {
-        "typecheck": "npm run typecheck --workspaces --if-present",
-        "test": "node --test test/*.test.cjs && npm test --workspace stratum-pool && npm run test:unit --workspace namp-portal",
-        "lint": "eslint packages/portal/src/init.ts packages/stratum-pool/src packages/stratum-pool/test packages/portal/web/src",
+        "typecheck": "tsc --noEmit && npm run typecheck --workspaces --if-present",
+        "test": "node --test test/*.test.cjs test/*.test.ts && npm test --workspace stratum-pool",
+        "lint": "eslint src/init.ts packages/stratum-pool/src packages/stratum-pool/test web/src",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "lint:fix": "eslint packages/portal/src/init.ts packages/stratum-pool/src packages/stratum-pool/test packages/portal/web/src --fix",
-        "check:config": "npm run check:config --workspace namp-portal",
+        "lint:fix": "eslint src/init.ts packages/stratum-pool/src packages/stratum-pool/test web/src --fix",
+        "check:config": "node --test test/config.test.ts",
         "web:dev": "npm run dev --workspace namp-web",
         "build": "npm run build --workspace namp-web",
         "install": "node-gyp rebuild",
-        "rebuild:native": "node-gyp rebuild"
+        "rebuild:native": "node-gyp rebuild",
+        "start": "node --import tsx src/init.ts"
     },
     "devDependencies": {
         "@babel/core": "^8.0.1",
@@ -52,8 +53,19 @@
         "esbuild@0.28.1": true
     },
     "dependencies": {
+        "async": "^3.2.6",
         "bindings": "^1.5.0",
-        "nan": "^2.28.0"
+        "colors": "^1.4.0",
+        "compression": "^1.8.1",
+        "dateformat": "^5.0.3",
+        "express": "^5.2.1",
+        "extend": "^3.0.2",
+        "nan": "^2.28.0",
+        "node-json-minify": "^3.0.0",
+        "node-watch": "^0.7.4",
+        "redis": "^6.2.0",
+        "stratum-pool": "^1.0.0",
+        "tsx": "^4.23.1"
     },
     "gypfile": true
 }

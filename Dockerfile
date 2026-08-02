@@ -18,8 +18,7 @@ RUN apt-get update \
 COPY package.json package-lock.json .npmrc binding.gyp ./
 COPY native/ ./native/
 COPY packages/stratum-pool/package.json ./packages/stratum-pool/
-COPY packages/portal/package.json ./packages/portal/
-COPY packages/portal/web/package.json ./packages/portal/web/
+COPY web/package.json ./web/
 RUN npm ci
 
 # Sources (config.json / pool_configs / coins are mounted at runtime).
@@ -28,7 +27,6 @@ COPY . .
 # Build the Vite + React SPA that the website worker serves from web/dist.
 RUN npm run build
 
-WORKDIR /app/packages/portal
 
 # Website (8080) and CLI listener (cliPort, 17117 in config_example.json).
 # These must match your config; stratum ports are per-pool, publish them in

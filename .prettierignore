@@ -1,6 +1,6 @@
 node_modules/
 package-lock.json
-packages/portal/web/dist/
+web/dist/
 
 # The native addon predates prettier (vendored C, CJS loader, changelog);
 # its generated test vectors moved with the tests
