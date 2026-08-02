@@ -14,8 +14,8 @@ export default [
             parserOptions: {
                 requireConfigFile: false,
                 babelOptions: {
-                    presets: ['@babel/preset-typescript']
-                }
+                    presets: ['@babel/preset-typescript'],
+                },
             },
             globals: {
                 global: 'readonly',
@@ -26,8 +26,8 @@ export default [
                 setTimeout: 'readonly',
                 clearTimeout: 'readonly',
                 setInterval: 'readonly',
-                clearInterval: 'readonly'
-            }
+                clearInterval: 'readonly',
+            },
         },
         rules: {
             // tsc --noEmit is the correctness gate; eslint surfaces a few style
@@ -37,11 +37,11 @@ export default [
             'no-unused-vars': 'off',
             'no-console': 'off',
             'prefer-const': 'warn',
-            'no-var': 'warn'
-        }
+            'no-var': 'warn',
+        },
     },
     {
-        ignores: ['node_modules/**', 'dist/**', '*.log', 'eslint.config.js']
+        ignores: ['node_modules/**', 'dist/**', '*.log', 'eslint.config.js'],
     },
-    prettier
+    prettier,
 ];
