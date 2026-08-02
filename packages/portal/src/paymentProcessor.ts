@@ -17,7 +17,7 @@ import {
     ppsPlusFeePart
 } from './feeRewardLogic.ts';
 import { esmppsAllocate, smppsAllocate, parseDebtEntry } from './smppsLogic.ts';
-import { createCoinAmounts } from './statsUtil.ts';
+import { createCoinAmounts, roundTo } from './statsUtil.ts';
 import async from 'async';
 import * as Stratum from 'stratum-pool';
 import * as StratumUtil from 'stratum-pool/src/util.ts';
