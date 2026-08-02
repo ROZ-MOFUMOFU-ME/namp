@@ -82,11 +82,21 @@ merges. Nothing is squashed; blame and bisect keep working.
 
 ### M4 — Cutover
 
-- [ ] Release NAMP v1.0.0 (repo is already public)
-- [ ] Archive the three source repos; READMEs point here
-      (legacy-main branches stay browsable in the archives)
-- [ ] Re-point dependabot, branch protection, and any external
-      consumers of the git URLs
+- [x] Release NAMP v1.0.0 (done 2026-08-02: GitHub Release from the
+      v1.0.0 tag with auto-generated notes)
+- [x] Migration notices on all three source repos (main + develop
+      READMEs point at the namp package paths; stratum-pool landed via
+      PR #61 due to branch protection)
+- [ ] **Archive the three source repos — owner action required**:
+      archiving needs admin rights (the emerauda account has write
+      only). From the ROZ-MOFUMOFU-ME account:
+      `gh repo archive ROZ-MOFUMOFU-ME/zny-nomp --yes` (and the same
+      for node-stratum-pool / node-multi-hashing), or Settings →
+      Danger Zone → Archive this repository
+- [x] dependabot re-pointed: namp carries .github/dependabot.yml (root
+      workspace tree, the portal web SPA, GitHub Actions); the old
+      repos' updates stop once archived
+- [ ] Optional (owner action): branch protection on namp main
 
 ## Inherited stack roadmap
 
