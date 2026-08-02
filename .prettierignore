@@ -1,7 +1,3 @@
-# Side-by-side clones of the source repos (kept until the merge completes)
-/zny-nomp/
-/node-stratum-pool/
-/node-multi-hashing/
-
 node_modules/
 package-lock.json
+packages/portal/web/dist/

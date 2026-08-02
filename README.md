@@ -7,40 +7,27 @@ pool portal, the stratum layer and the hashing module all in one.
 - Written **NAMP**; the repository/package name is lowercase `namp`
 - TypeScript 7 (native compiler), ESM, Node 22.18+
 
-## What gets unified
+## Packages
 
-| Target (planned)         | Source repository                                                           | Role                            |
+| Package                  | Imported from                                                               | Role                            |
 | ------------------------ | --------------------------------------------------------------------------- | ------------------------------- |
 | `packages/portal`        | [zny-nomp](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp)                     | Pool portal (NOMP) + web UI     |
 | `packages/stratum-pool`  | [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool)   | Stratum protocol layer          |
 | `packages/multi-hashing` | [node-multi-hashing](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing) | Hashing algorithms (C++ native) |
 
 Dependency direction: `portal → stratum-pool → multi-hashing`.
-The **develop branches (TypeScript) of the source repos are the migration
-baseline**. The merge preserves full history via git filter-repo; see
-[ROADMAP.md](ROADMAP.md) for the plan.
+Each package carries the full commit history of its source repo,
+imported with git filter-repo path rewrites (nothing squashed).
 
-## Current state: scaffold
+## Current state
 
-`packages/` is still empty. Until the migration completes, the three source
-repos live side-by-side in this directory as plain clones, excluded via
-`.gitignore` — code changes still go to each repo's develop branch.
+The three source histories are fully imported under `packages/`
+(migration phase M1) — 2,700+ commits, blame/bisect intact. Development
+happens in this repository now; the source repos are frozen pending
+archive. The packages still reference each other through git URLs until
+M2 lands workspace references (see [ROADMAP.md](ROADMAP.md)).
 
-### Interim multi-repo management — manage.sh
-
-```bash
-./manage.sh status        # branch, changes and ahead/behind for each repo
-./manage.sh sync          # fetch + ff-update main/develop + pull current branch
-./manage.sh exec log -1   # run any git command across the three repos
-```
-
-### VS Code
-
-```bash
-code namp.code-workspace
-```
-
-## Development (monorepo)
+## Development
 
 ```bash
 nvm use            # Node 24 (.nvmrc)

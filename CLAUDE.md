@@ -15,24 +15,24 @@ English.
 
 ## Layout and current state
 
-npm workspaces monorepo (`packages/*`). **Currently a scaffold — packages/
-is empty.** The three source repos sit side-by-side at the root as plain
-clones, excluded via .gitignore:
+npm workspaces monorepo (`packages/*`). **M1 (history import) is done**:
+the full develop histories live under packages/, imported via git
+filter-repo path rewrites (blame/bisect work across the import).
 
-- `zny-nomp/` → will become `packages/portal` (pool portal + web UI)
-- `node-stratum-pool/` → `packages/stratum-pool` (stratum protocol layer)
-- `node-multi-hashing/` → `packages/multi-hashing` (C++ native, not TS)
+- `packages/portal` (from zny-nomp) — pool portal + web UI
+- `packages/stratum-pool` (from node-stratum-pool) — stratum protocol layer
+- `packages/multi-hashing` (from node-multi-hashing) — C++ native, not TS
 
 Dependency direction: portal → stratum-pool → multi-hashing.
-**The migration baseline is each repo's develop branch (TypeScript).**
-Since 2026-08-02 main follows the same TS line (replaced via a -s ours
-merge; the legacy JS main survives as each repo's legacy-main branch).
+**Development happens in this repository now.** The source repos are
+frozen pending archive (M4); their main branches follow the TS develop
+line since 2026-08-02 (legacy JS mains survive as legacy-main).
 ROADMAP.md is the source of truth for migration steps and progress.
 
-Important: until the merge completes, code changes go to the source
-repos' develop branches (packages/ has no content yet). Use `./manage.sh`
-(status / sync / pull / push / exec) for bulk git operations across the
-three repos.
+Until M2 lands workspace references, package.json deps still use git
+URLs (`stratum-pool#develop`, `multi-hashing#develop`), so npm installs
+duplicate copies inside packages/*/node_modules; the root node_modules
+symlinks are the workspace-local versions.
 
 ## Toolchain
 

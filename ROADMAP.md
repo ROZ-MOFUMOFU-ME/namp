@@ -8,9 +8,10 @@ repos' roadmaps, which this file supersedes once the merge lands.
 
 ## Where we are (2026-08-02)
 
-- Scaffold in place: npm workspaces (`packages/*`), TypeScript 7 (native
-  compiler), prettier, MIT, Node 22.18+/ESM. `packages/` is still empty;
-  the source repos sit beside it as gitignored clones.
+- Monorepo live: npm workspaces (`packages/*`), TypeScript 7 (native
+  compiler), prettier, MIT, Node 22.18+/ESM. **M1 done (2026-08-02)** —
+  the three source histories (2,706 commits) are imported under
+  `packages/` and the root install/typecheck/test gate is green.
 - **All three source repos' main now follows the TypeScript develop line**
   (replaced 2026-08-02 via `-s ours` merges; the legacy JS mains survive
   as `legacy-main`). Releases so far: zny-nomp v1.4.0 (develop is v2.0.0
@@ -28,13 +29,14 @@ Import each repo's full history under `packages/`, most-depended-on
 first, using git filter-repo path rewrites + `--allow-unrelated-histories`
 merges. Nothing is squashed; blame and bisect keep working.
 
-- [ ] multi-hashing → `packages/multi-hashing`
-- [ ] stratum-pool → `packages/stratum-pool`
-- [ ] zny-nomp → `packages/portal`
-- [ ] Gate: root `npm install && npm run typecheck && npm test` green
-      with the imported packages untouched
-- [ ] Drop the side-by-side clones and their .gitignore entries;
-      retire manage.sh / namp.code-workspace
+- [x] multi-hashing → `packages/multi-hashing` (497 commits)
+- [x] stratum-pool → `packages/stratum-pool` (784 commits)
+- [x] zny-nomp → `packages/portal` (1425 commits)
+- [x] Gate: root `npm install && npm run typecheck && npm test` green
+      with the imported packages untouched (typecheck ×2, KAT vectors,
+      stratum node --test incl. the native addon, portal 106 unit tests)
+- [x] Drop the side-by-side clones and their .gitignore entries;
+      retire manage.sh / namp.code-workspace (done 2026-08-02)
 
 ### M2 — One workspace
 
