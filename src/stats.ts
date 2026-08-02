@@ -1,5 +1,5 @@
 import async from 'async';
-import algos from './stratum/algoProperties.ts';
+import algos from './algoProperties.ts';
 import type { Logger } from './logUtil.ts';
 import { createRedisClient } from './redisUtil.ts';
 import { parsePriceHash } from './priceProviders.ts';

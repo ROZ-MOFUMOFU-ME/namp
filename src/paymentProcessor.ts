@@ -19,9 +19,9 @@ import {
 import { esmppsAllocate, smppsAllocate, parseDebtEntry } from './smppsLogic.ts';
 import { createCoinAmounts, roundTo } from './statsUtil.ts';
 import async from 'async';
-import * as Stratum from './stratum/index.ts';
-import * as StratumUtil from './stratum/util.ts';
-import algos from './stratum/algoProperties.ts';
+import * as daemonModule from './daemon.ts';
+import * as StratumUtil from './util.ts';
+import algos from './algoProperties.ts';
 import type { Logger } from './logUtil.ts';
 
 // `util` is referenced (but never imported) by getProperAddress/handleAddress
@@ -435,7 +435,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
             pplntTimeQualify
     );
 
-    var daemon = new (Stratum as any).daemon.interface(
+    var daemon = new (daemonModule as any).interface(
         [processingConfig.daemon],
         function (severity: any, message: any) {
             (logger as any)[severity](logSystem, logComponent, message);

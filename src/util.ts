@@ -3,10 +3,16 @@ import base58 from 'bs58check';
 import * as bitcoin from 'bitcoinjs-lib';
 import zcash from '@exodus/bitcoinjs-lib-zcash';
 
-export function addressFromEx(exAddress: string, ripdm160Key: string): string | null {
+export function addressFromEx(
+    exAddress: string,
+    ripdm160Key: string
+): string | null {
     try {
         const versionByte = getVersionByte(exAddress);
-        const addrBase = Buffer.concat([versionByte, Buffer.from(ripdm160Key, 'hex')]);
+        const addrBase = Buffer.concat([
+            versionByte,
+            Buffer.from(ripdm160Key, 'hex')
+        ]);
         const checksum = sha256d(addrBase).slice(0, 4);
         const address = Buffer.concat([addrBase, checksum]);
         return base58.encode(address);
@@ -39,7 +45,8 @@ export function reverseHex(hex: string): string {
 }
 
 export function reverseByteOrder(buff: Buffer): Buffer {
-    for (let i = 0; i < 8; i++) buff.writeUInt32LE(buff.readUInt32BE(i * 4), i * 4);
+    for (let i = 0; i < 8; i++)
+        buff.writeUInt32LE(buff.readUInt32BE(i * 4), i * 4);
     return reverseBuffer(buff);
 }
 
@@ -97,12 +104,26 @@ export function serializeNumber(n: number): Buffer {
 }
 
 export function serializeString(s: string): Buffer {
-    if (s.length < 253) return Buffer.concat([Buffer.from([s.length]), Buffer.from(s)]);
+    if (s.length < 253)
+        return Buffer.concat([Buffer.from([s.length]), Buffer.from(s)]);
     else if (s.length < 0x10000)
-        return Buffer.concat([Buffer.from([253]), packUInt16LE(s.length), Buffer.from(s)]);
+        return Buffer.concat([
+            Buffer.from([253]),
+            packUInt16LE(s.length),
+            Buffer.from(s)
+        ]);
     else if (s.length < 0x100000000)
-        return Buffer.concat([Buffer.from([254]), packUInt32LE(s.length), Buffer.from(s)]);
-    else return Buffer.concat([Buffer.from([255]), packUInt16LE(s.length), Buffer.from(s)]);
+        return Buffer.concat([
+            Buffer.from([254]),
+            packUInt32LE(s.length),
+            Buffer.from(s)
+        ]);
+    else
+        return Buffer.concat([
+            Buffer.from([255]),
+            packUInt16LE(s.length),
+            Buffer.from(s)
+        ]);
 }
 
 export function packUInt16LE(num: number): Buffer {
@@ -182,18 +203,24 @@ export function pubkeyToScript(key: string): Buffer {
 
 export function miningKeyToScript(key: string): Buffer {
     const keyBuffer = Buffer.from(key, 'hex');
-    return Buffer.concat([Buffer.from([0x76, 0xa9, 0x14]), keyBuffer, Buffer.from([0x88, 0xac])]);
+    return Buffer.concat([
+        Buffer.from([0x76, 0xa9, 0x14]),
+        keyBuffer,
+        Buffer.from([0x88, 0xac])
+    ]);
 }
 
 export function addressToScript(network: any, addr?: string): Buffer {
     if (typeof network !== 'undefined' && network !== null) {
         // bitcoinjs-lib v7 returns Uint8Array; downstream expects Buffer
-        return Buffer.from(bitcoin.address.toOutputScript(addr as any, network));
+        return Buffer.from(
+            bitcoin.address.toOutputScript(addr as any, network)
+        );
     } else {
         return Buffer.concat([
             Buffer.from([0x76, 0xa9, 0x14]),
             bitcoin.address.fromBase58Check(addr as any).hash,
-            Buffer.from([0x88, 0xac]),
+            Buffer.from([0x88, 0xac])
         ]);
     }
 }
@@ -205,7 +232,7 @@ export function kotoAddressToScript(addr: string, network?: any): Buffer {
         return Buffer.concat([
             Buffer.from([0x76, 0xa9, 0x14]),
             zcash.address.fromBase58Check(addr).hash,
-            Buffer.from([0x88, 0xac]),
+            Buffer.from([0x88, 0xac])
         ]);
     }
 }
@@ -230,7 +257,7 @@ export function getReadableHashRateString(hashrate: number): string {
         ' PH/s',
         ' EH/s',
         ' ZH/s',
-        ' YH/s',
+        ' YH/s'
     ];
     const i = Math.floor(Math.log(hashrate / 1000) / Math.log(1000) - 1);
     hashrate = hashrate / 1000 / Math.pow(1000, i + 1);
@@ -312,7 +339,7 @@ const consensusParams = {
     nSubsidyHalvingInterval: 1051200,
     SubsidySlowStartShift() {
         return Math.floor(consensusParams.nSubsidySlowStartInterval / 2);
-    },
+    }
 };
 
 export function setupKotoConsensusParams(options: any): void {
@@ -320,10 +347,12 @@ export function setupKotoConsensusParams(options: any): void {
         return;
     }
     if (options.coin.nSubsidySlowStartInterval) {
-        consensusParams.nSubsidySlowStartInterval = options.coin.nSubsidySlowStartInterval;
+        consensusParams.nSubsidySlowStartInterval =
+            options.coin.nSubsidySlowStartInterval;
     }
     if (options.coin.nSubsidyHalvingInterval) {
-        consensusParams.nSubsidyHalvingInterval = options.coin.nSubsidyHalvingInterval;
+        consensusParams.nSubsidyHalvingInterval =
+            options.coin.nSubsidyHalvingInterval;
     }
 }
 
@@ -362,19 +391,22 @@ export function getFounderRewardScript(network: any, addr: string): Buffer {
         return Buffer.concat([
             Buffer.from([0x76, 0xa9, 0x14]),
             bitcoin.address.fromBase58Check(addr).hash,
-            Buffer.from([0x88, 0xac]),
+            Buffer.from([0x88, 0xac])
         ]);
     }
 }
 
-export function getKotoFounderRewardScript(addr: string, network?: any): Buffer {
+export function getKotoFounderRewardScript(
+    addr: string,
+    network?: any
+): Buffer {
     if (typeof network !== 'undefined' && network !== null) {
         return zcash.address.toOutputScript(addr, network);
     } else {
         return Buffer.concat([
             Buffer.from([0x76, 0xa9, 0x14]),
             zcash.address.fromBase58Check(addr).hash,
-            Buffer.from([0x88, 0xac]),
+            Buffer.from([0x88, 0xac])
         ]);
     }
 }

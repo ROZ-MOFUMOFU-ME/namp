@@ -15,33 +15,37 @@ English.
 
 ## Layout and current state
 
-npm workspaces monorepo (`packages/*`). **M1 (history import) is done**:
-the full develop histories live under packages/, imported via git
-filter-repo path rewrites (blame/bisect work across the import).
+One flat application — a single package.json, lockfile and node_modules
+(M5 dissolved the interim npm workspaces):
 
-- `packages/portal` (from zny-nomp) — pool portal + web UI
-- `packages/stratum-pool` (from node-stratum-pool) — stratum protocol layer
-- `packages/multi-hashing` (from node-multi-hashing) — C++ native, not TS
+- `src/` — the portal: cluster master (`init.ts`) + pool / payment /
+  website workers
+- `src/stratum/` — the stratum protocol library (GPL-2.0), imported
+  relatively (`./stratum/index.ts`); deep imports use `./stratum/*.ts`
+- `native/` — the C/C++ hashing addon (GPL-2.0, NAN, deliberately JS
+  loader `index.cjs`); binding.gyp at the root builds it on install
+- `web/` — the React/Vite SPA with its own tsconfig; built to
+  `web/dist`, served by `src/website.ts`
+- `test/` — every suite, one `node --test` run (hashing vectors on
+  node:test included); redis-backed tests skip without a local Redis
+- `coins/`, `pool_configs/` — operator config (examples committed, real
+  files gitignored); `docs/` — operator guides
 
-Dependency direction: portal → stratum-pool → multi-hashing, wired as
-**workspace references**. Four workspaces total — the web SPA
-(`packages/portal/web`, package `namp-web`) is one of them — behind a
-single root lockfile. All dev tooling, scripts and shared config live
-at the root; packages declare only their own runtime dependencies.
-**Development happens in this repository now.** The source repos are
-frozen pending archive (M4); their main branches follow the TS develop
-line since 2026-08-02 (legacy JS mains survive as legacy-main).
-ROADMAP.md is the source of truth for migration steps and progress.
+**Development happens here.** The source repos (zny-nomp,
+node-stratum-pool, node-multi-hashing) are frozen pending archive;
+their main branches follow the TS line since 2026-08-02 (legacy JS
+mains survive as legacy-main). ROADMAP.md is the source of truth.
 
-Each package has its own CLAUDE.md with package-specific guidance
-(architecture, commands, caveats) — read it before working inside that
-package. CI is one root pipeline (.github/workflows/ci.yml); releases
-are one vX.Y.Z tag matching the root package.json version
-(.github/workflows/release.yml).
+Per-directory CLAUDE.md files (src/, src/stratum/, native/) carry the
+deep dives. CI is one root pipeline; releases are one vX.Y.Z tag
+matching package.json (.github/workflows/).
 
 ## Toolchain
 
-- Node 22.18+ (.nvmrc says 24), ESM (`"type": "module"`)
+- Node 22.18+ (.nvmrc says 24), ESM (`"type": "module"`); the backend
+  runs on plain Node — buildless TS via native type stripping, no
+  loader (tsx retired with the workspaces: no more .ts under
+  node_modules)
 - **TypeScript 7** (native compiler, root devDependency). Packages
   extend tsconfig.base.json; `noEmit` + `erasableSyntaxOnly` +
   `verbatimModuleSyntax` keep the code runnable under Node's native

@@ -1,28 +1,28 @@
 # CLAUDE.md
 
-Guidance for `packages/portal` — the mining portal at the top of the
-NAMP stack. Monorepo-wide guidance lives in the root CLAUDE.md.
+Guidance for `src/` — the whole NAMP backend: the portal (cluster
+master + pool / payment / website workers) and the stratum protocol
+modules it drives, one flat directory. Repository-wide guidance lives
+in the root CLAUDE.md; the native hashing addon is documented in
+native/CLAUDE.md.
 
 ## Startup and runtime
 
-Depends on `stratum-pool` (workspace reference), which depends on
-`multi-hashing`. **Start via the tsx loader** (`npm start` =
-`node --import tsx src/init.ts`; `tsx` is a regular dependency): the
-workspace deps resolve under `node_modules` as TypeScript sources, and
-Node's built-in type stripping refuses `.ts` under `node_modules`
-(`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`), so tsx transforms them
-at runtime. `src/init.ts` forks all workers with `cluster.fork()`,
-which inherits `execArgv`, so `--import tsx` propagates to every
-worker. The portal's own `src/*.ts` would also run under native type
-stripping, but the startup path is unified on tsx.
+The stratum modules live flat in this directory; the native hashing
+addon is `native/`. **Start with plain Node** (`npm start` =
+`node src/init.ts`): the whole backend is buildless TypeScript run
+through Node's native type stripping — `erasableSyntaxOnly` guarantees
+every construct is erasable, and with no `.ts` under `node_modules`
+any more, no loader is involved. `src/init.ts` forks all workers with
+`cluster.fork()`, which inherit the same plain-Node invocation.
 
 Minimum Node: `>=22.18` (`engines`; Node 24 recommended). The
-`@exodus/bitcoinjs-lib-zcash` dependency (via stratum-pool, for
-koto/zcash addresses) `require()`s an ESM package, so
+`@exodus/bitcoinjs-lib-zcash` dependency (koto/zcash addresses)
+`require()`s an ESM package, so
 require(ESM)-capable Node is mandatory (`ERR_REQUIRE_ESM` otherwise).
 
-Native addon caveat: see packages/multi-hashing/CLAUDE.md — after a
-Node version switch run `npm rebuild multi-hashing` at the root.
+Native addon caveat: see native/CLAUDE.md — after a
+Node version switch run `npm run rebuild:native` at the root.
 
 ## Commands
 
@@ -146,3 +146,59 @@ This is production pool software ("beta"): config file structure and
 the Redis data layout are considered unstable between commits; only
 tagged releases are stable. Be conservative with config-schema and
 Redis-key-format changes.
+
+## Stratum layer architecture
+
+ESM (`"type": "module"`) TypeScript, ~4.4k lines, **no
+build step** — Node's native type stripping (22.18+/24) runs `.ts`
+directly; `tsc --noEmit` typechecks only (strict, nodenext,
+verbatimModuleSyntax, erasableSyntaxOnly, allowImportingTsExtensions;
+import specifiers use real extensions like `./foo.ts`; the untyped
+`@exodus/bitcoinjs-lib-zcash` is ambient-declared in
+`types/shims.d.ts`). The entry `index.ts` exports
+`createPool(options, authorizeFn)` — it **constructs and returns a
+`Pool`** (`pool.ts`); the caller starts it with `pool.start()` —
+plus named exports `daemon` and `varDiff`. `Pool` is the orchestrator
+wiring everything together.
+
+Share lifecycle — the flow that ties most files together:
+
+1. **Template polling** — `daemon.ts` (RPC client with multi-daemon
+   fallback) polls `getblocktemplate`; `peer.ts` additionally
+   connects to the daemon as a P2P peer to detect new blocks faster
+   than polling.
+2. **Job creation** — `jobManager.ts` detects a new block/height and
+   builds a `BlockTemplate` (`blockTemplate.ts`); coinbase
+   serialization lives in `transactions.ts` (rewards, fees,
+   masternode outputs), merkle branches in `merkleTree.ts`.
+3. **Broadcast** — `stratum.ts` (the TCP stratum server, largest
+   file) sends `mining.notify` to all subscribed miners. Per-port
+   difficulty is fixed or managed by `varDiff.ts` (retargeting from
+   share submission rate).
+4. **Share validation** — on `mining.submit`,
+   `jobManager.processShare()` checks job/nonce/ntime/duplicates,
+   rebuilds the header and hashes it via the per-algorithm hasher from
+   `algoProperties.ts`; hash-vs-target decides valid share / valid
+   block.
+5. **Block submission** — `pool.ts` serializes the block, submits over
+   RPC, confirms acceptance, then emits the `share` event; the portal
+   persists it to Redis downstream.
+
+`algoProperties.ts` is the algorithm registry (~50 entries: the
+scrypt family, x11–x25x, lyra2 variants, yescrypt/yespower families,
+vipstar, …). Each entry is
+`{ multiplier, diff?, hash(coinConfig) → (data: Buffer) => Buffer }`
+with the inner function wrapping a `multi-hashing` export. Adding an
+algorithm = implement/export it in `native/`, then
+register it here (mind the difficulty `multiplier` and whether the
+block hash needs `util.reverseBuffer`).
+
+`stratum.ts` also implements connection policy: subscription
+management, invalid-share auto-ban, connection timeouts, optional
+HAProxy `tcpProxyProtocol` support.
+
+## Native addon caveat
+
+See native/CLAUDE.md: the addon is ABI-bound — after a
+Node version switch run `npm run rebuild:native` at the root, or
+tests fail with `Module did not self-register`.

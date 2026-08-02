@@ -109,7 +109,8 @@ const BlockTemplate = function BlockTemplate(
     const swapRootWordOrder = (hex: string) => {
         const b = Buffer.from(hex, 'hex');
         const out = Buffer.alloc(b.length);
-        for (let i = 0; i + 4 <= b.length; i += 4) b.subarray(i, i + 4).copy(out, b.length - 4 - i);
+        for (let i = 0; i + 4 <= b.length; i += 4)
+            b.subarray(i, i + 4).copy(out, b.length - 4 - i);
         return out.toString('hex');
     };
     if (rpcData.hashstateroot) {
@@ -123,7 +124,9 @@ const BlockTemplate = function BlockTemplate(
             return Buffer.from(tx.data, 'hex');
         })
     );
-    this.merkleTree = new (merkleTree as any)(getTransactionBuffers(rpcData.transactions));
+    this.merkleTree = new (merkleTree as any)(
+        getTransactionBuffers(rpcData.transactions)
+    );
     this.merkleBranch = getMerkleHashes(this.merkleTree.steps);
     this.generationTransaction = transactions.CreateGeneration(
         rpcData,
@@ -135,17 +138,26 @@ const BlockTemplate = function BlockTemplate(
         network
     );
 
-    this.serializeCoinbase = function (this: any, extraNonce1: Buffer, extraNonce2: Buffer) {
+    this.serializeCoinbase = function (
+        this: any,
+        extraNonce1: Buffer,
+        extraNonce2: Buffer
+    ) {
         return Buffer.concat([
             this.generationTransaction[0],
             extraNonce1,
             extraNonce2,
-            this.generationTransaction[1],
+            this.generationTransaction[1]
         ]);
     };
 
     // https://en.bitcoin.it/wiki/Protocol_specification#Block_Headers
-    this.serializeHeader = function (merkleRoot: any, nTime: any, nonce: any, versionMask: any) {
+    this.serializeHeader = function (
+        merkleRoot: any,
+        nTime: any,
+        nonce: any,
+        versionMask: any
+    ) {
         let headerSize;
         if (rpcData.version == 5 && rpcData.finalsaplingroothash) {
             headerSize = 112;
@@ -191,18 +203,27 @@ const BlockTemplate = function BlockTemplate(
         return util.reverseBuffer(header);
     };
 
-    this.serializeBlock = function (this: any, header: Buffer, coinbase: Buffer) {
+    this.serializeBlock = function (
+        this: any,
+        header: Buffer,
+        coinbase: Buffer
+    ) {
         return Buffer.concat([
             header,
             util.varIntBuffer(this.rpcData.transactions.length + 1),
             coinbase,
             this.transactionData,
             getVoteData(),
-            Buffer.from(reward === 'POS' ? [0] : []),
+            Buffer.from(reward === 'POS' ? [0] : [])
         ]);
     };
 
-    this.registerSubmit = function (extraNonce1: any, extraNonce2: any, nTime: any, nonce: any) {
+    this.registerSubmit = function (
+        extraNonce1: any,
+        extraNonce2: any,
+        nTime: any,
+        nonce: any
+    ) {
         const submission = extraNonce1 + extraNonce2 + nTime + nonce;
         if (submits.indexOf(submission) === -1) {
             submits.push(submission);
@@ -228,7 +249,7 @@ const BlockTemplate = function BlockTemplate(
                 this.merkleBranch,
                 util.packInt32BE(this.rpcData.version).toString('hex'),
                 this.rpcData.bits,
-                util.packUInt32BE(this.rpcData.curtime).toString('hex'),
+                util.packUInt32BE(this.rpcData.curtime).toString('hex')
             ];
             if (this.hashstaterootReversed && this.hashutxorootReversed) {
                 // VIPSTARCOIN / HTMLcoin (qtum-style): the canonical miner

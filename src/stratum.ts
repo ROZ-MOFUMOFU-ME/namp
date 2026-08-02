@@ -20,7 +20,7 @@ const SubscriptionCounter = function () {
             count++;
             if (Number.MAX_VALUE === count) count = 0;
             return padding + util.packInt64LE(count).toString('hex');
-        },
+        }
     };
 };
 
@@ -29,8 +29,8 @@ const NiceHashAPI = function (this: any) {
     this.url = 'https://api2.nicehash.com/main/api/v2/public/buy/info';
     this.options = {
         agent: new https.Agent({
-            keepAlive: true,
-        }),
+            keepAlive: true
+        })
     };
     this.refresh = function () {
         return new Promise(function (resolve, reject) {
@@ -38,8 +38,14 @@ const NiceHashAPI = function (this: any) {
                 .get(_this.url, _this.options, function (result: any) {
                     let error;
                     if (result.statusCode !== 200) {
-                        error = new Error(`Request Failed.\nStatus Code: ${result.statusCode}`);
-                    } else if (!/^application\/json/.test(result.headers['content-type'])) {
+                        error = new Error(
+                            `Request Failed.\nStatus Code: ${result.statusCode}`
+                        );
+                    } else if (
+                        !/^application\/json/.test(
+                            result.headers['content-type']
+                        )
+                    ) {
                         error = new Error(
                             `Invalid content-type.\nExpected application/json but received ${result.headers['content-type']}`
                         );
@@ -82,7 +88,7 @@ let niceHashAPIData: any = {
         multi: 1000,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     x11: {
         down_step: -0.0001,
@@ -95,7 +101,7 @@ let niceHashAPIData: any = {
         multi: 0.001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     grincuckaroo29: {
         down_step: -0.0001,
@@ -108,7 +114,7 @@ let niceHashAPIData: any = {
         multi: 1000000,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     cryptonightv8: {
         down_step: -0.0001,
@@ -121,7 +127,7 @@ let niceHashAPIData: any = {
         multi: 1000,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     x13: {
         down_step: -0.0001,
@@ -134,7 +140,7 @@ let niceHashAPIData: any = {
         multi: 0.001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     grincuckatoo31: {
         down_step: -0.0001,
@@ -147,7 +153,7 @@ let niceHashAPIData: any = {
         multi: 1000000,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     zhash: {
         down_step: -0.0001,
@@ -160,7 +166,7 @@ let niceHashAPIData: any = {
         multi: 1000,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     x16rv2: {
         down_step: -0.0001,
@@ -173,7 +179,7 @@ let niceHashAPIData: any = {
         multi: 1,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     blake2s: {
         down_step: -0.0001,
@@ -186,7 +192,7 @@ let niceHashAPIData: any = {
         multi: 0.001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     nist5: {
         down_step: -0.0001,
@@ -199,7 +205,7 @@ let niceHashAPIData: any = {
         multi: 0.001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     beamv2: {
         down_step: -0.0001,
@@ -212,7 +218,7 @@ let niceHashAPIData: any = {
         multi: 1000000,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     quark: {
         down_step: -0.0001,
@@ -225,7 +231,7 @@ let niceHashAPIData: any = {
         multi: 0.001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     scrypt: {
         down_step: -0.001,
@@ -238,7 +244,7 @@ let niceHashAPIData: any = {
         multi: 0.001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     skunk: {
         down_step: -0.0001,
@@ -251,7 +257,7 @@ let niceHashAPIData: any = {
         multi: 1,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     sha256asicboost: {
         down_step: -0.0001,
@@ -264,7 +270,7 @@ let niceHashAPIData: any = {
         multi: 0.000001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     daggerhashimoto: {
         down_step: -0.0001,
@@ -277,7 +283,7 @@ let niceHashAPIData: any = {
         multi: 0.001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     lyra2z: {
         down_step: -0.0001,
@@ -290,7 +296,7 @@ let niceHashAPIData: any = {
         multi: 1,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     lbry: {
         down_step: -0.0001,
@@ -303,7 +309,7 @@ let niceHashAPIData: any = {
         multi: 0.001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     sha256: {
         down_step: -0.0001,
@@ -316,7 +322,7 @@ let niceHashAPIData: any = {
         multi: 0.000001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     cryptonightv7: {
         down_step: -0.0001,
@@ -329,7 +335,7 @@ let niceHashAPIData: any = {
         multi: 1000,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     lyra2rev3: {
         down_step: -0.0001,
@@ -342,7 +348,7 @@ let niceHashAPIData: any = {
         multi: 1,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     decred: {
         down_step: -0.0001,
@@ -355,7 +361,7 @@ let niceHashAPIData: any = {
         multi: 0.000001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     grincuckarood29: {
         down_step: -0.0001,
@@ -368,7 +374,7 @@ let niceHashAPIData: any = {
         multi: 1000000,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     cryptonight: {
         down_step: -0.0001,
@@ -381,7 +387,7 @@ let niceHashAPIData: any = {
         multi: 1,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     equihash: {
         down_step: -0.0001,
@@ -394,7 +400,7 @@ let niceHashAPIData: any = {
         multi: 1000,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     cuckoocycle: {
         down_step: -0.0001,
@@ -407,7 +413,7 @@ let niceHashAPIData: any = {
         multi: 1000000,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     qubit: {
         down_step: -0.0001,
@@ -420,7 +426,7 @@ let niceHashAPIData: any = {
         multi: 0.001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     lyra2rev2: {
         down_step: -0.0001,
@@ -433,7 +439,7 @@ let niceHashAPIData: any = {
         multi: 0.001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     neoscrypt: {
         down_step: -0.0001,
@@ -446,7 +452,7 @@ let niceHashAPIData: any = {
         multi: 1,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     cryptonightr: {
         down_step: -0.0001,
@@ -459,7 +465,7 @@ let niceHashAPIData: any = {
         multi: 1000,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     keccak: {
         down_step: -0.0001,
@@ -472,7 +478,7 @@ let niceHashAPIData: any = {
         multi: 0.001,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
+        min_amount: 0.005
     },
     x16r: {
         down_step: -0.0001,
@@ -485,18 +491,24 @@ let niceHashAPIData: any = {
         multi: 1,
         min_price: 0.0001,
         max_price: 100,
-        min_amount: 0.005,
-    },
+        min_amount: 0.005
+    }
 };
 // let niceHashAPITimeout = -1; // Removed as unused
-const niceHashMiningAlgorithmsReducer = function (accumulator: any, algorithm: any) {
+const niceHashMiningAlgorithmsReducer = function (
+    accumulator: any,
+    algorithm: any
+) {
     const name = algorithm.name.toLowerCase();
     delete algorithm.name;
     accumulator[name] = algorithm;
     return accumulator;
 };
 const updateNiceHashData = function (apiData: any) {
-    niceHashAPIData = apiData.miningAlgorithms.reduce(niceHashMiningAlgorithmsReducer, {});
+    niceHashAPIData = apiData.miningAlgorithms.reduce(
+        niceHashMiningAlgorithmsReducer,
+        {}
+    );
 };
 const handleNiceHashAPIError = function (error: any) {
     // TODO: Use the logging system!
@@ -561,7 +573,8 @@ const StratumClient = function (this: any, options: any) {
                   else _this.shares.invalid++;
                   const totalShares = _this.shares.valid + _this.shares.invalid;
                   if (totalShares >= banning.checkThreshold) {
-                      const percentBad = (_this.shares.invalid / totalShares) * 100;
+                      const percentBad =
+                          (_this.shares.invalid / totalShares) * 100;
                       if (percentBad < banning.invalidPercent)
                           //reset shares
                           _this.shares = { valid: 0, invalid: 0 };
@@ -600,7 +613,7 @@ const StratumClient = function (this: any, options: any) {
                 sendJson({
                     id: null,
                     result: [algos[options.coin.algorithm].multiplier],
-                    method: 'mining.get_multiplier',
+                    method: 'mining.get_multiplier'
                 });
                 break;
             case 'ping':
@@ -609,7 +622,7 @@ const StratumClient = function (this: any, options: any) {
                 sendJson({
                     id: null,
                     result: [],
-                    method: 'pong',
+                    method: 'pong'
                 });
                 break;
             case 'mining.configure':
@@ -625,7 +638,7 @@ const StratumClient = function (this: any, options: any) {
                 sendJson({
                     id: null,
                     result: [],
-                    error: true,
+                    error: true
                 });
                 emitLog('mining.get_transactionsfrom  miner, message = %s');
                 break;
@@ -646,7 +659,7 @@ const StratumClient = function (this: any, options: any) {
         sendJson({
             id: message.id,
             result: true,
-            error: null,
+            error: null
         });
     }
 
@@ -680,7 +693,10 @@ const StratumClient = function (this: any, options: any) {
                     _this.initialDifficulty,
                     niceHashData.min_diff_initial
                 );
-                if (!_this.varDiff || _this.minimumDifficulty < niceHashData.min_diff_working) {
+                if (
+                    !_this.varDiff ||
+                    _this.minimumDifficulty < niceHashData.min_diff_working
+                ) {
                     if (_this.varDiff) {
                         _this.varDiff.removeAllListeners();
                     }
@@ -691,11 +707,11 @@ const StratumClient = function (this: any, options: any) {
                             options.defaultVarDiff || {
                                 targetTime: 15,
                                 retargetTime: 90,
-                                variancePercent: 30,
+                                variancePercent: 30
                             },
                             {
                                 minDiff: niceHashData.min_diff_working,
-                                maxDiff: 2 * niceHashData.min_diff_working,
+                                maxDiff: 2 * niceHashData.min_diff_working
                             }
                         )
                     );
@@ -712,7 +728,7 @@ const StratumClient = function (this: any, options: any) {
                     sendJson({
                         id: message.id,
                         result: null,
-                        error,
+                        error
                     });
                     return;
                 }
@@ -722,12 +738,12 @@ const StratumClient = function (this: any, options: any) {
                     result: [
                         [
                             ['mining.set_difficulty', options.subscriptionId],
-                            ['mining.notify', options.subscriptionId],
+                            ['mining.notify', options.subscriptionId]
                         ],
                         extraNonce1,
-                        extraNonce2Size,
+                        extraNonce2Size
                     ],
-                    error: null,
+                    error: null
                 });
             }
         );
@@ -748,7 +764,7 @@ const StratumClient = function (this: any, options: any) {
                     sendJson({
                         id: message.id,
                         result: _this.authorized,
-                        error: result.error,
+                        error: result.error
                     });
                 }
 
@@ -758,27 +774,44 @@ const StratumClient = function (this: any, options: any) {
                 } else {
                     const passwordArgs = _this.workerPass.split(',');
                     for (let i = 0; i < passwordArgs.length; i++) {
-                        const key = passwordArgs[i].substr(0, passwordArgs[i].indexOf('='));
+                        const key = passwordArgs[i].substr(
+                            0,
+                            passwordArgs[i].indexOf('=')
+                        );
                         switch (key.toLowerCase()) {
                             case 'd':
                                 _this.initialDifficulty =
                                     parseInt(
-                                        passwordArgs[i].substr(passwordArgs[i].indexOf('=') + 1)
+                                        passwordArgs[i].substr(
+                                            passwordArgs[i].indexOf('=') + 1
+                                        )
                                     ) || -1;
                                 break;
                             case 'md':
                                 if (!_this.varDiff) {
                                     _this.minimumDifficulty =
                                         parseInt(
-                                            passwordArgs[i].substr(passwordArgs[i].indexOf('=') + 1)
+                                            passwordArgs[i].substr(
+                                                passwordArgs[i].indexOf('=') + 1
+                                            )
                                         ) || -1;
-                                    if (options.defaultVarDiff && _this.minimumDifficulty > -1) {
+                                    if (
+                                        options.defaultVarDiff &&
+                                        _this.minimumDifficulty > -1
+                                    ) {
                                         _this.varDiff = new (varDiff as any)(
                                             options.socket.localPort,
-                                            Object.assign({}, options.defaultVarDiff, {
-                                                minDiff: _this.minimumDifficulty,
-                                                maxDiff: 2 * _this.minimumDifficulty,
-                                            })
+                                            Object.assign(
+                                                {},
+                                                options.defaultVarDiff,
+                                                {
+                                                    minDiff:
+                                                        _this.minimumDifficulty,
+                                                    maxDiff:
+                                                        2 *
+                                                        _this.minimumDifficulty
+                                                }
+                                            )
                                         );
                                         _this.varDiff.manageClient(_this);
                                     }
@@ -787,7 +820,9 @@ const StratumClient = function (this: any, options: any) {
                             case 'm':
                                 _this.isSoloMining =
                                     passwordArgs[i]
-                                        .substr(passwordArgs[i].indexOf('=') + 1)
+                                        .substr(
+                                            passwordArgs[i].indexOf('=') + 1
+                                        )
                                         .trim()
                                         .toLowerCase() === 'solo';
                                 break;
@@ -810,7 +845,7 @@ const StratumClient = function (this: any, options: any) {
             sendJson({
                 id: message.id,
                 result: null,
-                error: [24, 'unauthorized worker', null],
+                error: [24, 'unauthorized worker', null]
             });
             considerBan(false);
             return;
@@ -819,7 +854,7 @@ const StratumClient = function (this: any, options: any) {
             sendJson({
                 id: message.id,
                 result: null,
-                error: [25, 'not subscribed', null],
+                error: [25, 'not subscribed', null]
             });
             considerBan(false);
             return;
@@ -829,7 +864,7 @@ const StratumClient = function (this: any, options: any) {
             jobId: message.params[1],
             extraNonce2: message.params[2],
             nTime: message.params[3].toLowerCase(),
-            nonce: message.params[4].toLowerCase(),
+            nonce: message.params[4].toLowerCase()
         };
 
         if (
@@ -839,11 +874,14 @@ const StratumClient = function (this: any, options: any) {
             isValidHexRegex.test(message.params[5])
         ) {
             const versionMask = parseInt(message.params[5], 16);
-            if (versionMask && (~parseInt(options.coin.version_mask, 16) & versionMask) !== 0) {
+            if (
+                versionMask &&
+                (~parseInt(options.coin.version_mask, 16) & versionMask) !== 0
+            ) {
                 sendJson({
                     id: message.id,
                     result: null,
-                    error: [6, 'invalid version mask', null],
+                    error: [6, 'invalid version mask', null]
                 });
                 considerBan(false);
                 return;
@@ -856,7 +894,7 @@ const StratumClient = function (this: any, options: any) {
                 sendJson({
                     id: message.id,
                     result,
-                    error,
+                    error
                 });
             }
         });
@@ -878,7 +916,7 @@ const StratumClient = function (this: any, options: any) {
         sendJson({
             id: message.id,
             result: true,
-            error: null,
+            error: null
         });
     }
     function handleSuggestDifficulty(message: any) {
@@ -886,19 +924,22 @@ const StratumClient = function (this: any, options: any) {
         sendJson({
             id: message.id,
             result: true,
-            error: null,
+            error: null
         });
     }
 
     function handleConfigure(message: any) {
-        if (options.coin.version_mask && isValidHexRegex.test(options.coin.version_mask)) {
+        if (
+            options.coin.version_mask &&
+            isValidHexRegex.test(options.coin.version_mask)
+        ) {
             sendJson({
                 id: message.id,
                 result: {
                     'version-rolling': true,
-                    'version-rolling.mask': options.coin.version_mask,
+                    'version-rolling.mask': options.coin.version_mask
                 },
-                error: null,
+                error: null
             });
         } else {
             _this.emit('unknownStratumMethod', message);
@@ -941,14 +982,18 @@ const StratumClient = function (this: any, options: any) {
             }
             if (dataBuffer.indexOf('\n') !== -1) {
                 const messages = dataBuffer.split('\n');
-                const incomplete = dataBuffer.slice(-1) === '\n' ? '' : messages.pop();
+                const incomplete =
+                    dataBuffer.slice(-1) === '\n' ? '' : messages.pop();
                 messages.forEach(function (message: any) {
                     if (message === '') return;
                     let messageJson;
                     try {
                         messageJson = JSON.parse(message);
                     } catch {
-                        if (options.tcpProxyProtocol !== true || d.indexOf('PROXY') !== 0) {
+                        if (
+                            options.tcpProxyProtocol !== true ||
+                            d.indexOf('PROXY') !== 0
+                        ) {
                             _this.emit('malformedMessage', message);
                             socket.destroy();
                         }
@@ -993,7 +1038,7 @@ const StratumClient = function (this: any, options: any) {
         sendJson({
             id: null,
             method: 'mining.set_difficulty',
-            params: [difficulty], //[512],
+            params: [difficulty] //[512],
         });
         return true;
     };
@@ -1018,7 +1063,7 @@ const StratumClient = function (this: any, options: any) {
         const json: any = {
             id: null,
             method: 'mining.notify',
-            params: jobParams,
+            params: jobParams
         };
 
         if (odoKey !== null) {
@@ -1032,7 +1077,10 @@ const StratumClient = function (this: any, options: any) {
     };
 
     this.manuallyAuthClient = function (username: any, password: any) {
-        handleAuthorize({ id: 1, params: [username, password] }, false /*do not reply to miner*/);
+        handleAuthorize(
+            { id: 1, params: [username, password] },
+            false /*do not reply to miner*/
+        );
     };
 
     this.manuallySetValues = function (otherClient: any) {
@@ -1041,7 +1089,10 @@ const StratumClient = function (this: any, options: any) {
         _this.difficulty = otherClient.difficulty;
     };
 };
-Object.setPrototypeOf((StratumClient as any).prototype, events.EventEmitter.prototype);
+Object.setPrototypeOf(
+    (StratumClient as any).prototype,
+    events.EventEmitter.prototype
+);
 
 /**
  * The actual stratum server.
@@ -1050,7 +1101,11 @@ Object.setPrototypeOf((StratumClient as any).prototype, events.EventEmitter.prot
  *   - 'client.disconnected'(StratumClientInstance) - when a miner disconnects. Be aware that the socket cannot be used anymore.
  *   - 'started' - when the server is up and running
  **/
-const StratumServer = function StratumServer(this: any, options: any, authorizeFn: any) {
+const StratumServer = function StratumServer(
+    this: any,
+    options: any,
+    authorizeFn: any
+) {
     //private members
 
     //ports, connectionTimeout, jobRebroadcastTimeout, banning, haproxy, authorizeFn
@@ -1064,7 +1119,11 @@ const StratumServer = function StratumServer(this: any, options: any, authorizeF
     const bannedIPs: any = {};
 
     function checkBan(client: any) {
-        if (options.banning && options.banning.enabled && client.remoteAddress in bannedIPs) {
+        if (
+            options.banning &&
+            options.banning.enabled &&
+            client.remoteAddress in bannedIPs
+        ) {
             const bannedTime = bannedIPs[client.remoteAddress];
             const bannedTimeAgo = Date.now() - bannedTime;
             const timeLeft = bannedMS! - bannedTimeAgo;
@@ -1089,7 +1148,7 @@ const StratumServer = function StratumServer(this: any, options: any, authorizeF
             connectionTimeout: options.connectionTimeout,
             tcpProxyProtocol: options.tcpProxyProtocol,
             coin: options.coin,
-            dynamicVarDiff: options.dynamicVarDiff,
+            dynamicVarDiff: options.dynamicVarDiff
         });
 
         stratumClients[subscriptionId] = client;
@@ -1128,7 +1187,8 @@ const StratumServer = function StratumServer(this: any, options: any, authorizeF
             setInterval(function () {
                 for (const ip in bannedIPs) {
                     const banTime = bannedIPs[ip];
-                    if (Date.now() - banTime > options.banning.time) delete bannedIPs[ip];
+                    if (Date.now() - banTime > options.banning.time)
+                        delete bannedIPs[ip];
                 }
             }, 1000 * options.banning.purgeInterval);
         }
@@ -1157,7 +1217,9 @@ const StratumServer = function StratumServer(this: any, options: any, authorizeF
             // credentials that clients send expecting an encrypted channel.
             if (portCfg.tls) {
                 if (tlsServerOptions === undefined)
-                    tlsServerOptions = buildTlsServerOptions(options.tlsOptions);
+                    tlsServerOptions = buildTlsServerOptions(
+                        options.tlsOptions
+                    );
                 if (!tlsServerOptions) {
                     console.error(
                         `Stratum port ${port} has tls:true but the key/cert is missing or unreadable; refusing to open it (no plaintext fallback).`
@@ -1204,11 +1266,17 @@ const StratumServer = function StratumServer(this: any, options: any, authorizeF
         const subId = _this.handleNewClient(clientObj.socket);
         if (subId != null) {
             // not banned!
-            stratumClients[subId].manuallyAuthClient(clientObj.workerName, clientObj.workerPass);
+            stratumClients[subId].manuallyAuthClient(
+                clientObj.workerName,
+                clientObj.workerPass
+            );
             stratumClients[subId].manuallySetValues(clientObj);
         }
     };
 };
-Object.setPrototypeOf((StratumServer as any).prototype, events.EventEmitter.prototype);
+Object.setPrototypeOf(
+    (StratumServer as any).prototype,
+    events.EventEmitter.prototype
+);
 
 export { StratumServer as Server };

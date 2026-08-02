@@ -1,4 +1,4 @@
-import multiHashing from '../../native/index.cjs';
+import multiHashing from '../native/index.cjs';
 import * as util from './util.ts';
 
 const diff1 = ((global as any).diff1 = BigInt(
@@ -32,11 +32,13 @@ function passthrough(fnName: string, props: any = {}) {
             return function (this: any, ...args: any[]) {
                 return (multiHashing as any)[fnName].apply(this, args);
             };
-        },
+        }
     };
 }
 
-const yescryptDiff = parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+const yescryptDiff = parseInt(
+    '0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+);
 
 const algos: any = ((global as any).algos = {
     sha256: {
@@ -46,7 +48,7 @@ const algos: any = ((global as any).algos = {
             return function (this: any, ...args: any[]) {
                 return (util.sha256d as any).apply(this, args);
             };
-        },
+        }
     },
     sha256d: passthrough('sha256d'),
     scrypt: {
@@ -60,7 +62,7 @@ const algos: any = ((global as any).algos = {
             return function (data: Buffer) {
                 return multiHashing.scrypt(data, nValue, rValue);
             };
-        },
+        }
     },
     'scrypt-og': {
         //Aiden settings
@@ -74,7 +76,7 @@ const algos: any = ((global as any).algos = {
             return function (data: Buffer) {
                 return multiHashing.scrypt(data, nValue, rValue);
             };
-        },
+        }
     },
     'scrypt-jane': {
         multiplier: Math.pow(2, 16),
@@ -84,9 +86,15 @@ const algos: any = ((global as any).algos = {
             const nMin = coinConfig.nMin || 4;
             const nMax = coinConfig.nMax || 30;
             return function (data: Buffer, nTime: number) {
-                return multiHashing.scryptjane(data, nTime, nTimestamp, nMin, nMax);
+                return multiHashing.scryptjane(
+                    data,
+                    nTime,
+                    nTimestamp,
+                    nMin,
+                    nMax
+                );
             };
-        },
+        }
     },
     'scrypt-n': {
         multiplier: Math.pow(2, 16),
@@ -101,7 +109,7 @@ const algos: any = ((global as any).algos = {
                 65536: 1859068265,
                 131072: 2060394857,
                 262144: 1722307603,
-                524288: 1769642992,
+                524288: 1769642992
             };
 
             const nFactor = (function () {
@@ -119,16 +127,19 @@ const algos: any = ((global as any).algos = {
             return function (data: Buffer) {
                 return multiHashing.scryptn(data, nFactor);
             };
-        },
+        }
     },
     sha1: passthrough('sha1', { blockHasher: 'sha256d' }),
     x11: passthrough('x11', { blockHasher: 'sha256d' }),
     x13: passthrough('x13'),
     x15: passthrough('x15'),
-    x16r: passthrough('x16r', { multiplier: Math.pow(2, 8), blockHasher: 'sha256d' }),
+    x16r: passthrough('x16r', {
+        multiplier: Math.pow(2, 8),
+        blockHasher: 'sha256d'
+    }),
     x16rv2: passthrough('x16rv2', {
         multiplier: Math.pow(2, 8),
-        blockHasher: 'sha256d',
+        blockHasher: 'sha256d'
     }),
     x17: passthrough('x17', { blockHasher: 'sha256d' }),
     skydoge: passthrough('skydoge'),
@@ -143,7 +154,10 @@ const algos: any = ((global as any).algos = {
                 return function (data: Buffer, nTimeInt: number) {
                     return multiHashing.keccak(
                         multiHashing.keccak(
-                            Buffer.concat([data, Buffer.from(nTimeInt.toString(16), 'hex')])
+                            Buffer.concat([
+                                data,
+                                Buffer.from(nTimeInt.toString(16), 'hex')
+                            ])
                         )
                     );
                 };
@@ -152,49 +166,55 @@ const algos: any = ((global as any).algos = {
                     return (multiHashing.keccak as any).apply(this, args);
                 };
             }
-        },
+        }
     },
-    allium: passthrough('allium', { multiplier: Math.pow(2, 8), blockHasher: 'sha256d' }),
+    allium: passthrough('allium', {
+        multiplier: Math.pow(2, 8),
+        blockHasher: 'sha256d'
+    }),
     blake: passthrough('blake', {
         multiplier: Math.pow(2, 8),
         blockHasher: 'sha256d',
-        coinbaseHasher: 'normalHashing',
+        coinbaseHasher: 'normalHashing'
     }),
     blake2s: passthrough('blake2s', {
         multiplier: Math.pow(2, 0),
-        blockHasher: 'sha256d',
+        blockHasher: 'sha256d'
     }),
     skein: passthrough('skein', { blockHasher: 'sha256d' }),
     groestl: passthrough('groestl', {
         multiplier: Math.pow(2, 8),
         blockHasher: 'sha256d',
-        coinbaseHasher: 'normalHashing',
+        coinbaseHasher: 'normalHashing'
     }),
     groestlmyriad: passthrough('groestlmyriad', { blockHasher: 'sha256d' }),
     fugue: passthrough('fugue', {
         multiplier: Math.pow(2, 8),
-        coinbaseHasher: 'normalHashing',
+        coinbaseHasher: 'normalHashing'
     }),
     shavite3: passthrough('shavite3'),
     hefty1: passthrough('hefty1'),
     neoscrypt: passthrough('neoscrypt', {
         multiplier: Math.pow(2, 5),
-        blockHasher: 'sha256d',
+        blockHasher: 'sha256d'
     }),
     minotaur: passthrough('minotaur', { blockHasher: 'sha256d' }),
-    lyra2: passthrough('lyra2re', { multiplier: Math.pow(2, 8), blockHasher: 'sha256d' }),
+    lyra2: passthrough('lyra2re', {
+        multiplier: Math.pow(2, 8),
+        blockHasher: 'sha256d'
+    }),
     lyra2v2: passthrough('lyra2rev2', {
         multiplier: Math.pow(2, 8),
-        blockHasher: 'sha256d',
+        blockHasher: 'sha256d'
     }),
     lyra2v3: passthrough('lyra2rev3', {
         multiplier: Math.pow(2, 8),
-        blockHasher: 'sha256d',
+        blockHasher: 'sha256d'
     }),
     lyra2re: passthrough('lyra2re', { multiplier: Math.pow(2, 7) }),
     lyra2re2: passthrough('lyra2rev2', {
         multiplier: Math.pow(2, 8),
-        blockHasher: 'sha256d',
+        blockHasher: 'sha256d'
     }),
     lyra2rev2: {
         multiplier: Math.pow(2, 8),
@@ -212,7 +232,7 @@ const algos: any = ((global as any).algos = {
                     return multiHashing.lyra2rev2(data);
                 }
             };
-        },
+        }
     },
     lyra2z: passthrough('lyra2z', { multiplier: Math.pow(2, 8) }),
     qubit: passthrough('qubit', { blockHasher: 'sha256d' }),
@@ -226,29 +246,29 @@ const algos: any = ((global as any).algos = {
             return function (data: Buffer, nTime: number) {
                 return multiHashing.odo(data, odoKey(nTime));
             };
-        },
+        }
     },
     yescryptR8: passthrough('yespower_0_5_R8', {
         multiplier: 65536,
-        diff: yescryptDiff,
+        diff: yescryptDiff
     }),
     yescryptR8G: passthrough('yespower_0_5_R8G', {
         multiplier: 65536,
         diff: yescryptDiff,
-        blockHasher: 'sha256d',
+        blockHasher: 'sha256d'
     }),
     yescryptR16: passthrough('yespower_0_5_R16', {
         multiplier: 65536,
         diff: yescryptDiff,
-        blockHasher: 'sha256d',
+        blockHasher: 'sha256d'
     }),
     yescryptR24: passthrough('yespower_0_5_R24', {
         multiplier: 65536,
-        diff: yescryptDiff,
+        diff: yescryptDiff
     }),
     yescryptR32: passthrough('yespower_0_5_R32', {
         multiplier: 65536,
-        diff: yescryptDiff,
+        diff: yescryptDiff
     }),
     yespower: passthrough('yespower', { multiplier: 65536 }),
     yespowerSUGAR: {
@@ -260,7 +280,7 @@ const algos: any = ((global as any).algos = {
             return function (data: Buffer) {
                 return multiHashing.yespower_sugar(data, nValue, rValue);
             };
-        },
+        }
     },
     yespowerLTNCG: {
         multiplier: Math.pow(2, 16),
@@ -271,11 +291,11 @@ const algos: any = ((global as any).algos = {
             return function (data: Buffer) {
                 return multiHashing.yespower_ltncg(data, nValue, rValue);
             };
-        },
+        }
     },
     yespowerR16: passthrough('yespower_r16', {
         multiplier: 65536,
-        blockHasher: 'sha256d',
+        blockHasher: 'sha256d'
     }),
     yespowerURX: {
         multiplier: Math.pow(2, 16),
@@ -285,7 +305,7 @@ const algos: any = ((global as any).algos = {
             return function (data: Buffer) {
                 return multiHashing.yespower_urx(data, nValue, rValue);
             };
-        },
+        }
     },
     vipstar: {
         blockHasher: 'sha256d',
@@ -304,8 +324,8 @@ const algos: any = ((global as any).algos = {
                 // what made every share read as shareDiff=0 before.
                 return util.sha256d(data);
             };
-        },
-    },
+        }
+    }
 });
 
 for (const algo in algos) {

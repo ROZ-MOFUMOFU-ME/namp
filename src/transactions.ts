@@ -9,7 +9,8 @@ const generateOutputTransactions = function (
     if (!reward) {
         reward = util.getKotoBlockSubsidy(rpcData.height);
         reward -=
-            rpcData.coinbasetxn.fee; /* rpcData.coinbasetxn.fee := <total fee of transaxtions> * -1)
+            rpcData.coinbasetxn
+                .fee; /* rpcData.coinbasetxn.fee := <total fee of transaxtions> * -1)
          */
     }
 
@@ -25,13 +26,13 @@ const generateOutputTransactions = function (
             rewardToPool -= payeeReward;
 
             const payeeScript = util.addressToScript({
-                address: rpcData.masternode.payee,
+                address: rpcData.masternode.payee
             });
             txOutputBuffers.push(
                 Buffer.concat([
                     util.packInt64LE(payeeReward),
                     util.varIntBuffer(payeeScript.length),
-                    payeeScript,
+                    payeeScript
                 ])
             );
         } else if (rpcData.masternode.length > 0) {
@@ -43,16 +44,21 @@ const generateOutputTransactions = function (
                 let payeeScript: Buffer;
 
                 if (rpcData.masternode[i].script) {
-                    payeeScript = Buffer.from(rpcData.masternode[i].script, 'hex');
+                    payeeScript = Buffer.from(
+                        rpcData.masternode[i].script,
+                        'hex'
+                    );
                 } else {
-                    payeeScript = util.addressToScript(rpcData.masternode[i].payee);
+                    payeeScript = util.addressToScript(
+                        rpcData.masternode[i].payee
+                    );
                 }
 
                 txOutputBuffers.push(
                     Buffer.concat([
                         util.packInt64LE(payeeReward),
                         util.varIntBuffer(payeeScript.length),
-                        payeeScript,
+                        payeeScript
                     ])
                 );
             }
@@ -71,7 +77,7 @@ const generateOutputTransactions = function (
                 payeeScript = Buffer.from(rpcData.superblock[i].script, 'hex');
             } else {
                 payeeScript = util.addressToScript({
-                    address: rpcData.superblock[i].payee,
+                    address: rpcData.superblock[i].payee
                 });
             }
 
@@ -79,7 +85,7 @@ const generateOutputTransactions = function (
                 Buffer.concat([
                     util.packInt64LE(payeeReward),
                     util.varIntBuffer(payeeScript.length),
-                    payeeScript,
+                    payeeScript
                 ])
             );
         }
@@ -99,13 +105,13 @@ const generateOutputTransactions = function (
         rewardToPool -= payeeReward;
 
         const payeeScript = util.addressToScript({
-            address: rpcData.payee,
+            address: rpcData.payee
         });
         txOutputBuffers.push(
             Buffer.concat([
                 util.packInt64LE(payeeReward),
                 util.varIntBuffer(payeeScript.length),
-                payeeScript,
+                payeeScript
             ])
         );
     }
@@ -124,7 +130,7 @@ const generateOutputTransactions = function (
             Buffer.concat([
                 util.packInt64LE(developerReward),
                 util.varIntBuffer(developerScript.length),
-                developerScript,
+                developerScript
             ])
         );
     }
@@ -146,7 +152,7 @@ const generateOutputTransactions = function (
             Buffer.concat([
                 util.packInt64LE(recipientReward),
                 util.varIntBuffer(recipients[i].script.length),
-                recipients[i].script,
+                recipients[i].script
             ])
         );
     }
@@ -155,24 +161,27 @@ const generateOutputTransactions = function (
         Buffer.concat([
             util.packInt64LE(rewardToPool),
             util.varIntBuffer(poolRecipient.length),
-            poolRecipient,
+            poolRecipient
         ])
     );
 
     if (rpcData.default_witness_commitment !== undefined) {
-        const witness_commitment = Buffer.from(rpcData.default_witness_commitment, 'hex');
+        const witness_commitment = Buffer.from(
+            rpcData.default_witness_commitment,
+            'hex'
+        );
         txOutputBuffers.unshift(
             Buffer.concat([
                 util.packInt64LE(0),
                 util.varIntBuffer(witness_commitment.length),
-                witness_commitment,
+                witness_commitment
             ])
         );
     }
 
     return Buffer.concat([
         util.varIntBuffer(txOutputBuffers.length),
-        Buffer.concat(txOutputBuffers),
+        Buffer.concat(txOutputBuffers)
     ]);
 };
 
@@ -193,7 +202,10 @@ export function CreateGeneration(
         txVersion = txMessages === true ? 2 : 1;
     }
     if (rpcData.coinbasetxn && rpcData.coinbasetxn.data) {
-        txVersion = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(0, 8)), 16); // tx version is first 4byte of coinbasetxn.data
+        txVersion = parseInt(
+            util.reverseHex(rpcData.coinbasetxn.data.slice(0, 8)),
+            16
+        ); // tx version is first 4byte of coinbasetxn.data
     }
     let txType = 0;
     let txExtraPayload: Buffer | undefined;
@@ -213,7 +225,8 @@ export function CreateGeneration(
     const txInSequence = 0;
 
     //Only required for POS coins
-    const txTimestamp = reward === 'POS' ? util.packUInt32LE(rpcData.curtime) : Buffer.from([]);
+    const txTimestamp =
+        reward === 'POS' ? util.packUInt32LE(rpcData.curtime) : Buffer.from([]);
 
     //For coins that support/require transaction comments
     const txComment =
@@ -225,7 +238,7 @@ export function CreateGeneration(
         util.serializeNumber(rpcData.height),
         //new Buffer(rpcData.coinbaseaux.flags, 'hex'),
         util.serializeNumber((Date.now() / 1000) | 0),
-        Buffer.from([extraNoncePlaceholder.length]),
+        Buffer.from([extraNoncePlaceholder.length])
     ]);
 
     const scriptSigPart2 = util.serializeString(util.getBlockIdentifier());
@@ -248,9 +261,11 @@ export function CreateGeneration(
         util.uint256BufferFromHash(txInPrevOutHash),
         util.packUInt32LE(txInPrevOutIndex),
         util.varIntBuffer(
-            scriptSigPart1.length + extraNoncePlaceholder.length + scriptSigPart2.length
+            scriptSigPart1.length +
+                extraNoncePlaceholder.length +
+                scriptSigPart2.length
         ),
-        scriptSigPart1,
+        scriptSigPart1
     ]);
 
     /*
@@ -259,14 +274,23 @@ export function CreateGeneration(
     a valid share and/or block.
      */
 
-    const outputTransactions = generateOutputTransactions(publicKey, recipients, rpcData);
+    const outputTransactions = generateOutputTransactions(
+        publicKey,
+        recipients,
+        rpcData
+    );
 
     // for Koto transaction v2/v3/v4 format
-    const nExpiryHeight = (txVersion & 0x7fffffff) >= 3 ? util.packUInt32LE(0) : Buffer.alloc(0);
-    const valueBalance = (txVersion & 0x7fffffff) >= 4 ? util.packInt64LE(0) : Buffer.alloc(0);
-    const vShieldedSpend = (txVersion & 0x7fffffff) >= 4 ? Buffer.from([0]) : Buffer.alloc(0);
-    const vShieldedOutput = (txVersion & 0x7fffffff) >= 4 ? Buffer.from([0]) : Buffer.alloc(0);
-    const nJoinSplit = (txVersion & 0x7fffffff) >= 2 ? Buffer.from([0]) : Buffer.alloc(0);
+    const nExpiryHeight =
+        (txVersion & 0x7fffffff) >= 3 ? util.packUInt32LE(0) : Buffer.alloc(0);
+    const valueBalance =
+        (txVersion & 0x7fffffff) >= 4 ? util.packInt64LE(0) : Buffer.alloc(0);
+    const vShieldedSpend =
+        (txVersion & 0x7fffffff) >= 4 ? Buffer.from([0]) : Buffer.alloc(0);
+    const vShieldedOutput =
+        (txVersion & 0x7fffffff) >= 4 ? Buffer.from([0]) : Buffer.alloc(0);
+    const nJoinSplit =
+        (txVersion & 0x7fffffff) >= 2 ? Buffer.from([0]) : Buffer.alloc(0);
 
     let p2;
     if (txExtraPayload !== undefined) {
@@ -282,7 +306,7 @@ export function CreateGeneration(
             util.packUInt32LE(txLockTime),
             txComment,
             util.varIntBuffer(txExtraPayload.length),
-            txExtraPayload,
+            txExtraPayload
         ]);
     } else {
         p2 = Buffer.concat([
@@ -300,7 +324,7 @@ export function CreateGeneration(
             vShieldedSpend,
             vShieldedOutput,
             nJoinSplit,
-            txComment,
+            txComment
         ]);
     }
     return [p1, p2];

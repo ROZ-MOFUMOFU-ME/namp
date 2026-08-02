@@ -4,7 +4,7 @@
     "description": "NAMP - Node All-in-One Mining Portal",
     "private": true,
     "type": "module",
-    "license": "(MIT AND GPL-2.0-only)",
+    "license": "GPL-2.0-only",
     "author": "ROZ-MOFUMOFU-ME",
     "repository": {
         "type": "git",
@@ -17,16 +17,16 @@
     "scripts": {
         "typecheck": "tsc --noEmit && tsc -p web",
         "test": "node --test test/*.test.cjs test/*.test.ts",
-        "lint": "eslint src/init.ts src/stratum test web/src",
+        "lint": "eslint src test web/src",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "lint:fix": "eslint src/init.ts src/stratum test web/src --fix",
+        "lint:fix": "eslint src test web/src --fix",
         "check:config": "node --test test/config.test.ts",
         "web:dev": "vite --config web/vite.config.ts",
         "build": "tsc -p web && vite build --config web/vite.config.ts",
         "install": "node-gyp rebuild",
         "rebuild:native": "node-gyp rebuild",
-        "start": "node --import tsx src/init.ts"
+        "start": "node src/init.ts"
     },
     "devDependencies": {
         "@babel/core": "^8.0.1",
@@ -75,8 +75,7 @@
         "react-is": "^19.2.8",
         "react-router-dom": "^7.18.2",
         "recharts": "^3.10.1",
-        "redis": "^6.2.0",
-        "tsx": "^4.23.1"
+        "redis": "^6.2.0"
     },
     "gypfile": true,
     "overrides": {

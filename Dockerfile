@@ -35,8 +35,6 @@ EXPOSE 8080 17117
 ENV REDIS_HOST=redis \
     REDIS_PORT=6379
 
-# Run via the tsx loader: the workspace deps ship TypeScript and Node's built-in
-# type-stripping refuses .ts under node_modules
-# (ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING). tsx transforms them at runtime.
-# cluster.fork() inherits execArgv, so every worker gets the loader too.
-CMD ["node", "--import", "tsx", "src/init.ts"]
+# Plain Node: the whole backend is buildless TypeScript run through Node's
+# native type stripping (erasableSyntaxOnly) — no loader involved.
+CMD ["node", "src/init.ts"]

@@ -1,7 +1,7 @@
 import net from 'net';
 import async from 'async';
-import * as Stratum from './stratum/index.ts';
-import * as StratumUtil from './stratum/util.ts';
+import * as daemonModule from './daemon.ts';
+import * as StratumUtil from './util.ts';
 import { createRedisClient } from './redisUtil.ts';
 import { parsePriceHash } from './priceProviders.ts';
 import { rankProfitability, decideSwitches } from './profitSwitchLogic.ts';
@@ -99,7 +99,7 @@ export default function (this: any, logger: Logger) {
             callback(null, null);
             return;
         }
-        const daemon = new (Stratum as any).daemon.interface(
+        const daemon = new (daemonModule as any).interface(
             [meta.daemon],
             function (severity: string, message: string) {
                 (logger as any)[severity](logSystem, name, message);

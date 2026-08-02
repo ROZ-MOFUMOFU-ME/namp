@@ -5,11 +5,16 @@ import * as util from './util.ts';
 import blockTemplate from './blockTemplate.ts';
 
 // Import algos and diff1
-import algos, { diff1, getBlockHasher, getCoinbaseHasher } from './algoProperties.ts';
+import algos, {
+    diff1,
+    getBlockHasher,
+    getCoinbaseHasher
+} from './algoProperties.ts';
 
 // Unique extranonce per subscriber
 const ExtraNonceCounter = function (this: any, configInstanceId?: number) {
-    const instanceId = configInstanceId || crypto.randomBytes(4).readUInt32LE(0);
+    const instanceId =
+        configInstanceId || crypto.randomBytes(4).readUInt32LE(0);
     let counter = instanceId << 27;
 
     this.next = function () {
@@ -49,7 +54,8 @@ const JobManager = function JobManager(this: any, options: any) {
 
     this.extraNonceCounter = new (ExtraNonceCounter as any)(options.instanceId);
     this.extraNoncePlaceholder = Buffer.from('f000000ff111111f', 'hex');
-    this.extraNonce2Size = this.extraNoncePlaceholder.length - this.extraNonceCounter.size;
+    this.extraNonce2Size =
+        this.extraNoncePlaceholder.length - this.extraNonceCounter.size;
     this.currentJob;
     this.validJobs = {};
 
@@ -68,12 +74,15 @@ const JobManager = function JobManager(this: any, options: any) {
         const founders = [];
         for (let i = 0; i < options.coin.kotoFoundersReward.length; i++) {
             const founder = options.coin.kotoFoundersReward[i];
-            if (rpcData.height >= founder.start && rpcData.height <= founder.last) {
+            if (
+                rpcData.height >= founder.start &&
+                rpcData.height <= founder.last
+            ) {
                 try {
                     founders.push({
                         percent: 0,
                         value: rpcData.coinbasetxn.foundersreward,
-                        script: util.getKotoFounderRewardScript(founder.address),
+                        script: util.getKotoFounderRewardScript(founder.address)
                     });
                 } catch {
                     emitErrorLog(
@@ -133,7 +142,8 @@ const JobManager = function JobManager(this: any, options: any) {
         let isNewBlock = typeof _this.currentJob === 'undefined';
         if (
             !isNewBlock &&
-            _this.currentJob.rpcData.previousblockhash !== rpcData.previousblockhash
+            _this.currentJob.rpcData.previousblockhash !==
+                rpcData.previousblockhash
         ) {
             isNewBlock = true;
 
@@ -177,7 +187,12 @@ const JobManager = function JobManager(this: any, options: any) {
             .reverseBuffer(job.merkleTree.withFirst(coinbaseHash))
             .toString('hex');
         const nTime = util.packUInt32BE(job.rpcData.curtime).toString('hex');
-        const headerLE = job.serializeHeader(merkleRoot, nTime, '00000000', undefined);
+        const headerLE = job.serializeHeader(
+            merkleRoot,
+            nTime,
+            '00000000',
+            undefined
+        );
         return { headerLE, jobId: job.jobId };
     };
 
@@ -211,7 +226,7 @@ const JobManager = function JobManager(this: any, options: any) {
                 worker: workerName,
                 difficulty,
                 isSoloMining,
-                error: error[1],
+                error: error[1]
             });
             return { error, result: null };
         };
@@ -242,7 +257,10 @@ const JobManager = function JobManager(this: any, options: any) {
         const extraNonce1Buffer = Buffer.from(extraNonce1, 'hex');
         const extraNonce2Buffer = Buffer.from(extraNonce2, 'hex');
 
-        const coinbaseBuffer = job.serializeCoinbase(extraNonce1Buffer, extraNonce2Buffer);
+        const coinbaseBuffer = job.serializeCoinbase(
+            extraNonce1Buffer,
+            extraNonce2Buffer
+        );
         const coinbaseHash = coinbaseHasher(coinbaseBuffer);
 
         const merkleRoot = util
@@ -255,7 +273,12 @@ const JobManager = function JobManager(this: any, options: any) {
         console.log('[DEBUG][processShare] nonce:', nonce);
         console.log('[DEBUG][processShare] versionMask:', versionMask);*/
 
-        const headerBuffer = job.serializeHeader(merkleRoot, nTime, nonce, versionMask);
+        const headerBuffer = job.serializeHeader(
+            merkleRoot,
+            nTime,
+            nonce,
+            versionMask
+        );
         /*console.log('[DEBUG][processShare] headerBuffer:', headerBuffer.toString('hex'));*/
 
         // Calculate header hash with nTimeInt parameter for all algorithms including lyra2rev2
@@ -271,13 +294,18 @@ const JobManager = function JobManager(this: any, options: any) {
             );
         }*/
 
-        const headerBigNum = BigInt(`0x${util.reverseBuffer(headerHash).toString('hex')}`);
+        const headerBigNum = BigInt(
+            `0x${util.reverseBuffer(headerHash).toString('hex')}`
+        );
 
         // Initialize algorithm properties
         const algorithm = job.algorithm || options.coin.algorithm;
         const algoProps = algos[algorithm];
         if (!algoProps) {
-            return shareError([24, `Algorithm properties not found for ${algorithm}`]);
+            return shareError([
+                24,
+                `Algorithm properties not found for ${algorithm}`
+            ]);
         }
         // Convert multiplier to BigInt
         const multiplier = BigInt(algoProps.multiplier || 1);
@@ -302,11 +330,15 @@ const JobManager = function JobManager(this: any, options: any) {
 
         // Check if share is a block candidate (matched network difficulty)
         if (job.target >= headerBigNum) {
-            blockHex = job.serializeBlock(headerBuffer, coinbaseBuffer).toString('hex');
+            blockHex = job
+                .serializeBlock(headerBuffer, coinbaseBuffer)
+                .toString('hex');
             blockHash = blockHasher(headerBuffer, nTime).toString('hex');
         } else {
             if (options.emitInvalidBlockHashes)
-                blockHashInvalid = util.reverseBuffer(util.sha256d(headerBuffer)).toString('hex');
+                blockHashInvalid = util
+                    .reverseBuffer(util.sha256d(headerBuffer))
+                    .toString('hex');
 
             // Check if share didn't reach the miner's difficulty
             if (shareDiff / difficulty < 0.99) {
@@ -314,7 +346,10 @@ const JobManager = function JobManager(this: any, options: any) {
                 if (previousDifficulty && shareDiff >= previousDifficulty) {
                     difficulty = previousDifficulty;
                 } else {
-                    return shareError([23, `low difficulty share of ${shareDiff}`]);
+                    return shareError([
+                        23,
+                        `low difficulty share of ${shareDiff}`
+                    ]);
                 }
             }
         }
@@ -333,7 +368,7 @@ const JobManager = function JobManager(this: any, options: any) {
                 blockDiff: blockDiffAdjusted,
                 blockDiffActual: job.difficulty,
                 blockHash,
-                blockHashInvalid,
+                blockHashInvalid
             },
             blockHex
         );

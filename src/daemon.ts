@@ -26,9 +26,13 @@ function DaemonInterface(this: any, daemons: any, logger: any) {
             if (daemons[i].maxSockets)
                 daemons[i].myagent = (http.Agent as any)({
                     maxSockets: daemons[i].maxSockets,
-                    keepAlive: false,
+                    keepAlive: false
                 });
-            else daemons[i].myagent = (http.Agent as any)({ maxSockets: 16, keepAlive: false });
+            else
+                daemons[i].myagent = (http.Agent as any)({
+                    maxSockets: 16,
+                    keepAlive: false
+                });
         }
         return daemons;
     })();
@@ -51,21 +55,27 @@ function DaemonInterface(this: any, daemons: any, logger: any) {
 
     function performHttpRequest(instance: any, jsonData: any, callback: any) {
         const options = {
-            hostname: typeof instance.host === 'undefined' ? '127.0.0.1' : instance.host,
+            hostname:
+                typeof instance.host === 'undefined'
+                    ? '127.0.0.1'
+                    : instance.host,
             port: instance.port,
             method: 'POST',
             auth: `${instance.user}:${instance.password}`,
             headers: {
-                'Content-Length': jsonData.length,
+                'Content-Length': jsonData.length
             },
-            agent: instance.myagent,
+            agent: instance.myagent
         };
 
         const parseJson = function (res: any, data: any) {
             let dataJson;
 
             if (res.statusCode === 401) {
-                logger('error', 'Unauthorized RPC access - invalid RPC username or password');
+                logger(
+                    'error',
+                    'Unauthorized RPC access - invalid RPC username or password'
+                );
                 return;
             }
 
@@ -99,7 +109,8 @@ function DaemonInterface(this: any, daemons: any, logger: any) {
         });
 
         req.on('error', function (e: any) {
-            if (e.code === 'ECONNREFUSED') callback({ type: 'offline', message: e.message }, null);
+            if (e.code === 'ECONNREFUSED')
+                callback({ type: 'offline', message: e.message }, null);
             else callback({ type: 'request error', message: e.message }, null);
         });
 
@@ -121,15 +132,19 @@ function DaemonInterface(this: any, daemons: any, logger: any) {
             requestJson.push({
                 method: cmdArray[i][0],
                 params: cmdArray[i][1],
-                id: Date.now() + Math.floor(Math.random() * 10) + i,
+                id: Date.now() + Math.floor(Math.random() * 10) + i
             });
         }
 
         const serializedRequest = JSON.stringify(requestJson);
 
-        performHttpRequest(instances[0], serializedRequest, function (error: any, result: any) {
-            callback(error, result);
-        });
+        performHttpRequest(
+            instances[0],
+            serializedRequest,
+            function (error: any, result: any) {
+                callback(error, result);
+            }
+        );
     }
 
     /* Sends a JSON RPC (http://json-rpc.org/wiki/specification) command to every configured daemon.
@@ -147,11 +162,15 @@ function DaemonInterface(this: any, daemons: any, logger: any) {
         async.each(
             instances,
             function (instance: any, eachCallback: any) {
-                let itemFinished = function (error: any, result: any, data?: any) {
+                let itemFinished = function (
+                    error: any,
+                    result: any,
+                    data?: any
+                ) {
                     const returnObj: any = {
                         error,
                         response: (result || {}).result,
-                        instance,
+                        instance
                     };
                     if (returnRawData) returnObj.data = data;
                     if (streamResults) callback(returnObj);
@@ -176,7 +195,7 @@ function DaemonInterface(this: any, daemons: any, logger: any) {
                               ? 'getinfo'
                               : method,
                     params,
-                    id: Date.now() + Math.floor(Math.random() * 10),
+                    id: Date.now() + Math.floor(Math.random() * 10)
                 });
 
                 performHttpRequest(
@@ -203,6 +222,9 @@ function DaemonInterface(this: any, daemons: any, logger: any) {
     this.batchCmd = batchCmd;
 }
 
-Object.setPrototypeOf((DaemonInterface as any).prototype, events.EventEmitter.prototype);
+Object.setPrototypeOf(
+    (DaemonInterface as any).prototype,
+    events.EventEmitter.prototype
+);
 
 export default { interface: DaemonInterface };

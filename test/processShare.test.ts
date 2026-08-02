@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert';
 
-import JobManager from '../src/stratum/jobManager.ts';
-import * as util from '../src/stratum/util.ts';
+import JobManager from '../src/jobManager.ts';
+import * as util from '../src/util.ts';
 
 /*
  * Share-validation tests for jobManager.processShare — the path every miner

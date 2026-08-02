@@ -1,6 +1,6 @@
 # stratum-pool
 
-> Part of the [NAMP](https://github.com/ROZ-MOFUMOFU-ME/namp) monorepo — `packages/stratum-pool`, consumed by `packages/portal` as a workspace dependency (not published to npm).
+> Feature reference for NAMP's stratum layer — the protocol modules living flat in [`src/`](../src/) (pool, stratum, jobManager, blockTemplate, daemon, peer, varDiff, …). Historical: this text began as the node-stratum-pool README.
 
 High performance Stratum poolserver in Node.js. One instance of this software can startup and manage multiple coin
 pools, each with their own daemon and stratum port :)
@@ -63,7 +63,7 @@ Not working currently:
 
 - Node.js v22+ (tested on Node 22 and 24): the library runs as buildless TypeScript via Node's native type stripping, which is enabled by default on Node 22.18+/24
 - coin daemon (preferably one with a relatively updated API and not some crapcoin :p)
-- a C/C++ toolchain with C++20 support (gcc 10-12), required to build the sibling `packages/multi-hashing` native addon
+- a C/C++ toolchain with C++20 support (gcc 10-12), required to build the `native/` hashing addon
 
 ## Example Usage
 
@@ -105,7 +105,7 @@ const myCoin = {
     algorithm: 'scrypt-jane',
     chainStartTime: 1375801200, //defaults to 1367991200 (YACoin) if not used
     nMin: 6, //defaults to 4 if not used
-    nMax: 32, //defaults to 30 if not used
+    nMax: 32 //defaults to 30 if not used
 };
 ```
 
@@ -126,8 +126,8 @@ const myCoin = {
         32768: 1580301436,
         65536: 1627636825,
         131072: 1674972214,
-        262144: 1722307603,
-    },
+        262144: 1722307603
+    }
 };
 ```
 
@@ -142,7 +142,7 @@ const myCoin = {
 
     /* This is not required and set to false by default. Some coins such as Copperlark and eCoin
        require it to be set to true. Maxcoin and most others are false. */
-    normalHashing: true,
+    normalHashing: true
 };
 ```
 
@@ -167,7 +167,7 @@ const pool = Stratum.createPool(
 
             /* 0.1% donation to NOMP. This pubkey can accept any type of coin, please leave this in
            your config to help support NOMP development. */
-            '22851477d63a085dbc2398c8430af1c09e7343f6': 0.1,
+            '22851477d63a085dbc2398c8430af1c09e7343f6': 0.1
         },
 
         blockRefreshInterval: 1000, //How often to poll RPC daemons for new blocks, in milliseconds
@@ -201,7 +201,7 @@ const pool = Stratum.createPool(
             time: 600, //How many seconds to ban worker for
             invalidPercent: 50, //What percent of invalid shares triggers ban
             checkThreshold: 500, //Check invalid percent when this many shares have been submitted
-            purgeInterval: 300, //Every this many seconds clear out the list of old bans
+            purgeInterval: 300 //Every this many seconds clear out the list of old bans
         },
 
         /* Each pool can have as many ports for your miners to connect to as you wish. Each port can
@@ -219,13 +219,13 @@ const pool = Stratum.createPool(
                     maxDiff: 512, //Network difficulty will be used if it is lower than this
                     targetTime: 15, //Try to get 1 share per this many seconds
                     retargetTime: 90, //Check to see if we should retarget every this many seconds
-                    variancePercent: 30, //Allow time to very this % from target without retargeting
-                },
+                    variancePercent: 30 //Allow time to very this % from target without retargeting
+                }
             },
             3256: {
                 //Another port for your miners to connect to, this port does not use varDiff
-                diff: 256, //The pool difficulty
-            },
+                diff: 256 //The pool difficulty
+            }
         },
 
         /* Recommended to have at least two daemon instances running in case one drops out-of-sync
@@ -241,15 +241,15 @@ const pool = Stratum.createPool(
                 host: '127.0.0.1',
                 port: 19332,
                 user: 'litecoinrpc',
-                password: 'testnet',
+                password: 'testnet'
             },
             {
                 //Backup daemon instance
                 host: '127.0.0.1',
                 port: 19344,
                 user: 'litecoinrpc',
-                password: 'testnet',
-            },
+                password: 'testnet'
+            }
         ],
 
         /* This allows the pool to connect to the daemon as a node peer to receive block updates.
@@ -268,8 +268,8 @@ const pool = Stratum.createPool(
             /* If your coin daemon is new enough (i.e. not a shitcoin) then it will support a p2p
            feature that prevents the daemon from spamming our peer node with unnecessary
            transaction data. Assume its supported but if you have problems try disabling it. */
-            disableTransactions: true,
-        },
+            disableTransactions: true
+        }
     },
     function (ip, port, workerName, password, callback) {
         //stratum authorization function
@@ -277,7 +277,7 @@ const pool = Stratum.createPool(
         callback({
             error: null,
             authorized: true,
-            disconnect: false,
+            disconnect: false
         });
     }
 );
@@ -316,7 +316,9 @@ pool.on('share', function (isValidShare, isValidBlock, data) {
     if (isValidBlock) console.log('Block found');
     else if (isValidShare) console.log('Valid share submitted');
     else if (data.blockHash)
-        console.log('We thought a block was found but it was rejected by the daemon');
+        console.log(
+            'We thought a block was found but it was rejected by the daemon'
+        );
     else console.log('Invalid share submitted');
 
     console.log('share data: ' + JSON.stringify(data));

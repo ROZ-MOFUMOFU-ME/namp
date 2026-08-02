@@ -20,13 +20,15 @@ export interface TlsServerOptions {
  * tls:true that silently served cleartext would leak the credentials clients send expecting an
  * encrypted channel.
  */
-export function buildTlsServerOptions(tlsOpts: TlsOptions | undefined): TlsServerOptions | null {
+export function buildTlsServerOptions(
+    tlsOpts: TlsOptions | undefined
+): TlsServerOptions | null {
     if (!tlsOpts || !tlsOpts.serverKey || !tlsOpts.serverCert) return null;
     try {
         return {
             key: fs.readFileSync(tlsOpts.serverKey),
             cert: fs.readFileSync(tlsOpts.serverCert),
-            ca: tlsOpts.ca ? fs.readFileSync(tlsOpts.ca) : undefined,
+            ca: tlsOpts.ca ? fs.readFileSync(tlsOpts.ca) : undefined
         };
     } catch {
         return null;

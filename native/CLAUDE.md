@@ -1,12 +1,11 @@
 # CLAUDE.md
 
-Guidance for `packages/multi-hashing` — the native hashing addon at the
-bottom of the NAMP stack. Monorepo-wide guidance lives in the root
-CLAUDE.md.
+Guidance for `native/` — the hashing addon at the bottom of the NAMP
+stack. Repository-wide guidance lives in the root CLAUDE.md.
 
 ## Role
 
-Consumed by `packages/stratum-pool` (`src/algoProperties.ts`,
+Consumed by the stratum layer (`src/algoProperties.ts`,
 `import multiHashing from 'multi-hashing'`) as a workspace dependency.
 Each exported hash function is called as
 `fn(dataBuffer, ...params) → Buffer`.
@@ -24,7 +23,7 @@ require C++20; gcc 10+ is needed.
 **ABI caveat**: this is a NAN addon (not N-API), so the compiled
 `build/Release/multihashing.node` is tied to the Node ABI it was built
 with. After switching Node versions, consumers fail with
-`Error: Module did not self-register` — run `npm rebuild multi-hashing`
+`Error: Module did not self-register` — run `npm run rebuild:native`
 at the monorepo root (or `npm run build` here).
 
 ## Architecture
@@ -60,5 +59,5 @@ Adding an algorithm:
 3. `npm run build`, then add known-answer vectors under `tests/vectors/`
    covered by `tests/test.vectors.js`.
 4. Register it downstream in
-   `packages/stratum-pool/src/algoProperties.ts` (hash wrapper +
+   `src/algoProperties.ts` (hash wrapper +
    difficulty multiplier).

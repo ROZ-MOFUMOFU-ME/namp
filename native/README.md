@@ -1,6 +1,6 @@
 # multi-hashing
 
-> Part of the [NAMP](https://github.com/ROZ-MOFUMOFU-ME/namp) monorepo — `packages/multi-hashing`, consumed by `packages/stratum-pool` as a workspace dependency (not published to npm).
+> NAMP's native hashing layer: C/C++ algorithm implementations built by the root binding.gyp, loaded through [`index.cjs`](index.cjs) and consumed by the stratum modules in `src/`.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/ROZ-MOFUMOFU-ME/namp/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/ci.yml)&nbsp;[![C/C++](https://img.shields.io/badge/C%2FC%2B%2B-00599C?style=flat-square&logo=cplusplus&logoColor=white)](https://isocpp.org/)&nbsp;[![Node.js](https://img.shields.io/badge/node-%E2%89%A520-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org/)&nbsp;[![node-gyp](https://img.shields.io/badge/node--gyp-native_addon-689F63?style=flat-square&logo=nodedotjs&logoColor=white)](https://github.com/nodejs/node-gyp)&nbsp;[![License](https://img.shields.io/badge/license-GPLv2-blue?style=flat-square)](https://opensource.org/licenses/GPL-2.0)&nbsp;[![Discord](https://img.shields.io/badge/Discord-join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
 

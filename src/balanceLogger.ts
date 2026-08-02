@@ -1,5 +1,5 @@
 import { createRedisClient, execCommands } from './redisUtil.ts';
-import * as Stratum from './stratum/index.ts';
+import * as daemonModule from './daemon.ts';
 import type { Logger } from './logUtil.ts';
 
 /*
@@ -39,7 +39,7 @@ export default function (this: any, logger: Logger) {
                     poolOptions.paymentProcessing.daemon) ||
                 (Array.isArray(poolOptions.daemons) && poolOptions.daemons[0]);
             if (!daemonCfg) return null;
-            const daemon = new (Stratum as any).daemon.interface(
+            const daemon = new (daemonModule as any).interface(
                 [daemonCfg],
                 function (severity: any, message: any) {
                     (logger as any)[severity](logSystem, coin, message);

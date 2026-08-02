@@ -38,7 +38,9 @@ function wordByteSwap(buf: Buffer): Buffer {
 
 const GETWORK_PAD = Buffer.alloc(11, 0);
 
-const DIFF1 = BigInt('0x00000000ffff0000000000000000000000000000000000000000000000000000');
+const DIFF1 = BigInt(
+    '0x00000000ffff0000000000000000000000000000000000000000000000000000'
+);
 
 // getwork target (little-endian) for a pool share difficulty, scaled by 1e8 so fractional
 // difficulties (vardiff) keep precision.
@@ -59,7 +61,7 @@ function makeVardiff(opts: any, startDiff: number) {
         diff: startDiff,
         lastTs: 0,
         lastRetarget: 0,
-        times: [] as number[],
+        times: [] as number[]
     };
 }
 
@@ -71,13 +73,21 @@ function vardiffOnSubmit(vd: any, nowSec: number) {
     }
     vd.times.push(Math.max(1, nowSec - vd.lastTs));
     vd.lastTs = nowSec;
-    if (nowSec - vd.lastRetarget < vd.opts.retargetTime || vd.times.length === 0) return;
+    if (
+        nowSec - vd.lastRetarget < vd.opts.retargetTime ||
+        vd.times.length === 0
+    )
+        return;
     vd.lastRetarget = nowSec;
-    const avg = vd.times.reduce((a: number, b: number) => a + b, 0) / vd.times.length;
+    const avg =
+        vd.times.reduce((a: number, b: number) => a + b, 0) / vd.times.length;
     vd.times = [];
     if (avg > vd.tMax || avg < vd.tMin) {
         let next = vd.diff * (vd.opts.targetTime / avg);
-        next = Math.max(vd.opts.minDiff || 0.01, Math.min(vd.opts.maxDiff || 1e9, next));
+        next = Math.max(
+            vd.opts.minDiff || 0.01,
+            Math.min(vd.opts.maxDiff || 1e9, next)
+        );
         vd.diff = next;
     }
 }
@@ -95,7 +105,9 @@ const GetworkServer = function (
     // ({ port, diff }) for backward compatibility.
     const ports: any =
         cfg.ports ||
-        (cfg.port ? { [String(cfg.port)]: { diff: cfg.diff, varDiff: cfg.varDiff } } : {});
+        (cfg.port
+            ? { [String(cfg.port)]: { diff: cfg.diff, varDiff: cfg.varDiff } }
+            : {});
 
     // Per-worker session: stable extraNonce1 (so coinbase/merkleRoot is reproducible at submit),
     // current difficulty and optional vardiff state.
@@ -111,9 +123,13 @@ const GetworkServer = function (
             const startDiff = portCfg.diff || 1;
             s = {
                 en1: jobManager.extraNonceCounter.next(),
-                en2hex: Buffer.alloc(jobManager.extraNonce2Size, 0).toString('hex'),
+                en2hex: Buffer.alloc(jobManager.extraNonce2Size, 0).toString(
+                    'hex'
+                ),
                 diff: startDiff,
-                vd: portCfg.varDiff ? makeVardiff(portCfg.varDiff, startDiff) : null,
+                vd: portCfg.varDiff
+                    ? makeVardiff(portCfg.varDiff, startDiff)
+                    : null
             };
             sessions[worker] = s;
         }
@@ -131,20 +147,32 @@ const GetworkServer = function (
         const built = jobManager.buildGetworkHeader(en1, en2);
         if (!built) return null;
         s.jobId = built.jobId;
-        const data = Buffer.concat([wordByteSwap(built.headerLE), GETWORK_PAD]).toString('hex');
+        const data = Buffer.concat([
+            wordByteSwap(built.headerLE),
+            GETWORK_PAD
+        ]).toString('hex');
         const diff = s.vd ? s.vd.diff : s.diff;
         s.diff = diff;
         return { data, target: diffToTarget(diff) };
     }
 
-    function submitWork(worker: string, dataHex: string, ip: string, port: number) {
+    function submitWork(
+        worker: string,
+        dataHex: string,
+        ip: string,
+        port: number
+    ) {
         const s = sessions[worker];
         if (!s || !s.jobId) return false;
         const wire = wordByteSwap(Buffer.from(dataHex, 'hex').subarray(0, 181));
         // wire layout: version[0:4] prev[4:36] merkle[36:68] nTime[68:72] bits[72:76] nonce[76:80].
         // wire is little-endian; processShare/serializeHeader want big-endian hex, so reverse each.
-        const nTime = Buffer.from(wire.subarray(68, 72)).reverse().toString('hex');
-        const nonce = Buffer.from(wire.subarray(76, 80)).reverse().toString('hex');
+        const nTime = Buffer.from(wire.subarray(68, 72))
+            .reverse()
+            .toString('hex');
+        const nonce = Buffer.from(wire.subarray(76, 80))
+            .reverse()
+            .toString('hex');
         if (s.vd) vardiffOnSubmit(s.vd, (Date.now() / 1000) | 0);
         jobManager.processShare(
             s.jobId,
@@ -164,7 +192,12 @@ const GetworkServer = function (
 
     function makeHandler(portNum: number, portCfg: any) {
         // Build and send the work/submit response for an already-authorized worker.
-        const respond = function (res: any, body: string, worker: string, ip: string) {
+        const respond = function (
+            res: any,
+            body: string,
+            worker: string,
+            ip: string
+        ) {
             res.setHeader('Content-Type', 'application/json');
             res.setHeader('X-Roll-NTime', 'expire=120');
             let reqId: any = 1;
@@ -199,11 +232,16 @@ const GetworkServer = function (
             let body = '';
             req.on('data', (c: any) => (body += c));
             req.on('end', function () {
-                const ip = (req.socket.remoteAddress || '').replace('::ffff:', '');
+                const ip = (req.socket.remoteAddress || '').replace(
+                    '::ffff:',
+                    ''
+                );
                 let worker = '';
                 const auth = req.headers['authorization'];
                 if (auth && auth.indexOf('Basic ') === 0) {
-                    worker = Buffer.from(auth.slice(6), 'base64').toString().split(':')[0];
+                    worker = Buffer.from(auth.slice(6), 'base64')
+                        .toString()
+                        .split(':')[0];
                 }
                 // Authorize a worker once, then cache it so getwork's per-poll requests don't
                 // re-run authorizeFn (and spam "Authorized") the way a fresh connect would.
@@ -211,22 +249,31 @@ const GetworkServer = function (
                     respond(res, body, worker, ip);
                     return;
                 }
-                authorizeFn(ip, portNum, worker, '', function (authResult: any) {
-                    if (!authResult || !authResult.authorized) {
-                        res.setHeader('Content-Type', 'application/json');
-                        res.writeHead(401);
-                        res.end(
-                            JSON.stringify({
-                                result: null,
-                                error: { code: -1, message: 'unauthorized' },
-                                id: 1,
-                            })
-                        );
-                        return;
+                authorizeFn(
+                    ip,
+                    portNum,
+                    worker,
+                    '',
+                    function (authResult: any) {
+                        if (!authResult || !authResult.authorized) {
+                            res.setHeader('Content-Type', 'application/json');
+                            res.writeHead(401);
+                            res.end(
+                                JSON.stringify({
+                                    result: null,
+                                    error: {
+                                        code: -1,
+                                        message: 'unauthorized'
+                                    },
+                                    id: 1
+                                })
+                            );
+                            return;
+                        }
+                        authorizedWorkers.add(worker);
+                        respond(res, body, worker, ip);
                     }
-                    authorizedWorkers.add(worker);
-                    respond(res, body, worker, ip);
-                });
+                );
             });
         };
     }
@@ -242,7 +289,9 @@ const GetworkServer = function (
             let server: any;
             if (portCfg.tls) {
                 if (tlsServerOptions === undefined)
-                    tlsServerOptions = buildTlsServerOptions(options.tlsOptions);
+                    tlsServerOptions = buildTlsServerOptions(
+                        options.tlsOptions
+                    );
                 if (!tlsServerOptions) {
                     emitErrorLog(
                         `Getwork port ${portStr} has tls:true but the key/cert is missing or unreadable; skipping`

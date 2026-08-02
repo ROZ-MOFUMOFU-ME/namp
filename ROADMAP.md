@@ -98,7 +98,7 @@ merges. Nothing is squashed; blame and bisect keep working.
       repos' updates stop once archived
 - [ ] Optional (owner action): branch protection on namp main
 
-### M5 — Dissolve the packages
+### M5 — Dissolve the packages (done: 2026-08-03)
 
 The workspaces exist only for historical reasons — nothing is published
 (decided in M3), so the package boundaries, the four package.json files
@@ -129,9 +129,18 @@ Dissolution order (most-depended-on first, green at every step):
       `'stratum-pool'` package/deep import is now a relative import,
       its tests joined root `test/`, and the whole suite runs as one
       `node --test` invocation
-- [ ] drop `workspaces`, merge the four package.json files into one,
-      re-point Docker/CI/docs; verify tsx is still needed (no more .ts
-      under node_modules — Node's native type stripping may suffice)
+- [x] license unified to **GPL-2.0-only** (done 2026-08-03): NAMP
+      descends from NOMP and ships statically combined with its GPL
+      stratum/hashing code, so the portal's historical MIT marking could
+      not survive the combination — one root LICENSE now covers the
+      repository, which also dissolved the last reason for a
+      src/stratum boundary: the stratum modules live flat in `src/`
+      (index shim gone, createPool lives in pool.ts, prettier profile
+      unified, eslint down to backend+web blocks)
+- [x] `workspaces` dropped, the four package.json files are one, and
+      Docker/CI/docs follow (done 2026-08-03). tsx verified unnecessary
+      and removed — with no .ts under node_modules, plain `node
+src/init.ts` boots the portal through native type stripping
 
 ## Inherited stack roadmap
 

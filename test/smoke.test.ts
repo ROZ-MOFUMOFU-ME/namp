@@ -1,10 +1,10 @@
 import assert from 'node:assert';
 import { test } from 'node:test';
 
-import * as stratumPool from '../src/stratum/index.ts';
-import BlockTemplate from '../src/stratum/blockTemplate.ts';
-import JobManager from '../src/stratum/jobManager.ts';
-import * as util from '../src/stratum/util.ts';
+import * as stratumPool from '../src/pool.ts';
+import BlockTemplate from '../src/blockTemplate.ts';
+import JobManager from '../src/jobManager.ts';
+import * as util from '../src/util.ts';
 
 test('exposes the public API surface', () => {
     assert.strictEqual(typeof stratumPool.createPool, 'function');

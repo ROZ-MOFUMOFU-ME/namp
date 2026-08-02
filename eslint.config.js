@@ -24,30 +24,18 @@ const tsLanguage = {
 
 export default [
     {
-        // Portal entry point only (the rest of the portal is covered by
-        // tsc --noEmit + prettier).
-        files: ['src/init.ts'],
+        // Backend + tests. tsc --noEmit is the correctness gate; eslint
+        // surfaces style rules as warnings (the faithful NOMP conversion
+        // still carries some var/this).
+        files: ['src/**/*.ts', 'test/**/*.ts'],
         languageOptions: tsLanguage,
         rules: {
-            ...js.configs.recommended.rules,
-            'no-var': 'error',
-            'prefer-const': 'error',
             'no-unused-vars': 'off',
             'no-undef': 'off',
-            'no-redeclare': 'error'
-        }
-    },
-    {
-        // stratum-pool: tsc is the correctness gate; eslint surfaces a
-        // few style rules as warnings (the faithful conversion keeps
-        // some var/this).
-        files: ['src/stratum/**/*.ts', 'test/**/*.ts'],
-        languageOptions: tsLanguage,
-        rules: {
-            'no-unused-vars': 'off',
             'no-console': 'off',
             'prefer-const': 'warn',
-            'no-var': 'warn'
+            'no-var': 'warn',
+            'no-redeclare': 'warn'
         }
     },
     {
@@ -82,7 +70,7 @@ export default [
             ...js.configs.recommended.rules,
             'no-unused-vars': 'off',
             'no-undef': 'off',
-            'no-redeclare': 'error'
+            'no-redeclare': 'warn'
         }
     },
     prettier

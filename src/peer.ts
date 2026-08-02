@@ -46,7 +46,9 @@ const Peer = function (this: any, options: any) {
     const _this = this;
     let client: any;
     const magic = Buffer.from(
-        options.testnet ? options.coin.peerMagicTestnet : options.coin.peerMagic,
+        options.testnet
+            ? options.coin.peerMagicTestnet
+            : options.coin.peerMagic,
         'hex'
     );
     const magicInt = magic.readUInt32LE(0);
@@ -57,7 +59,7 @@ const Peer = function (this: any, options: any) {
     const invCodes = {
         error: 0,
         tx: 1,
-        block: 2,
+        block: 2
     };
 
     const networkServices = Buffer.from('0100000000000000', 'hex'); //NODE_NETWORK services (value 1 packed as uint64)
@@ -71,14 +73,16 @@ const Peer = function (this: any, options: any) {
     //If protocol version is new enough, add do not relay transactions flag byte, outlined in BIP37
     //https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki#extensions-to-existing-messages
     const relayTransactions =
-        options.p2p.disableTransactions === true ? Buffer.from([false] as any) : Buffer.from([]);
+        options.p2p.disableTransactions === true
+            ? Buffer.from([false] as any)
+            : Buffer.from([]);
 
     const commands = {
         version: commandStringBuffer('version'),
         inv: commandStringBuffer('inv'),
         verack: commandStringBuffer('verack'),
         addr: commandStringBuffer('addr'),
-        getblocks: commandStringBuffer('getblocks'),
+        getblocks: commandStringBuffer('getblocks')
     };
 
     (function init() {
@@ -89,7 +93,7 @@ const Peer = function (this: any, options: any) {
         client = net.connect(
             {
                 host: options.p2p.host,
-                port: options.p2p.port,
+                port: options.p2p.port
             },
             function () {
                 SendVersion();
@@ -114,38 +118,52 @@ const Peer = function (this: any, options: any) {
 
     function SetupMessageParser(client: any) {
         const beginReadingMessage = function (preRead: Buffer | null) {
-            readFlowingBytes(client, 24, preRead, function (header: Buffer, lopped: Buffer | null) {
-                const msgMagic = header.readUInt32LE(0);
-                if (msgMagic !== magicInt) {
-                    _this.emit('error', 'bad magic number from peer');
-                    while (header.readUInt32LE(0) !== magicInt && header.length >= 4) {
-                        header = header.slice(1);
-                    }
-                    if (header.readUInt32LE(0) === magicInt) {
-                        beginReadingMessage(header);
-                    } else {
-                        beginReadingMessage(Buffer.alloc(0));
-                    }
-                    return;
-                }
-                const msgCommand = header.slice(4, 16).toString();
-                const msgLength = header.readUInt32LE(16);
-                const msgChecksum = header.readUInt32LE(20);
-                readFlowingBytes(
-                    client,
-                    msgLength,
-                    lopped,
-                    function (payload: Buffer, lopped: Buffer | null) {
-                        if (util.sha256d(payload).readUInt32LE(0) !== msgChecksum) {
-                            _this.emit('error', 'bad payload - failed checksum');
-                            beginReadingMessage(null);
-                            return;
+            readFlowingBytes(
+                client,
+                24,
+                preRead,
+                function (header: Buffer, lopped: Buffer | null) {
+                    const msgMagic = header.readUInt32LE(0);
+                    if (msgMagic !== magicInt) {
+                        _this.emit('error', 'bad magic number from peer');
+                        while (
+                            header.readUInt32LE(0) !== magicInt &&
+                            header.length >= 4
+                        ) {
+                            header = header.slice(1);
                         }
-                        HandleMessage(msgCommand, payload);
-                        beginReadingMessage(lopped);
+                        if (header.readUInt32LE(0) === magicInt) {
+                            beginReadingMessage(header);
+                        } else {
+                            beginReadingMessage(Buffer.alloc(0));
+                        }
+                        return;
                     }
-                );
-            });
+                    const msgCommand = header.slice(4, 16).toString();
+                    const msgLength = header.readUInt32LE(16);
+                    const msgChecksum = header.readUInt32LE(20);
+                    readFlowingBytes(
+                        client,
+                        msgLength,
+                        lopped,
+                        function (payload: Buffer, lopped: Buffer | null) {
+                            if (
+                                util.sha256d(payload).readUInt32LE(0) !==
+                                msgChecksum
+                            ) {
+                                _this.emit(
+                                    'error',
+                                    'bad payload - failed checksum'
+                                );
+                                beginReadingMessage(null);
+                                return;
+                            }
+                            HandleMessage(msgCommand, payload);
+                            beginReadingMessage(lopped);
+                        }
+                    );
+                }
+            );
         };
 
         beginReadingMessage(null);
@@ -205,7 +223,7 @@ const Peer = function (this: any, options: any) {
             command,
             util.packUInt32LE(payload.length),
             util.sha256d(payload).slice(0, 4),
-            payload,
+            payload
         ]);
         client.write(message);
         _this.emit('sentMessage', message);
@@ -221,7 +239,7 @@ const Peer = function (this: any, options: any) {
             crypto.randomBytes(8), //nonce, random unique ID
             userAgent,
             blockStartHeight,
-            relayTransactions,
+            relayTransactions
         ]);
         SendMessage(commands.version, payload);
     }

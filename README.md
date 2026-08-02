@@ -9,11 +9,11 @@ pool portal, the stratum layer and the hashing module all in one.
 
 ## Packages
 
-| Package                  | Imported from                                                               | Role                            |
+| Lives in                 | Imported from                                                               | Role                            |
 | ------------------------ | --------------------------------------------------------------------------- | ------------------------------- |
-| `packages/portal`        | [zny-nomp](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp)                     | Pool portal (NOMP) + web UI     |
-| `packages/stratum-pool`  | [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool)   | Stratum protocol layer          |
-| `packages/multi-hashing` | [node-multi-hashing](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing) | Hashing algorithms (C++ native) |
+| `src/`, `web/`           | [zny-nomp](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp)                     | Pool portal (NOMP) + web UI     |
+| `src/` (stratum modules) | [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool)   | Stratum protocol layer          |
+| `native/`                | [node-multi-hashing](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing) | Hashing algorithms (C++ native) |
 
 Dependency direction: `portal → stratum-pool → multi-hashing`.
 Each package carries the full commit history of its source repo,
@@ -23,52 +23,40 @@ imported with git filter-repo path rewrites (nothing squashed).
 
 ```
 namp/
-├── package.json          # workspaces root — every script and dependency lives here
-├── package-lock.json     #   the single lockfile for all four workspaces
-├── tsconfig.base.json    # shared TS config; each package extends it
+├── package.json          # THE package.json — deps, scripts, everything
+├── binding.gyp           # native addon build (node-gyp, runs on install)
+├── tsconfig.json         # backend project (extends tsconfig.base.json)
 ├── eslint.config.js      # the one lint config (per-area rule blocks)
-├── .prettierrc / .editorconfig / .nvmrc / .npmrc
-├── types/shims.d.ts      # ambient declarations shared across packages
-├── Dockerfile            # portal image; build from here
-├── docker-compose.yml    # portal + Redis dev stack
-├── .github/workflows/    # the one CI + release pipeline (ci.yml, release.yml)
-├── ROADMAP.md            # migration state + stack-wide roadmap
-└── packages/
-    ├── portal/           # the mining portal (namp-portal, MIT)
-    │   ├── src/          #   cluster master + pool/payment/web workers (buildless TS)
-    │   ├── web/          #   React/Vite SPA (namp-web) — a workspace too;
-    │   │                 #   the stack's only build step
-    │   ├── coins/        #   coin definitions (examples committed, real configs gitignored)
-    │   ├── pool_configs/ #   per-pool configs (same convention)
-    │   └── docs/         #   operator guides (TLS, reverse proxy, payment schemes)
-    ├── stratum-pool/     # stratum protocol library (GPL-2.0)
-    │   └── src/          #   daemon RPC, job/share pipeline, stratum server, algo registry
-    └── multi-hashing/    # C++ hashing addon (GPL-2.0, NAN, deliberately JavaScript)
-        └── src/          #   one file per algorithm + sha3/crypto/kawpow primitives
+├── src/                  # the whole backend: portal workers + stratum protocol modules
+├── native/               # C/C++ hashing sources + CJS loader
+├── web/                  # React/Vite SPA (own tsconfig; built to web/dist)
+├── test/                 # every suite: hashing vectors + stratum + portal
+├── coins/ pool_configs/  # coin definitions & pool configs (examples committed)
+├── docs/                 # operator guides (setup, TLS, reverse proxy, payments)
+├── Dockerfile            # container build; docker-compose.yml for the dev stack
+└── .github/workflows/    # the one CI + release pipeline
 ```
 
-Rule of thumb: **everything runs from the root** — one `npm install`,
-one lockfile, one lint/format/typecheck/test entry point. Packages hold
-code and their own CLAUDE.md deep dive; they carry no dev tooling,
-scripts or dependency pins of their own.
-
-## Current state
-
-The three source histories are fully imported under `packages/`
-(migration phase M1) — 2,700+ commits, blame/bisect intact. Development
-happens in this repository now; the source repos are frozen pending
-archive. The packages reference each other as npm workspaces behind a
-single root lockfile (see [ROADMAP.md](ROADMAP.md) for the migration
-state).
+Everything runs from the root: `npm install` (builds the addon),
+`npm start` (plain Node — buildless TS via native type stripping),
+`npm test`, `npm run lint / typecheck / format`, `npm run build` (the
+SPA, the stack's only build step). Layer guides live next to the code ([src/CLAUDE.md](src/CLAUDE.md),
+[native/CLAUDE.md](native/CLAUDE.md)); operator documentation lives in
+[docs/](docs/): [guide.md](docs/guide.md) (full setup),
+[payment-schemes.md](docs/payment-schemes.md),
+[reverse-proxy.md](docs/reverse-proxy.md),
+[stratum-tls.md](docs/stratum-tls.md), and
+[stratum.md](docs/stratum.md) (the stratum layer's feature reference).
 
 ## Development
 
 ```bash
 nvm use            # Node 24 (.nvmrc)
-npm install        # installs all four workspaces, builds the native addon
-npm run typecheck  # tsc --noEmit across the workspaces
+npm install        # one install: dependencies + the native addon build
+npm start          # run the portal (plain Node, no loader, no build)
+npm run typecheck  # backend + web compiler projects
 npm run lint       # eslint (backend + web)
-npm test           # hashing vectors + stratum smoke + portal unit tests
+npm test           # one node --test run: vectors + stratum + portal
 npm run build      # build the web SPA (the only build step)
 npm run web:dev    # Vite dev server on :5173, proxying /api to the portal
 npm run format     # prettier
@@ -185,7 +173,7 @@ Donations for development are greatly appreciated!
 
 ## License
 
-Per package: the repo scaffolding and `packages/portal` are
-[MIT](LICENSE); `packages/stratum-pool` and `packages/multi-hashing`
-are GPL-2.0 (see their LICENSE files), inherited from their upstream
-lineage.
+[GPL-2.0](LICENSE). NAMP descends from NOMP and ships as one program
+statically combined with its GPL-2.0 stratum and hashing code, so the
+whole repository is licensed GPL-2.0-only — the historical MIT marking
+on the portal portion could not survive the combination.

@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert';
 
-import BlockTemplate from '../src/stratum/blockTemplate.ts';
-import * as util from '../src/stratum/util.ts';
+import BlockTemplate from '../src/blockTemplate.ts';
+import * as util from '../src/util.ts';
 
 /*
  * Block serialization tests: the bytes the daemon ultimately validates.

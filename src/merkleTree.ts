@@ -51,7 +51,7 @@ MerkleTree.prototype = {
             f = util.sha256d(Buffer.concat([f, s]));
         });
         return f;
-    },
+    }
 };
 
 export default MerkleTree;

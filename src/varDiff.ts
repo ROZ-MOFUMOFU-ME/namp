@@ -50,9 +50,11 @@ const varDiff = function varDiff(this: any, port: number, varDiffOptions: any) {
 
     //if (!varDiffOptions) return;
 
-    const variance = varDiffOptions.targetTime * (varDiffOptions.variancePercent / 100);
+    const variance =
+        varDiffOptions.targetTime * (varDiffOptions.variancePercent / 100);
 
-    const bufferSize = (varDiffOptions.retargetTime / varDiffOptions.targetTime) * 4;
+    const bufferSize =
+        (varDiffOptions.retargetTime / varDiffOptions.targetTime) * 4;
     const tMin = varDiffOptions.targetTime - variance;
     const tMax = varDiffOptions.targetTime + variance;
 
@@ -83,7 +85,8 @@ const varDiff = function varDiff(this: any, port: number, varDiffOptions: any) {
             timeBuffer.append(sinceLast);
             lastTs = ts;
 
-            if (ts - lastRtc < options.retargetTime && timeBuffer.size() > 0) return;
+            if (ts - lastRtc < options.retargetTime && timeBuffer.size() > 0)
+                return;
 
             lastRtc = ts;
             const avg = timeBuffer.avg();
@@ -114,6 +117,9 @@ const varDiff = function varDiff(this: any, port: number, varDiffOptions: any) {
         });
     };
 };
-Object.setPrototypeOf((varDiff as any).prototype, events.EventEmitter.prototype);
+Object.setPrototypeOf(
+    (varDiff as any).prototype,
+    events.EventEmitter.prototype
+);
 
 export default varDiff;

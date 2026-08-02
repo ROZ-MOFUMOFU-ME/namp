@@ -1,4 +1,4 @@
-import * as Stratum from './stratum/index.ts';
+import { createPool } from './pool.ts';
 import net from 'net';
 
 import { createRedisClient } from './redisUtil.ts';
@@ -219,11 +219,9 @@ export default function (this: any, logger: Logger) {
             );
         };
 
-        var pool = (Stratum as any).createPool(
-            poolOptions,
-            authorizeFN,
-            logger
-        ); // factory method on imported namespace
+        // createPool takes (options, authorizeFn); a stray third argument
+        // used to vanish behind an any-cast.
+        var pool = createPool(poolOptions, authorizeFN);
         pool.on(
             'share',
             function (isValidShare: any, isValidBlock: any, data: any) {

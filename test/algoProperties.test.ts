@@ -4,8 +4,8 @@ import assert from 'node:assert';
 import algos, {
     getBlockHasher,
     getCoinbaseHasher
-} from '../src/stratum/algoProperties.ts';
-import * as util from '../src/stratum/util.ts';
+} from '../src/algoProperties.ts';
+import * as util from '../src/util.ts';
 
 /*
  * Equivalence oracle for the hasher-selection refactor.
