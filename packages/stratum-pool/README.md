@@ -1,11 +1,13 @@
-# node-stratum-pool
+# stratum-pool
+
+> Part of the [NAMP](https://github.com/ROZ-MOFUMOFU-ME/namp) monorepo — `packages/stratum-pool`, consumed by `packages/portal` as a workspace dependency (not published to npm).
 
 High performance Stratum poolserver in Node.js. One instance of this software can startup and manage multiple coin
 pools, each with their own daemon and stratum port :)
 
-**Roadmap:** see [ROADMAP.md](ROADMAP.md) for current status, known issues, and planned improvements.
+**Roadmap:** see the root [ROADMAP.md](../../ROADMAP.md) for current status, known issues, and planned improvements.
 
-[![CI](https://img.shields.io/github/actions/workflow/status/ROZ-MOFUMOFU-ME/node-stratum-pool/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool/actions/workflows/ci.yml)&nbsp;[![Release](https://img.shields.io/github/v/tag/ROZ-MOFUMOFU-ME/node-stratum-pool?include_prereleases&sort=semver&style=flat-square&logo=github&logoColor=white&label=release)](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool/tags)&nbsp;[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)&nbsp;[![Code style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4?style=flat-square&logo=prettier&logoColor=white)](https://prettier.io/)&nbsp;[![Node.js](https://img.shields.io/badge/node-%E2%89%A522-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org/)&nbsp;[![Bitcoin](https://img.shields.io/badge/Bitcoin-F7931A?style=flat-square&logo=bitcoin&logoColor=white)](https://bitcoin.org/)&nbsp;[![License](https://img.shields.io/badge/license-GPLv2-blue?style=flat-square)](https://opensource.org/licenses/GPL-2.0)&nbsp;[![Discord](https://img.shields.io/badge/Discord-join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
+[![CI](https://img.shields.io/github/actions/workflow/status/ROZ-MOFUMOFU-ME/namp/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/ci.yml)&nbsp;[![Release](https://img.shields.io/github/v/release/ROZ-MOFUMOFU-ME/namp?style=flat-square&logo=github&label=release&color=blue)](https://github.com/ROZ-MOFUMOFU-ME/namp/releases)&nbsp;[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)&nbsp;[![Code style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4?style=flat-square&logo=prettier&logoColor=white)](https://prettier.io/)&nbsp;[![Node.js](https://img.shields.io/badge/node-%E2%89%A522-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org/)&nbsp;[![Bitcoin](https://img.shields.io/badge/Bitcoin-F7931A?style=flat-square&logo=bitcoin&logoColor=white)](https://bitcoin.org/)&nbsp;[![License](https://img.shields.io/badge/license-GPLv2-blue?style=flat-square)](https://opensource.org/licenses/GPL-2.0)&nbsp;[![Discord](https://img.shields.io/badge/Discord-join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
 
 ### Community
 
@@ -83,17 +85,13 @@ Not working currently:
 
 - Node.js v22+ (tested on Node 22 and 24): the library runs as buildless TypeScript via Node's native type stripping, which is enabled by default on Node 22.18+/24
 - coin daemon (preferably one with a relatively updated API and not some crapcoin :p)
-- a C/C++ toolchain with C++20 support (gcc 10+), required to build the [multi-hashing](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing) native addon
+- a C/C++ toolchain with C++20 support (gcc 10-12), required to build the sibling `packages/multi-hashing` native addon
 
 ## Example Usage
 
-#### Install as a node module
+#### In the monorepo
 
-```bash
-npm install git+https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool.git#main
-```
-
-Development happens on the `develop` branch; `main` is for releases/pre-releases and is protected, so changes land via pull request. This library is developed alongside the sibling repositories [node-multi-hashing](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing) (hashing addon) and [zny-nomp](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp) (mining portal); consumers install the release version via `#main`.
+The portal already depends on this package through npm workspaces — a single `npm install` at the repo root wires it up. There is nothing to install separately; the examples below show the module API.
 
 #### Module usage
 

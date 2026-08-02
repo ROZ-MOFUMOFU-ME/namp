@@ -40,9 +40,7 @@
         "test": "node --test --test-force-exit",
         "typecheck": "tsc --noEmit",
         "lint": "eslint src/ test/",
-        "lint:fix": "eslint src/ test/ --fix",
-        "format": "prettier --write src/ test/ eslint.config.js",
-        "format:check": "prettier --check src/ test/ eslint.config.js"
+        "lint:fix": "eslint src/ test/ --fix"
     },
     "repository": {
         "type": "git",

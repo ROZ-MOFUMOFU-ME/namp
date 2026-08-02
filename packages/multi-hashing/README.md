@@ -1,10 +1,12 @@
-# node-multi-hashing
+# multi-hashing
 
-[![CI](https://img.shields.io/github/actions/workflow/status/ROZ-MOFUMOFU-ME/node-multi-hashing/node.js.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing/actions/workflows/node.js.yml)&nbsp;[![CircleCI](https://img.shields.io/circleci/build/github/ROZ-MOFUMOFU-ME/node-multi-hashing/main?style=flat-square&logo=circleci&label=CircleCI)](https://circleci.com/gh/ROZ-MOFUMOFU-ME/node-multi-hashing/tree/main)&nbsp;[![C/C++](https://img.shields.io/badge/C%2FC%2B%2B-00599C?style=flat-square&logo=cplusplus&logoColor=white)](https://isocpp.org/)&nbsp;[![Node.js](https://img.shields.io/badge/node-%E2%89%A520-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org/)&nbsp;[![node-gyp](https://img.shields.io/badge/node--gyp-native_addon-689F63?style=flat-square&logo=nodedotjs&logoColor=white)](https://github.com/nodejs/node-gyp)&nbsp;[![License](https://img.shields.io/badge/license-GPLv2-blue?style=flat-square)](https://opensource.org/licenses/GPL-2.0)&nbsp;[![Discord](https://img.shields.io/badge/Discord-join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
+> Part of the [NAMP](https://github.com/ROZ-MOFUMOFU-ME/namp) monorepo — `packages/multi-hashing`, consumed by `packages/stratum-pool` as a workspace dependency (not published to npm).
+
+[![CI](https://img.shields.io/github/actions/workflow/status/ROZ-MOFUMOFU-ME/namp/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/ci.yml)&nbsp;[![C/C++](https://img.shields.io/badge/C%2FC%2B%2B-00599C?style=flat-square&logo=cplusplus&logoColor=white)](https://isocpp.org/)&nbsp;[![Node.js](https://img.shields.io/badge/node-%E2%89%A520-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org/)&nbsp;[![node-gyp](https://img.shields.io/badge/node--gyp-native_addon-689F63?style=flat-square&logo=nodedotjs&logoColor=white)](https://github.com/nodejs/node-gyp)&nbsp;[![License](https://img.shields.io/badge/license-GPLv2-blue?style=flat-square)](https://opensource.org/licenses/GPL-2.0)&nbsp;[![Discord](https://img.shields.io/badge/Discord-join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
 
 Cryptocurrency hashing functions for node.js.
 
-**Roadmap:** see [ROADMAP.md](ROADMAP.md) for current status, known issues, and planned improvements.
+**Roadmap:** see the root [ROADMAP.md](../../ROADMAP.md) for current status, known issues, and planned improvements.
 
 ### Community
 
@@ -20,19 +22,13 @@ Note: `lyra2rev2` (Monacoin's Lyra2REv2) is finalized with the SHA-3 reference B
 
 ## Requirements
 
-- Node.js v18+ (exercised in CI on Node 16/18/20/22 via GitHub Actions and Node 20/22/24 via CircleCI)
+- Node.js v22+ (exercised in the monorepo CI on Node 22/24)
 - A C/C++ toolchain with C++20 support (gcc 10+ or equivalent) — the addon is built with `-std=c++20`, which the V8 headers of Node 24 require
 - Python (used by node-gyp)
 
 ## Usage
 
-Install
-
-```bash
-npm install multi-hashing
-```
-
-Example usage:
+Inside the monorepo, `packages/stratum-pool` already depends on this package through npm workspaces; a root `npm install` builds the addon. Example usage:
 
 ```javascript
 const multiHashing = require('multi-hashing');
@@ -55,7 +51,7 @@ npm run build        # rebuild after source or Node version changes
 npm test             # run the known-answer test vectors
 ```
 
-This repository is developed on the `develop` branch together with [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool) and [zny-nomp](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp); `main` holds tagged releases, which the consumers install as a git dependency (`#main`). The whole public API lives in the native layer — `index.js` is a single `require('bindings')('multihashing.node')` line, and it (along with `tests/*.js`) is intentionally kept as JavaScript: routing the `bindings` resolver through Node's ESM→CJS translation of a `.ts` entry stops it from locating the compiled `multihashing.node`.
+The whole public API lives in the native layer — `index.js` is a single `require('bindings')('multihashing.node')` line, and it (along with `tests/*.js`) is intentionally kept as JavaScript: routing the `bindings` resolver through Node's ESM→CJS translation of a `.ts` entry stops it from locating the compiled `multihashing.node`.
 
 Note: the compiled addon is tied to the Node ABI it was built with. If you switch Node versions and see `Error: Module did not self-register`, run `npm run build` again (or `npm rebuild multi-hashing` in a consuming project).
 
