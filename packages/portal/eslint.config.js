@@ -1,16 +1,23 @@
 import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import babelParser from '@babel/eslint-parser';
 import prettier from 'eslint-config-prettier';
 
+// typescript-eslint cannot run against TypeScript 7 (the native compiler
+// no longer ships the JS compiler API), so TS syntax is parsed with
+// @babel/eslint-parser (@babel/preset-typescript, no type info) and
+// type-aware checking is tsc's job (npm run typecheck).
 export default [
     {
         // Entry point only (the rest of src/ is covered by `tsc --noEmit` + prettier).
         files: ['src/init.ts'],
         languageOptions: {
-            parser: tseslint.parser,
+            parser: babelParser,
+            sourceType: 'module',
             parserOptions: {
-                ecmaVersion: 2022,
-                sourceType: 'module'
+                requireConfigFile: false,
+                babelOptions: {
+                    presets: ['@babel/preset-typescript']
+                }
             },
             globals: {
                 // Node.js globals
@@ -31,24 +38,14 @@ export default [
                 clearInterval: 'readonly'
             }
         },
-        plugins: {
-            '@typescript-eslint': tseslint.plugin
-        },
         rules: {
             ...js.configs.recommended.rules,
             'no-var': 'error',
             'prefer-const': 'error',
-            // core no-unused-vars is not TS-aware; use the typescript-eslint one
+            // no-unused-vars / no-undef misfire on TS syntax without type
+            // info — both are tsc's job.
             'no-unused-vars': 'off',
-            '@typescript-eslint/no-unused-vars': [
-                'warn',
-                {
-                    varsIgnorePattern: '^_',
-                    argsIgnorePattern: '^_',
-                    caughtErrorsIgnorePattern: '^_'
-                }
-            ],
-            'no-undef': 'off', // TS handles name resolution
+            'no-undef': 'off',
             'no-redeclare': 'error'
         }
     },

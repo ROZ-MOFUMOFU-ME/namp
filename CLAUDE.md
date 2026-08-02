@@ -40,15 +40,17 @@ are one vX.Y.Z tag matching the root package.json version
 ## Toolchain
 
 - Node 22.18+ (.nvmrc says 24), ESM (`"type": "module"`)
-- **TypeScript: TS7-ready config, TS6 toolchain (for now).** Packages
+- **TypeScript 7** (native compiler, root devDependency). Packages
   extend tsconfig.base.json; `noEmit` + `erasableSyntaxOnly` +
   `verbatimModuleSyntax` keep the code runnable under Node's native
-  type stripping / tsx and valid for the TS7 native compiler — tsc is
-  typecheck-only. The installed typescript stays ^6 everywhere because
-  typescript-eslint's peer range caps at <6.1 and resolving a hoisted
-  7.x crashes eslint (`Cannot read properties of undefined (reading
-'Intrinsic')`). Unify on ^7 in M3 once typescript-eslint supports it.
-  Do not use non-erasable syntax such as enums
+  type stripping / tsx — tsc is typecheck-only. Do not use
+  non-erasable syntax such as enums
+- **Linting: eslint 10 + @babel/eslint-parser** (typescript-eslint
+  cannot run against TS7 — no JS compiler API). TS is parsed with
+  @babel/preset-typescript (no type info); rules that misfire without
+  types (no-unused-vars, no-undef) stay off — tsc owns type-aware
+  checking. The whole lint toolchain lives in the root devDependencies;
+  each package keeps its own eslint.config.js (rule sets differ)
 - Root scripts delegate to workspaces: `npm run typecheck` / `npm test` /
   `npm run lint`
 - prettier: singleQuote / semi / tabWidth 4 / trailingComma none (.prettierrc)

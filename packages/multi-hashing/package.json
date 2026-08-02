@@ -1,48 +1,50 @@
 {
-    "name": "multi-hashing",
-    "version": "1.2.0",
-    "main": "index.js",
-    "license": "GPL-2.0",
-    "author": {
-        "name": "Matthew Little",
-        "email": "zone117x@gmail.com"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing.git"
-    },
-    "files": ["index.js", "binding.gyp", "src"],
-    "scripts": {
-        "build": "node-gyp rebuild",
-        "test": "mocha --require @babel/register --gc-global tests/test.vectors.js"
-    },
-    "dependencies": {
-        "bindings": "^1.5.0",
-        "nan": "^2.27.0"
-    },
-    "devDependencies": {
-        "@babel/core": "^7.29.7",
-        "@babel/register": "^7.29.7",
-        "mocha": "^11.7.6"
-    },
-    "overrides": {
-        "serialize-javascript": "^7.0.5",
-        "diff": "^8.0.3"
-    },
-    "keywords": [
-        "argon2",
-        "scrypt",
-        "scryptjane",
-        "script-n",
-        "x11",
-        "quark",
-        "keccak_hash",
-        "skein",
-        "bcrypt",
-        "keccak",
-        "blake",
-        "shavite",
-        "fugue",
-        "sha1"
-    ]
+  "name": "multi-hashing",
+  "version": "1.2.0",
+  "main": "index.js",
+  "license": "GPL-2.0",
+  "author": {
+    "name": "Matthew Little",
+    "email": "zone117x@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing.git"
+  },
+  "files": [
+    "index.js",
+    "binding.gyp",
+    "src"
+  ],
+  "scripts": {
+    "build": "node-gyp rebuild",
+    "test": "mocha --gc-global tests/test.vectors.js"
+  },
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "nan": "^2.27.0"
+  },
+  "devDependencies": {
+    "mocha": "^11.7.6"
+  },
+  "overrides": {
+    "serialize-javascript": "^7.0.5",
+    "diff": "^8.0.3"
+  },
+  "keywords": [
+    "argon2",
+    "scrypt",
+    "scryptjane",
+    "script-n",
+    "x11",
+    "quark",
+    "keccak_hash",
+    "skein",
+    "bcrypt",
+    "keccak",
+    "blake",
+    "shavite",
+    "fugue",
+    "sha1"
+  ]
 }

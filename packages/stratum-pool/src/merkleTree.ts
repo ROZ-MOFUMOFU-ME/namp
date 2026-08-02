@@ -44,7 +44,9 @@ const MerkleTree = function MerkleTree(this: any, data: Buffer[]) {
     this.steps = calculateSteps(data);
 };
 MerkleTree.prototype = {
-    withFirst(f: any) {
+    // TS7 infers `this` as this prototype literal (TS6 was laxer) — the
+    // instance fields live on the constructed object, so type `this` loosely.
+    withFirst(this: any, f: any) {
         this.steps.forEach(function (s: Buffer) {
             f = util.sha256d(Buffer.concat([f, s]));
         });

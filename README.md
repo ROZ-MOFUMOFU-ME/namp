@@ -5,7 +5,7 @@ It continues the NOMP (Node Open Mining Portal) lineage and provides the
 pool portal, the stratum layer and the hashing module all in one.
 
 - Written **NAMP**; the repository/package name is lowercase `namp`
-- TypeScript (TS7-ready config, buildless via Node type stripping), ESM, Node 22.18+
+- TypeScript 7 (typecheck; code runs buildless via Node type stripping), ESM, Node 22.18+
 
 ## Packages
 

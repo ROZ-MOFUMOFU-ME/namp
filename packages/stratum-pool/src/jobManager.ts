@@ -117,7 +117,6 @@ const JobManager = function JobManager(this: any, options: any) {
             // CBlockHeader::GetHash via standard sha256d over the serialized
             // header (incl. hashStateRoot/hashUTXORoot/prevoutStake), so
             // submitblock's getblock lookup matches.
-            // eslint-disable-next-line no-fallthrough
             case 'vipstar':
                 return function (_d: any) {
                     return util.reverseBuffer(util.sha256d(_d));

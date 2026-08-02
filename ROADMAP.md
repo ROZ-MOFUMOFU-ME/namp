@@ -8,9 +8,9 @@ repos' roadmaps, which this file supersedes once the merge lands.
 
 ## Where we are (2026-08-02)
 
-- Monorepo live: npm workspaces (`packages/*`), TS7-ready TypeScript
-  config (toolchain on ^6 until typescript-eslint supports 7), prettier,
-  MIT, Node 22.18+/ESM. **M1 and M2 done
+- Monorepo live: npm workspaces (`packages/*`), TypeScript 7 (native
+  compiler; eslint 10 lints TS via @babel/eslint-parser since
+  typescript-eslint has no TS7 support), prettier, MIT, Node 22.18+/ESM. **M1 and M2 done
   (2026-08-02)** — the three source histories (2,706 commits) are
   imported under `packages/`, the packages reference each other as
   workspaces behind a single lockfile, CI/release run as one root
@@ -60,10 +60,15 @@ merges. Nothing is squashed; blame and bisect keep working.
 
 ### M3 — TS7 alignment and rebranding
 
-- [ ] Unify typescript on ^7 and hoist eslint / prettier config to the
-      root — **blocked on typescript-eslint TS7 support** (its peer
-      range caps at <6.1 as of 2026-08; a hoisted 7.x crashes eslint,
-      so the whole tree pins ^6 for now)
+- [x] Unify typescript on ^7 and hoist the lint toolchain to the root
+      (done 2026-08-02): typescript-eslint (peer <6.1, no TS7 support)
+      is dropped — eslint 10 parses TS via @babel/eslint-parser +
+      @babel/preset-typescript, tsc 7 owns type-aware checking; eslint /
+      @eslint/js / eslint-config-prettier / @babel/* / typescript /
+      prettier live in the root devDependencies (per-package
+      eslint.config.js kept — rule sets differ intentionally;
+      stratum-pool also keeps its trailingComma:es5 .prettierrc to
+      avoid a whole-tree reformat)
 - [ ] Rebrand the portal from ZNY-NOMP to NAMP (site branding is already
       config-driven, so this is naming/docs/UI defaults, not a rewrite)
 - [ ] npm package identities: decide whether stratum-pool /
