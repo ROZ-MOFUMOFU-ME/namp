@@ -1,9 +1,8 @@
 name: Release
 
-# Publish a GitHub Release when a version tag is pushed, so consumers can pin
-# the git dependencies by tag (e.g. #v1.4.0-beta.0) instead of tracking #main.
-# Cut tags from an already-CI-green commit on main (see CLAUDE.md release flow):
-# the build/lint workflows gate main/develop but do not run on tag pushes.
+# One vX.Y.Z tag releases the whole stack (replaces the old three-repo
+# "tag downstream, pin upstream" dance). Cut tags from a CI-green commit
+# on main; the CI workflow does not run on tag pushes.
 on:
     push:
         tags:
@@ -22,7 +21,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v6
               with:
-                  node-version: '22.x'
+                  node-version: '24.x'
 
             - name: Verify the tag matches package.json version
               run: |
@@ -38,12 +37,11 @@ jobs:
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  # A pre-release semver carries a hyphen (e.g. -beta.0, -rc.1).
-                  prerelease=""
+                  prerelease_flag=""
                   case "${GITHUB_REF_NAME}" in
-                      *-*) prerelease="--prerelease" ;;
+                      *-*) prerelease_flag="--prerelease" ;;
                   esac
                   gh release create "${GITHUB_REF_NAME}" \
-                      --title "${GITHUB_REF_NAME}" \
+                      --title "NAMP ${GITHUB_REF_NAME}" \
                       --generate-notes \
-                      ${prerelease}
+                      $prerelease_flag
