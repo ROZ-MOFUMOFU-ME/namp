@@ -546,6 +546,93 @@ DECLARE_FUNC(kawpow)
     SET_BUFFER_RETURN(output, 64);
 }
 
+/*
+ * Ethash (Ethereum/Ethereum Classic family, incl. VirBiCoin).
+ *
+ * A pool never needs the DAG: it verifies what miners submit. Two entry
+ * points mirror how a pool checks a share —
+ *
+ *   ethash_verify_final(headerHash, mixHash, nonce, boundary) -> bool
+ *       keccak-only, no cache: the cheap check that the submitted mix
+ *       produces a hash under the share target.
+ *   ethash_verify(headerHash, mixHash, nonce, boundary, height) -> bool
+ *       full verification against the epoch's light cache: proves the mix
+ *       itself was derived from the DAG, which the cheap check cannot.
+ *
+ * Etchash (Ethereum Classic) uses the same algorithm with ECIP-1099's
+ * halved epoch length; pass the epoch-adjusted height from the caller.
+ */
+DECLARE_FUNC(ethash_verify_final)
+{
+    if (info.Length() < 4)
+        RETURN_EXCEPT("You must provide 4 arguments: headerHash, mixHash, nonce, boundary.");
+
+    Local<Object> obj_header = Nan::To<Object>(info[0]).ToLocalChecked();
+    Local<Object> obj_mix = Nan::To<Object>(info[1]).ToLocalChecked();
+    Local<Object> obj_nonce = Nan::To<Object>(info[2]).ToLocalChecked();
+
+    if (!Buffer::HasInstance(obj_header) || Buffer::Length(obj_header) != 32)
+        RETURN_EXCEPT("Argument 1 (header hash) should be a 32-byte buffer.");
+    if (!Buffer::HasInstance(obj_mix) || Buffer::Length(obj_mix) != 32)
+        RETURN_EXCEPT("Argument 2 (mix hash) should be a 32-byte buffer.");
+    if (!Buffer::HasInstance(obj_nonce) || Buffer::Length(obj_nonce) != 8)
+        RETURN_EXCEPT("Argument 3 (nonce) should be an 8-byte buffer.");
+    Local<Object> obj_bound = Nan::To<Object>(info[3]).ToLocalChecked();
+    if (!Buffer::HasInstance(obj_bound) || Buffer::Length(obj_bound) != 32)
+        RETURN_EXCEPT("Argument 4 (boundary) should be a 32-byte buffer.");
+
+    ethash::hash256 header = {};
+    ethash::hash256 mix = {};
+    ethash::hash256 boundary = {};
+    std::memcpy(header.bytes, Buffer::Data(obj_header), 32);
+    std::memcpy(mix.bytes, Buffer::Data(obj_mix), 32);
+    std::memcpy(boundary.bytes, Buffer::Data(obj_bound), 32);
+
+    uint64_t nonce = 0;
+    std::memcpy((uint8_t *)&nonce, Buffer::Data(obj_nonce), 8);
+
+    const bool ok = ethash::verify_final_hash(header, mix, nonce, boundary);
+    info.GetReturnValue().Set(Nan::New<v8::Boolean>(ok));
+}
+
+DECLARE_FUNC(ethash_verify)
+{
+    if (info.Length() < 5)
+        RETURN_EXCEPT("You must provide 5 arguments: headerHash, mixHash, nonce, boundary, height.");
+
+    Local<Object> obj_header = Nan::To<Object>(info[0]).ToLocalChecked();
+    Local<Object> obj_mix = Nan::To<Object>(info[1]).ToLocalChecked();
+    Local<Object> obj_nonce = Nan::To<Object>(info[2]).ToLocalChecked();
+    Local<Object> obj_boundary = Nan::To<Object>(info[3]).ToLocalChecked();
+
+    if (!Buffer::HasInstance(obj_header) || Buffer::Length(obj_header) != 32)
+        RETURN_EXCEPT("Argument 1 (header hash) should be a 32-byte buffer.");
+    if (!Buffer::HasInstance(obj_mix) || Buffer::Length(obj_mix) != 32)
+        RETURN_EXCEPT("Argument 2 (mix hash) should be a 32-byte buffer.");
+    if (!Buffer::HasInstance(obj_nonce) || Buffer::Length(obj_nonce) != 8)
+        RETURN_EXCEPT("Argument 3 (nonce) should be an 8-byte buffer.");
+    if (!Buffer::HasInstance(obj_boundary) || Buffer::Length(obj_boundary) != 32)
+        RETURN_EXCEPT("Argument 4 (boundary) should be a 32-byte buffer.");
+    if (!info[4]->IsUint32())
+        RETURN_EXCEPT("Argument 5 (height) should be an unsigned integer.");
+
+    ethash::hash256 header = {};
+    ethash::hash256 mix = {};
+    ethash::hash256 boundary = {};
+    std::memcpy(header.bytes, Buffer::Data(obj_header), 32);
+    std::memcpy(mix.bytes, Buffer::Data(obj_mix), 32);
+    std::memcpy(boundary.bytes, Buffer::Data(obj_boundary), 32);
+
+    uint64_t nonce = 0;
+    std::memcpy((uint8_t *)&nonce, Buffer::Data(obj_nonce), 8);
+
+    const uint32_t height = Nan::To<uint32_t>(info[4]).ToChecked();
+    auto context = ethash::create_epoch_context(ethash::get_epoch_number(height));
+    const bool ok = ethash::e_verify(*context, header, mix, nonce, boundary);
+
+    info.GetReturnValue().Set(Nan::New<v8::Boolean>(ok));
+}
+
 DECLARE_FUNC(vipstar)
 {
     if (info.Length() < 1)
@@ -575,6 +662,8 @@ NAN_MODULE_INIT(init)
     NAN_EXPORT(target, blake2s);
     NAN_EXPORT(target, boolberry);
     NAN_EXPORT(target, kawpow);
+    NAN_EXPORT(target, ethash_verify_final);
+    NAN_EXPORT(target, ethash_verify);
     NAN_EXPORT(target, c11);
     NAN_EXPORT(target, cryptonight);
     NAN_EXPORT(target, cryptonightfast);

@@ -40,7 +40,15 @@ if (process.env.SETS) {
 // or disable all skips
 // SKIP=x mocha -gc ...
 //
-var skipalgos = ['bcrypt', 'scryptjane']; // disable bcrypt for now
+// ethash_* are share-verification predicates (header, mix, nonce, boundary),
+// not one-buffer hashers, so the vector runner cannot drive them; they have
+// their own test in test/ethash.test.ts.
+var skipalgos = [
+    'bcrypt',
+    'scryptjane',
+    'ethash_verify',
+    'ethash_verify_final'
+]; // disable bcrypt for now
 if (process.env.SKIPS) {
     skipalgos = process.env.SKIPS.split(',');
 }
