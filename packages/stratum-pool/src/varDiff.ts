@@ -1,0 +1,119 @@
+import events from 'events';
+
+/*
+
+Vardiff ported from stratum-mining share-limiter
+ https://github.com/ahmedbodi/stratum-mining/blob/master/mining/basic_share_limiter.py
+
+ */
+
+function RingBuffer(this: any, maxSize: number) {
+    let data: number[] = [];
+    let cursor = 0;
+    let isFull = false;
+    this.append = function (x: number) {
+        if (isFull) {
+            data[cursor] = x;
+            cursor = (cursor + 1) % maxSize;
+        } else {
+            data.push(x);
+            cursor++;
+            if (data.length === maxSize) {
+                cursor = 0;
+                isFull = true;
+            }
+        }
+    };
+    this.avg = function () {
+        const sum = data.reduce(function (a, b) {
+            return a + b;
+        });
+        return sum / (isFull ? maxSize : cursor);
+    };
+    this.size = function () {
+        return isFull ? maxSize : cursor;
+    };
+    this.clear = function () {
+        data = [];
+        cursor = 0;
+        isFull = false;
+    };
+}
+
+// Truncate a number to a fixed amount of decimal places
+function toFixed(num: number, len: number) {
+    return parseFloat(num.toFixed(len));
+}
+
+const varDiff = function varDiff(this: any, port: number, varDiffOptions: any) {
+    const _this = this;
+
+    //if (!varDiffOptions) return;
+
+    const variance = varDiffOptions.targetTime * (varDiffOptions.variancePercent / 100);
+
+    const bufferSize = (varDiffOptions.retargetTime / varDiffOptions.targetTime) * 4;
+    const tMin = varDiffOptions.targetTime - variance;
+    const tMax = varDiffOptions.targetTime + variance;
+
+    this.manageClient = function (client: any) {
+        const stratumPort = client.socket.localPort;
+
+        if (stratumPort != port) {
+            console.error('Handling a client which is not of this vardiff?');
+        }
+        const options = varDiffOptions;
+
+        let lastTs: number;
+        let lastRtc: number;
+        let timeBuffer: any;
+
+        client.on('submit', function () {
+            const ts = (Date.now() / 1000) | 0;
+
+            if (!lastRtc) {
+                lastRtc = ts - options.retargetTime / 2;
+                lastTs = ts;
+                timeBuffer = new (RingBuffer as any)(bufferSize);
+                return;
+            }
+
+            const sinceLast = ts - lastTs;
+
+            timeBuffer.append(sinceLast);
+            lastTs = ts;
+
+            if (ts - lastRtc < options.retargetTime && timeBuffer.size() > 0) return;
+
+            lastRtc = ts;
+            const avg = timeBuffer.avg();
+            let ddiff = options.targetTime / avg;
+
+            if (avg > tMax && client.difficulty > options.minDiff) {
+                if (options.x2mode) {
+                    ddiff = 0.5;
+                }
+                if (ddiff * client.difficulty < options.minDiff) {
+                    ddiff = options.minDiff / client.difficulty;
+                }
+            } else if (avg < tMin) {
+                if (options.x2mode) {
+                    ddiff = 2;
+                }
+                const diffMax = options.maxDiff;
+                if (ddiff * client.difficulty > diffMax) {
+                    ddiff = diffMax / client.difficulty;
+                }
+            } else {
+                return;
+            }
+
+            const newDiff = toFixed(client.difficulty * ddiff, 8);
+            timeBuffer.clear();
+            _this.emit('newDifficulty', client, newDiff);
+        });
+    };
+};
+Object.setPrototypeOf((varDiff as any).prototype, events.EventEmitter.prototype);
+
+export default varDiff;

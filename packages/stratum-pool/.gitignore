@@ -1,0 +1,55 @@
+# Dependencies (package-lock.json is committed and intentionally NOT ignored)
+node_modules/
+.npm/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Runtime / diagnostic data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# TypeScript / build output
+# This library is buildless (tsconfig "noEmit"); kept as defensive entries.
+*.tsbuildinfo
+dist/
+build/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Caches
+.eslintcache
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE / Editor
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Claude Code
+.claude/
