@@ -17,7 +17,6 @@ RUN apt-get update \
 # setting the web SPA needs.
 COPY package.json package-lock.json .npmrc binding.gyp ./
 COPY native/ ./native/
-COPY packages/stratum-pool/package.json ./packages/stratum-pool/
 COPY web/package.json ./web/
 RUN npm ci
 

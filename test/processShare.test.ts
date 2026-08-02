@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert';
 
-import JobManager from '../src/jobManager.ts';
-import * as util from '../src/util.ts';
+import JobManager from '../src/stratum/jobManager.ts';
+import * as util from '../src/stratum/util.ts';
 
 /*
  * Share-validation tests for jobManager.processShare — the path every miner
@@ -31,13 +31,15 @@ function makeManager(bits: string) {
         coin: { algorithm: 'sha256' },
         poolAddressScript: Buffer.alloc(25, 0x11),
         recipients: [],
-        network: undefined,
+        network: undefined
     });
 
     // The pool emits share(shareData, blockHex) — the serialized block rides
     // along as a second argument, so both are recorded here.
     const shares: any[] = [];
-    jm.on('share', (data: any, blockHex: any) => shares.push({ ...data, blockHex }));
+    jm.on('share', (data: any, blockHex: any) =>
+        shares.push({ ...data, blockHex })
+    );
 
     jm.processTemplate({
         bits,
@@ -46,7 +48,7 @@ function makeManager(bits: string) {
         coinbasevalue: 5000000000,
         curtime: 1000,
         version: 4,
-        transactions: [],
+        transactions: []
     });
 
     return { jm, shares };
@@ -67,7 +69,7 @@ function validSubmission(jm: any, overrides: Record<string, any> = {}) {
         workerName: 'worker.1',
         versionMask: undefined,
         isSoloMining: false,
-        ...overrides,
+        ...overrides
     };
 }
 
@@ -104,7 +106,9 @@ function mine(
             return { result, share, nonce, attempts: n + 1 };
         }
     }
-    throw new Error(`no ${opts.block ? 'block' : 'share'} found in ${maxTries} nonces`);
+    throw new Error(
+        `no ${opts.block ? 'block' : 'share'} found in ${maxTries} nonces`
+    );
 }
 
 test('accepts a valid share and reports it', () => {
@@ -133,9 +137,14 @@ test('rejects malformed submissions before hashing', () => {
         ['ntime wrong size', { nTime: '0003e8' }, 20, /ntime/],
         ['nonce wrong size', { nonce: '0000' }, 20, /nonce/],
         // curtime is 1000; anything earlier replays a stale template.
-        ['ntime before curtime', { nTime: '000003e7' }, 20, /ntime out of range/],
+        [
+            'ntime before curtime',
+            { nTime: '000003e7' },
+            20,
+            /ntime out of range/
+        ],
         // More than two hours ahead of now.
-        ['ntime too far ahead', { nTime: 'ffffffff' }, 20, /ntime out of range/],
+        ['ntime too far ahead', { nTime: 'ffffffff' }, 20, /ntime out of range/]
     ];
 
     for (const [name, overrides, code, message] of cases) {
@@ -179,7 +188,10 @@ test('accepts a share that only clears the pre-retarget difficulty', () => {
     const { share } = mine(
         jm,
         shares,
-        validSubmission(jm, { difficulty: 1e12, previousDifficulty: MIN_DIFFICULTY })
+        validSubmission(jm, {
+            difficulty: 1e12,
+            previousDifficulty: MIN_DIFFICULTY
+        })
     );
 
     assert.strictEqual(
@@ -202,7 +214,9 @@ test('reports a block candidate with its hash and serialized block', () => {
     // The serialized block starts with the header the hash was taken over.
     const header = share.blockHex.slice(0, 160);
     assert.strictEqual(
-        util.reverseBuffer(util.sha256d(Buffer.from(header, 'hex'))).toString('hex'),
+        util
+            .reverseBuffer(util.sha256d(Buffer.from(header, 'hex')))
+            .toString('hex'),
         share.blockHash,
         'block hash must be the hash of the serialized block header'
     );

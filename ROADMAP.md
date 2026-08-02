@@ -122,10 +122,13 @@ Dissolution order (most-depended-on first, green at every step):
       the KAT tests run from root `test/` on node:test (mocha retired),
       the loader is `native/index.cjs` (CJS under the ESM root) with a
       `.d.cts` type surface, and stratum imports it by relative path
-- [ ] stratum-pool → `src/stratum/`; the portal's `'stratum-pool'` /
-      deep imports become relative; its tests join root `test/`
-- [ ] portal → root `src/` (+ `coins/`, `pool_configs/`, `docs/`,
-      `config_example.json`); web → root `web/`
+- [x] portal → root `src/` (+ `coins/`, `pool_configs/`, `docs/`,
+      `config_example.json`); web → root `web/` (done 2026-08-03;
+      flattened first so the stratum import rewrite happens once)
+- [x] stratum-pool → `src/stratum/` (done 2026-08-03); every
+      `'stratum-pool'` package/deep import is now a relative import,
+      its tests joined root `test/`, and the whole suite runs as one
+      `node --test` invocation
 - [ ] drop `workspaces`, merge the four package.json files into one,
       re-point Docker/CI/docs; verify tsx is still needed (no more .ts
       under node_modules — Node's native type stripping may suffice)

@@ -164,4 +164,4 @@ export function createCoinAmounts(magnitude: number | (() => number)) {
  * the website render identical strings; re-exported here under the portal's
  * historical name.
  */
-export { getReadableHashRateString as readableHashRateString } from 'stratum-pool/src/util.ts';
+export { getReadableHashRateString as readableHashRateString } from './stratum/util.ts';

@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert';
 
-import BlockTemplate from '../src/blockTemplate.ts';
-import * as util from '../src/util.ts';
+import BlockTemplate from '../src/stratum/blockTemplate.ts';
+import * as util from '../src/stratum/util.ts';
 
 /*
  * Block serialization tests: the bytes the daemon ultimately validates.
@@ -31,7 +31,11 @@ const UTXOROOT = '44'.repeat(32);
 // field and lets the allocation zero the rest.
 const QTUM_TAIL = '00'.repeat(32) + 'ffffffff' + '00';
 
-function makeTemplate(rpcOverrides: any = {}, reward?: string, recipients: any[] = []) {
+function makeTemplate(
+    rpcOverrides: any = {},
+    reward?: string,
+    recipients: any[] = []
+) {
     return new (BlockTemplate as any)(
         '1',
         {
@@ -42,7 +46,7 @@ function makeTemplate(rpcOverrides: any = {}, reward?: string, recipients: any[]
             curtime: 1000,
             version: 4,
             transactions: [],
-            ...rpcOverrides,
+            ...rpcOverrides
         },
         POOL_SCRIPT,
         EXTRANONCE_PLACEHOLDER,
@@ -57,13 +61,22 @@ function makeTemplate(rpcOverrides: any = {}, reward?: string, recipients: any[]
 const rev = (hex: string) => util.reverseHex(hex);
 
 test('serializes a standard 80-byte header in wire order', () => {
-    const header = makeTemplate().serializeHeader(MERKLE_ROOT, NTIME, NONCE, undefined);
+    const header = makeTemplate().serializeHeader(
+        MERKLE_ROOT,
+        NTIME,
+        NONCE,
+        undefined
+    );
 
     assert.strictEqual(header.length, 80);
     const hex = header.toString('hex');
 
     // version (LE) | prevhash | merkle root | nTime | bits | nonce
-    assert.strictEqual(hex.slice(0, 8), '04000000', 'version must be little-endian');
+    assert.strictEqual(
+        hex.slice(0, 8),
+        '04000000',
+        'version must be little-endian'
+    );
     assert.strictEqual(hex.slice(8, 72), rev(PREVHASH));
     assert.strictEqual(hex.slice(72, 136), rev(MERKLE_ROOT));
     assert.strictEqual(hex.slice(136, 144), rev(NTIME));
@@ -74,15 +87,30 @@ test('serializes a standard 80-byte header in wire order', () => {
 test('applies a version mask only to the version-rolling bits', () => {
     const template = makeTemplate({ version: 0x20000000 });
 
-    const plain = template.serializeHeader(MERKLE_ROOT, NTIME, NONCE, undefined);
+    const plain = template.serializeHeader(
+        MERKLE_ROOT,
+        NTIME,
+        NONCE,
+        undefined
+    );
     assert.strictEqual(plain.readUInt32LE(0), 0x20000000);
 
     // BIP310: miners may roll only the bits inside 0x1fffe000.
-    const rolled = template.serializeHeader(MERKLE_ROOT, NTIME, NONCE, 0xffffffff);
+    const rolled = template.serializeHeader(
+        MERKLE_ROOT,
+        NTIME,
+        NONCE,
+        0xffffffff
+    );
     assert.strictEqual(rolled.readUInt32LE(0), 0x20000000 | 0x1fffe000);
 
     // Bits outside the mask are ignored, so the base version survives.
-    const outside = template.serializeHeader(MERKLE_ROOT, NTIME, NONCE, 0xe0001fff);
+    const outside = template.serializeHeader(
+        MERKLE_ROOT,
+        NTIME,
+        NONCE,
+        0xe0001fff
+    );
     assert.strictEqual(outside.readUInt32LE(0), 0x20000000);
 });
 
@@ -92,9 +120,14 @@ test('serializes the 181-byte qtum header as bitcoin header + roots', () => {
     // roots must follow it in canonical little-endian.
     const template = makeTemplate({
         hashstateroot: STATEROOT,
-        hashutxoroot: UTXOROOT,
+        hashutxoroot: UTXOROOT
     });
-    const header = template.serializeHeader(MERKLE_ROOT, NTIME, NONCE, undefined);
+    const header = template.serializeHeader(
+        MERKLE_ROOT,
+        NTIME,
+        NONCE,
+        undefined
+    );
 
     assert.strictEqual(header.length, 181);
     const hex = header.toString('hex');
@@ -103,10 +136,22 @@ test('serializes the 181-byte qtum header as bitcoin header + roots', () => {
     const standard = makeTemplate()
         .serializeHeader(MERKLE_ROOT, NTIME, NONCE, undefined)
         .toString('hex');
-    assert.strictEqual(hex.slice(0, 160), standard, 'qtum header must extend the 80-byte header');
+    assert.strictEqual(
+        hex.slice(0, 160),
+        standard,
+        'qtum header must extend the 80-byte header'
+    );
 
-    assert.strictEqual(hex.slice(160, 224), rev(STATEROOT), 'hashStateRoot follows the header');
-    assert.strictEqual(hex.slice(224, 288), rev(UTXOROOT), 'hashUTXORoot follows the state root');
+    assert.strictEqual(
+        hex.slice(160, 224),
+        rev(STATEROOT),
+        'hashStateRoot follows the header'
+    );
+    assert.strictEqual(
+        hex.slice(224, 288),
+        rev(UTXOROOT),
+        'hashUTXORoot follows the state root'
+    );
     assert.strictEqual(
         hex.slice(288),
         QTUM_TAIL,
@@ -118,7 +163,10 @@ test('sends the notify roots word-swapped so miners rebuild the header', () => {
     // ccminer runs le32dec over each root, i.e. byteswaps every uint32 word.
     // The pool therefore ships the words in reverse order; applying the miner's
     // per-word swap to what we send must yield the canonical header bytes.
-    const template = makeTemplate({ hashstateroot: STATEROOT, hashutxoroot: UTXOROOT });
+    const template = makeTemplate({
+        hashstateroot: STATEROOT,
+        hashutxoroot: UTXOROOT
+    });
 
     const minerSwap = (hex: string) => {
         const b = Buffer.from(hex, 'hex');
@@ -134,8 +182,16 @@ test('sends the notify roots word-swapped so miners rebuild the header', () => {
 });
 
 test('serializes a 112-byte Sapling header with the final root first', () => {
-    const template = makeTemplate({ version: 5, finalsaplingroothash: '55'.repeat(32) });
-    const header = template.serializeHeader(MERKLE_ROOT, NTIME, NONCE, undefined);
+    const template = makeTemplate({
+        version: 5,
+        finalsaplingroothash: '55'.repeat(32)
+    });
+    const header = template.serializeHeader(
+        MERKLE_ROOT,
+        NTIME,
+        NONCE,
+        undefined
+    );
 
     assert.strictEqual(header.length, 112);
     // The reversal puts the sapling root last, after the 80-byte header.
@@ -145,9 +201,14 @@ test('serializes a 112-byte Sapling header with the final root first', () => {
 test('wraps the block as header, tx count, coinbase, then transactions', () => {
     const txData = 'abcdef0123456789';
     const template = makeTemplate({
-        transactions: [{ data: txData, txid: 'aa'.repeat(32) }],
+        transactions: [{ data: txData, txid: 'aa'.repeat(32) }]
     });
-    const header = template.serializeHeader(MERKLE_ROOT, NTIME, NONCE, undefined);
+    const header = template.serializeHeader(
+        MERKLE_ROOT,
+        NTIME,
+        NONCE,
+        undefined
+    );
     const coinbase = template.serializeCoinbase(
         Buffer.from('00000000', 'hex'),
         Buffer.from('00000000', 'hex')
@@ -166,7 +227,12 @@ test('wraps the block as header, tx count, coinbase, then transactions', () => {
 });
 
 test('appends the POS marker byte only for POS coins', () => {
-    const header = makeTemplate().serializeHeader(MERKLE_ROOT, NTIME, NONCE, undefined);
+    const header = makeTemplate().serializeHeader(
+        MERKLE_ROOT,
+        NTIME,
+        NONCE,
+        undefined
+    );
     const coinbase = Buffer.from('00', 'hex');
 
     const pow = makeTemplate().serializeBlock(header, coinbase);
@@ -180,7 +246,7 @@ test('the coinbase pays the pool and each reward recipient', () => {
     const feeScript = Buffer.alloc(25, 0x22);
     const coinbasevalue = 5000000000;
     const template = makeTemplate({ coinbasevalue }, undefined, [
-        { percent: 0.01, script: feeScript },
+        { percent: 0.01, script: feeScript }
     ]);
 
     const coinbase = template.serializeCoinbase(
@@ -193,17 +259,23 @@ test('the coinbase pays the pool and each reward recipient', () => {
     const feeOutput = Buffer.concat([
         util.packInt64LE(feeReward),
         util.varIntBuffer(feeScript.length),
-        feeScript,
+        feeScript
     ]);
-    assert.ok(coinbase.includes(feeOutput), 'recipient output missing from the coinbase');
+    assert.ok(
+        coinbase.includes(feeOutput),
+        'recipient output missing from the coinbase'
+    );
 
     // The pool keeps the remainder.
     const poolOutput = Buffer.concat([
         util.packInt64LE(coinbasevalue - feeReward),
         util.varIntBuffer(POOL_SCRIPT.length),
-        POOL_SCRIPT,
+        POOL_SCRIPT
     ]);
-    assert.ok(coinbase.includes(poolOutput), 'pool output missing or misvalued');
+    assert.ok(
+        coinbase.includes(poolOutput),
+        'pool output missing or misvalued'
+    );
 
     // The extranonces sit between the two halves of the generation transaction.
     assert.ok(

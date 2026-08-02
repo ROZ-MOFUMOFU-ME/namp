@@ -503,7 +503,10 @@ const handleNiceHashAPIError = function (error: any) {
     console.error(error);
 };
 const rescheduleNiceHashAPIUpdate = function () {
-    setTimeout(maybeUpdateNiceHashAPIInformation, 300000);
+    // unref: keep refreshing while the pool runs, but never hold the process
+    // open for it — tests, the stats module and CLI tools import this file
+    // too, and a bare timer here kept their event loops alive forever.
+    setTimeout(maybeUpdateNiceHashAPIInformation, 300000).unref();
 };
 const niceHashAPIHandler = new (NiceHashAPI as any)();
 const maybeUpdateNiceHashAPIInformation = function () {
@@ -513,7 +516,10 @@ const maybeUpdateNiceHashAPIInformation = function () {
         .catch(handleNiceHashAPIError)
         .finally(rescheduleNiceHashAPIUpdate);
 };
-maybeUpdateNiceHashAPIInformation();
+// Scheduled, not immediate: importing a module must not fire network
+// requests. Until the first refresh lands, the static defaults above apply
+// (which is also the behaviour whenever the API is unreachable).
+rescheduleNiceHashAPIUpdate();
 
 /**
  * Defining each client that connects to the stratum server.

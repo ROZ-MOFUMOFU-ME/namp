@@ -41,10 +41,7 @@ export default [
         // stratum-pool: tsc is the correctness gate; eslint surfaces a
         // few style rules as warnings (the faithful conversion keeps
         // some var/this).
-        files: [
-            'packages/stratum-pool/src/**/*.ts',
-            'packages/stratum-pool/test/**/*.ts'
-        ],
+        files: ['src/stratum/**/*.ts', 'test/**/*.ts'],
         languageOptions: tsLanguage,
         rules: {
             'no-unused-vars': 'off',

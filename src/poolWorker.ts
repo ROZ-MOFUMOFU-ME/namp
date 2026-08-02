@@ -1,4 +1,4 @@
-import * as Stratum from 'stratum-pool';
+import * as Stratum from './stratum/index.ts';
 import net from 'net';
 
 import { createRedisClient } from './redisUtil.ts';

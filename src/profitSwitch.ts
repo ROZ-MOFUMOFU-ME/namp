@@ -1,7 +1,7 @@
 import net from 'net';
 import async from 'async';
-import * as Stratum from 'stratum-pool';
-import * as StratumUtil from 'stratum-pool/src/util.ts';
+import * as Stratum from './stratum/index.ts';
+import * as StratumUtil from './stratum/util.ts';
 import { createRedisClient } from './redisUtil.ts';
 import { parsePriceHash } from './priceProviders.ts';
 import { rankProfitability, decideSwitches } from './profitSwitchLogic.ts';

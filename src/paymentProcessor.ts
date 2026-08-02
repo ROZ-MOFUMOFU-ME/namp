@@ -19,9 +19,9 @@ import {
 import { esmppsAllocate, smppsAllocate, parseDebtEntry } from './smppsLogic.ts';
 import { createCoinAmounts, roundTo } from './statsUtil.ts';
 import async from 'async';
-import * as Stratum from 'stratum-pool';
-import * as StratumUtil from 'stratum-pool/src/util.ts';
-import algos from 'stratum-pool/src/algoProperties.ts';
+import * as Stratum from './stratum/index.ts';
+import * as StratumUtil from './stratum/util.ts';
+import algos from './stratum/algoProperties.ts';
 import type { Logger } from './logUtil.ts';
 
 // `util` is referenced (but never imported) by getProperAddress/handleAddress

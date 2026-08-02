@@ -12,7 +12,7 @@ import Website from './website.ts';
 import ProfitSwitch from './profitSwitch.ts';
 import PriceFeed from './priceFeed.ts';
 import BalanceLogger from './balanceLogger.ts';
-import algos from 'stratum-pool/src/algoProperties.ts';
+import algos from './stratum/algoProperties.ts';
 import jsonMinify from 'node-json-minify';
 
 // Set JSON.minify for backward compatibility

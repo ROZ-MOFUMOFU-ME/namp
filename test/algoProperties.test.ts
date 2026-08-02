@@ -1,8 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert';
 
-import algos, { getBlockHasher, getCoinbaseHasher } from '../src/algoProperties.ts';
-import * as util from '../src/util.ts';
+import algos, {
+    getBlockHasher,
+    getCoinbaseHasher
+} from '../src/stratum/algoProperties.ts';
+import * as util from '../src/stratum/util.ts';
 
 /*
  * Equivalence oracle for the hasher-selection refactor.
@@ -53,7 +56,9 @@ function oldBlockHasher(coin: any, hashDigest: (...args: any[]) => Buffer) {
         case 'groestl':
         case 'groestlmyriad':
             return function (this: any, ...args: any[]) {
-                return util.reverseBuffer((util.sha256d as any).apply(this, args));
+                return util.reverseBuffer(
+                    (util.sha256d as any).apply(this, args)
+                );
             };
         case 'lyra2rev2':
             return function (this: any, ...args: any[]) {
@@ -90,7 +95,8 @@ function oldBlockHasher(coin: any, hashDigest: (...args: any[]) => Buffer) {
 
 // A stand-in for the algorithm's PoW hasher: deterministic, and distinct from
 // sha256d so a wrong branch cannot accidentally produce a matching hash.
-const fakeDigest = (data: Buffer) => util.sha256(Buffer.concat([data, Buffer.from([0xab])]));
+const fakeDigest = (data: Buffer) =>
+    util.sha256(Buffer.concat([data, Buffer.from([0xab])]));
 
 const header = Buffer.alloc(80, 7);
 const nTime = 0x5f5e100;
@@ -113,10 +119,14 @@ test('every algorithm resolves the same coinbase hasher as the old switch', () =
 test('every algorithm resolves the same block hasher as the old switch', () => {
     for (const algorithm of algoNames) {
         for (const reward of ['POS', 'POW']) {
-            if (reward !== 'POS' && SCRYPT_POW_FAMILY.includes(algorithm)) continue;
+            if (reward !== 'POS' && SCRYPT_POW_FAMILY.includes(algorithm))
+                continue;
             const coin = { algorithm, reward };
             const expected = oldBlockHasher(coin, fakeDigest);
-            assert.ok(expected, `${algorithm} (${reward}) oracle produced no hasher`);
+            assert.ok(
+                expected,
+                `${algorithm} (${reward}) oracle produced no hasher`
+            );
             assert.deepStrictEqual(
                 getBlockHasher(coin, fakeDigest)(header, nTime),
                 expected(header, nTime),
@@ -132,7 +142,10 @@ test('non-POS scrypt now hashes blocks instead of crashing', () => {
     // function". Upstream NOMP fell through to the sha256d group; that is what
     // the 'posDigest' policy now does.
     for (const algorithm of SCRYPT_POW_FAMILY) {
-        assert.strictEqual(oldBlockHasher({ algorithm, reward: 'POW' }, fakeDigest), undefined);
+        assert.strictEqual(
+            oldBlockHasher({ algorithm, reward: 'POW' }, fakeDigest),
+            undefined
+        );
         const hasher = getBlockHasher({ algorithm, reward: 'POW' }, fakeDigest);
         assert.deepStrictEqual(
             hasher(header, nTime),
@@ -153,8 +166,18 @@ test('the algorithm table keeps its multipliers and diffs', () => {
     assert.strictEqual(algos.x11.multiplier, 1);
     assert.strictEqual(algos.vipstar.multiplier, 1);
     // The yescrypt family carries a hardcoded truncated diff.
-    for (const algo of ['yescryptR8', 'yescryptR8G', 'yescryptR16', 'yescryptR24', 'yescryptR32']) {
-        assert.strictEqual(algos[algo].diff, algos.yescryptR8.diff, `${algo} lost its diff`);
+    for (const algo of [
+        'yescryptR8',
+        'yescryptR8G',
+        'yescryptR16',
+        'yescryptR24',
+        'yescryptR32'
+    ]) {
+        assert.strictEqual(
+            algos[algo].diff,
+            algos.yescryptR8.diff,
+            `${algo} lost its diff`
+        );
     }
 });
 

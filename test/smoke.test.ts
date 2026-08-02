@@ -1,10 +1,10 @@
 import assert from 'node:assert';
 import { test } from 'node:test';
 
-import * as stratumPool from '../src/index.ts';
-import BlockTemplate from '../src/blockTemplate.ts';
-import JobManager from '../src/jobManager.ts';
-import * as util from '../src/util.ts';
+import * as stratumPool from '../src/stratum/index.ts';
+import BlockTemplate from '../src/stratum/blockTemplate.ts';
+import JobManager from '../src/stratum/jobManager.ts';
+import * as util from '../src/stratum/util.ts';
 
 test('exposes the public API surface', () => {
     assert.strictEqual(typeof stratumPool.createPool, 'function');
@@ -28,7 +28,7 @@ test('builds merkle leaves from the correct per-chain tx hash', () => {
         previousblockhash: '00'.repeat(32),
         height: 100,
         coinbasevalue: 5000000000,
-        transactions: [{ data: data.toString('hex'), hash: fullHashBE, txid }],
+        transactions: [{ data: data.toString('hex'), hash: fullHashBE, txid }]
     };
 
     const sapling = new (BlockTemplate as any)(
@@ -74,11 +74,11 @@ test('createPool builds a pool from a dummy configuration', () => {
             difficulty: 1,
             connections: 0,
             networkHashRate: 0,
-            stratumPorts: [],
-        },
+            stratumPorts: []
+        }
     };
     const pool = stratumPool.createPool(dummyOptions, () => ({
-        authorized: true,
+        authorized: true
     }));
     assert.strictEqual(typeof pool, 'object');
     assert.ok(pool);
@@ -97,7 +97,7 @@ test('refuses to broadcast a vipstar template missing the qtum roots', () => {
         previousblockhash: '00'.repeat(32),
         height: 100,
         coinbasevalue: 5000000000,
-        transactions: [{ data: 'abcdef0123456789', txid: 'aa'.repeat(32) }],
+        transactions: [{ data: 'abcdef0123456789', txid: 'aa'.repeat(32) }]
     };
     const makeManager = (algorithm: string) => {
         const jm: any = new (JobManager as any)({
@@ -105,7 +105,7 @@ test('refuses to broadcast a vipstar template missing the qtum roots', () => {
             coin: { algorithm },
             poolAddressScript,
             recipients: [],
-            network: undefined,
+            network: undefined
         });
         const events = { newBlocks: 0, errors: [] as string[] };
         jm.on('newBlock', () => events.newBlocks++);
@@ -130,7 +130,7 @@ test('refuses to broadcast a vipstar template missing the qtum roots', () => {
         complete.jm.processTemplate({
             ...rpcBase,
             hashstateroot: '11'.repeat(32),
-            hashutxoroot: '22'.repeat(32),
+            hashutxoroot: '22'.repeat(32)
         }),
         true
     );

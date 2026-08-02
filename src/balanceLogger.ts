@@ -1,5 +1,5 @@
 import { createRedisClient, execCommands } from './redisUtil.ts';
-import * as Stratum from 'stratum-pool';
+import * as Stratum from './stratum/index.ts';
 import type { Logger } from './logUtil.ts';
 
 /*
