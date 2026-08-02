@@ -24,6 +24,12 @@ const COIN = 'testcoin';
 let redis: any;
 let available = false;
 
+/** Test files share one Redis and run in parallel; only clear our own keys. */
+async function clearCoinKeys() {
+    const keys = await redis.keys(`${COIN}:*`);
+    if (keys.length) await redis.del(keys);
+}
+
 const silentLogger: any = {
     debug: () => {},
     warning: () => {},
@@ -71,13 +77,13 @@ after(async () => {
         await processor.connection.quit().catch(() => {});
     }
     if (available) {
-        await redis.flushDb();
+        await clearCoinKeys();
         await redis.quit();
     }
 });
 
 beforeEach(async () => {
-    if (available) await redis.flushDb();
+    if (available) await clearCoinKeys();
 });
 
 const shareOf = (overrides: any = {}) => ({

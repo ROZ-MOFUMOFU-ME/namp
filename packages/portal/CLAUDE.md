@@ -29,7 +29,7 @@ Node version switch run `npm rebuild multi-hashing` at the root.
 ```bash
 npm start             # boots the portal (needs Redis and coin daemons)
 npm run typecheck     # lint/format run at the monorepo root
-npm run test:unit     # node:test unit tests (pure logic, no native addon needed)
+npm run test:unit     # node:test unit tests (the redis-backed ones skip without a local Redis)
 npm run check:config  # JSON-parse validation of configs and examples (also in test:unit; CI)
 ```
 

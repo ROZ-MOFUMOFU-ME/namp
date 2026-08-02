@@ -63,7 +63,7 @@ export default function (
             });
     };
     this.updatePriceData();
-    setInterval(
+    const priceInterval = setInterval(
         function () {
             _this.updatePriceData();
         },
@@ -1021,4 +1021,18 @@ export default function (
     };
 
     this.getReadableHashRateString = readableHashRateString;
+
+    /**
+     * Stop the price timer and close every redis client this module opened.
+     * The website worker keeps stats alive for the process lifetime; tests
+     * (and an eventual graceful shutdown) need to release the handles.
+     */
+    this.shutdown = function (): Promise<unknown> {
+        clearInterval(priceInterval);
+        const closing = redisClients.map(function (entry: any) {
+            return entry.client.quit().catch(function () {});
+        });
+        if (redisStats) closing.push(redisStats.quit().catch(function () {}));
+        return Promise.all(closing);
+    };
 }
