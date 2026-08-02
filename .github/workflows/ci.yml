@@ -50,6 +50,6 @@ jobs:
                   echo "CXX=g++-12" >> "$GITHUB_ENV"
             - run: npm ci
             - name: Check config files parse
-              run: npm run check:config --workspace zny-nomp
+              run: npm run check:config --workspace namp-portal
             - name: Run the workspace test suites
               run: npm test

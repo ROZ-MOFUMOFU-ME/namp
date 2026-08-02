@@ -12,7 +12,7 @@ export default function Header() {
     const [open, setOpen] = useState(false);
     const config = useQuery({ queryKey: ['config'], queryFn: getConfig });
     const branding = config.data?.branding;
-    const siteName = branding?.siteName || 'zny-nomp';
+    const siteName = branding?.siteName || 'NAMP';
     const logo = branding?.logo || '/logo.svg';
     const tagline = branding?.tagline;
     return (

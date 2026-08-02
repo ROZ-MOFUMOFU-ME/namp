@@ -1,7 +1,7 @@
 {
-    "name": "zny-nomp",
+    "name": "namp-portal",
     "version": "2.0.0",
-    "description": "BitZeny (yescrypt) stratum mining pool based on NOMP",
+    "description": "NAMP mining pool portal (multi-coin, multi-algo) — NOMP lineage",
     "keywords": [
         "stratum",
         "mining",
@@ -13,9 +13,9 @@
         "yescrypt",
         "yespower"
     ],
-    "homepage": "https://github.com/ROZ-MOFUMOFU-ME/zny-nomp",
+    "homepage": "https://github.com/ROZ-MOFUMOFU-ME/namp",
     "bugs": {
-        "url": "https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/issues"
+        "url": "https://github.com/ROZ-MOFUMOFU-ME/namp/issues"
     },
     "license": "MIT",
     "author": "ROZ",
@@ -32,7 +32,7 @@
     "type": "module",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ROZ-MOFUMOFU-ME/zny-nomp.git"
+        "url": "git+https://github.com/ROZ-MOFUMOFU-ME/namp.git"
     },
     "scripts": {
         "start": "node --import tsx src/init.ts",

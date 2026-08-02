@@ -1,4 +1,4 @@
-# Design: Solo / PPS / D-PPS Payment Schemes for zny-nomp
+# Design: Solo / PPS / D-PPS Payment Schemes for NAMP
 
 > Status: **IMPLEMENTED** on `develop` — `solo`, `pps` and `dpps` are all live in
 > `paymentProcessing.paymentMode` (alongside `prop`/`pplnt`). This is the original

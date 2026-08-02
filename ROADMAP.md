@@ -58,7 +58,7 @@ merges. Nothing is squashed; blame and bisect keep working.
 - [x] Single release flow (.github/workflows/release.yml): one
       `vX.Y.Z` tag matching the root package.json releases the stack
 
-### M3 — TS7 alignment and rebranding
+### M3 — TS7 alignment and rebranding (done: 2026-08-02)
 
 - [x] Unify typescript on ^7 and hoist the lint toolchain to the root
       (done 2026-08-02): typescript-eslint (peer <6.1, no TS7 support)
@@ -69,11 +69,16 @@ merges. Nothing is squashed; blame and bisect keep working.
       eslint.config.js kept — rule sets differ intentionally;
       stratum-pool also keeps its trailingComma:es5 .prettierrc to
       avoid a whole-tree reformat)
-- [ ] Rebrand the portal from ZNY-NOMP to NAMP (site branding is already
-      config-driven, so this is naming/docs/UI defaults, not a rewrite)
-- [ ] npm package identities: decide whether stratum-pool /
-      multi-hashing stay independently consumable (published names,
-      prebuilds) or become internal workspaces only
+- [x] Rebrand the portal from ZNY-NOMP to NAMP (done 2026-08-02): the
+      package is `namp-portal`, UI fallback branding / README / docs /
+      Docker file headers / example config say NAMP, GitHub links point
+      at namp; historical references (imported-from, release notes)
+      stay as zny-nomp on purpose
+- [x] npm package identities (decided 2026-08-02): stratum-pool and
+      multi-hashing are **internal workspaces only** — names kept so
+      the existing `import 'stratum-pool'` / deep-import surface stays
+      intact; nothing is published to npm. Revisit only if an external
+      consumer shows up (then: scoped names + prebuilds)
 
 ### M4 — Cutover
 

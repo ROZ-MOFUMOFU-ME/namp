@@ -25,7 +25,7 @@
         "stratumHost": "cryppit.com",
         "branding": {
             "_comment_branding": "Per-deployment branding. siteName/logo/favicon accept absolute URLs (CDN ok). logo = header logo; home.logo = hero logo (separate).",
-            "siteName": "zny-nomp",
+            "siteName": "NAMP",
             "logo": "/logo.svg",
             "favicon": "/favicon.ico",
             "tagline": "",

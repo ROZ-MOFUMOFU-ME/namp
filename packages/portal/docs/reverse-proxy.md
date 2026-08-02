@@ -53,7 +53,7 @@ Build it first: `cd web && npm install --legacy-peer-deps && npm run build`.
 server {
     listen 80;
     server_name pool.example.com;
-    root /path/to/zny-nomp/web/dist;
+    root /path/to/namp/packages/portal/web/dist;
 
     location /api/ {
         proxy_http_version 1.1;

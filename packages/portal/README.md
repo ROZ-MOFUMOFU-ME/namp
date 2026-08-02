@@ -1,6 +1,6 @@
 # BitZeny - Node Open Mining Portal
 
-[![CI](https://img.shields.io/github/actions/workflow/status/ROZ-MOFUMOFU-ME/zny-nomp/node.js.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/actions/workflows/node.js.yml)&nbsp;[![Lint](https://img.shields.io/github/actions/workflow/status/ROZ-MOFUMOFU-ME/zny-nomp/lint-format.yml?branch=main&style=flat-square&logo=prettier&logoColor=white&label=lint)](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/actions/workflows/lint-format.yml)&nbsp;[![Release](https://img.shields.io/github/v/release/ROZ-MOFUMOFU-ME/zny-nomp?style=flat-square&logo=github&label=release&color=blue)](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/releases)&nbsp;[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)&nbsp;[![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)&nbsp;[![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)&nbsp;[![Node.js](https://img.shields.io/badge/node-%E2%89%A522.18-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org/)&nbsp;[![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)](https://redis.io/)&nbsp;[![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)&nbsp;[![Discord](https://img.shields.io/badge/Discord-join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
+[![CI](https://img.shields.io/github/actions/workflow/status/ROZ-MOFUMOFU-ME/namp/node.js.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/node.js.yml)&nbsp;[![Lint](https://img.shields.io/github/actions/workflow/status/ROZ-MOFUMOFU-ME/namp/lint-format.yml?branch=main&style=flat-square&logo=prettier&logoColor=white&label=lint)](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/lint-format.yml)&nbsp;[![Release](https://img.shields.io/github/v/release/ROZ-MOFUMOFU-ME/namp?style=flat-square&logo=github&label=release&color=blue)](https://github.com/ROZ-MOFUMOFU-ME/namp/releases)&nbsp;[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)&nbsp;[![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)&nbsp;[![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)&nbsp;[![Node.js](https://img.shields.io/badge/node-%E2%89%A522.18-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org/)&nbsp;[![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)](https://redis.io/)&nbsp;[![License](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)&nbsp;[![Discord](https://img.shields.io/badge/Discord-join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
 
 This is a Yescrypt, YesPoWer, YesPoWerSUGAR, YescryptR8G, Lyra2REv2, sha256d, Quark, x11, vipstar and more algo mining pool based off of Node Open Mining Portal. Coins known to work include BitZeny, Koto, Monacoin, Bellcoin, Sugarchain, KumaCoin, Yenten (dev-fee aware) and VIPSTARCOIN.
 
@@ -10,7 +10,7 @@ The backend is written in **TypeScript** and runs **buildless** — `.ts` runs d
 
 #### Production Usage Notice
 
-This is beta software. All of the following are things that can change and break an existing ZNY-NOMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then _DO NOT_ pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data. _Only tagged releases are considered stable._
+This is beta software. All of the following are things that can change and break an existing NAMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then _DO NOT_ pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data. _Only tagged releases are considered stable._
 
 #### Paid Solution
 
@@ -18,13 +18,13 @@ Usage of this software requires abilities with sysadmin, database admin, coin da
 
 ### Community
 
-ZNY-NOMP official Discord Server
+NAMP official Discord Server
 
 - Join [https://discord.gg/zHUdQy2NzU](https://discord.gg/zHUdQy2NzU)
 
-If your pool uses ZNY-NOMP let us know and we will list your website here.
+If your pool uses NAMP let us know and we will list your website here.
 
-### Some pools using ZNY-NOMP or node-stratum-pool module:
+### Some pools using NAMP or node-stratum-pool module:
 
 - [mofumofu.me - BitZeny Mining Pool](https://zny.mofumofu.me/)
 
@@ -52,17 +52,9 @@ npm run format      # Prettier --write .
 npm run test:unit   # node --test unit tests (test/*.test.ts)
 ```
 
-#### Multi-repository development
+#### Monorepo development
 
-This portal depends on [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool) which in turn depends on [node-multi-hashing](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing). All three repositories are developed together on their `develop` branches; `main` is for releases (node-stratum-pool's `main` is protected, so changes there land via pull request). On `develop` the git dependencies track `#develop`, so a fresh `npm install` pulls the TypeScript sibling code; the release merge to `main` switches the specs back to `#main`. To work on the whole stack locally, clone the three repos side by side and link them (this also avoids rebuilding the native addon on every install):
-
-```bash
-cd ../node-multi-hashing && npm link
-cd ../node-stratum-pool  && npm link multi-hashing && npm link
-cd ../zny-nomp           && npm link stratum-pool
-```
-
-Re-run `npm link stratum-pool` after any `npm install`/`npm update` in zny-nomp — npm replaces the symlink with a git clone (verify with `ls -la node_modules/stratum-pool`).
+This portal is `packages/portal` of the [namp](https://github.com/ROZ-MOFUMOFU-ME/namp) monorepo and depends on its sibling workspaces `stratum-pool` and `multi-hashing`. A single `npm install` at the repo root links everything — no `npm link` chain is needed. Run the stack-wide checks from the root: `npm run typecheck`, `npm run lint`, `npm test`.
 
 ##### Seriously
 
@@ -104,8 +96,8 @@ sudo apt install nodejs npm -y
 sudo npm install n -g
 sudo n stable
 sudo apt purge nodejs npm -y
-git clone https://github.com/ROZ-MOFUMOFU-ME/zny-nomp
-cd zny-nomp
+git clone https://github.com/ROZ-MOFUMOFU-ME/namp
+cd namp
 npm install
 ```
 
@@ -593,15 +585,15 @@ operator-supplied. See `config_example.json` for the full shape with
 - Use something like [redis-commander](https://github.com/joeferner/redis-commander) to have a nice GUI
   for exploring your redis database.
 - Use something like [logrotator](http://www.thegeekstuff.com/2010/07/logrotate-examples/) to rotate log
-  output from ZNY-NOMP.
-- Use [New Relic](http://newrelic.com/) to monitor your ZNY-NOMP instance and server performance.
+  output from NAMP.
+- Use [New Relic](http://newrelic.com/) to monitor your NAMP instance and server performance.
 
-#### Upgrading ZNY-NOMP
+#### Upgrading NAMP
 
-When updating ZNY-NOMP to the latest code its important to not only `git pull` the latest from this repo, but to also update
+When updating NAMP to the latest code its important to not only `git pull` the latest from this repo, but to also update
 the `node-stratum-pool` and `node-multi-hashing` modules, and any config files that may have been changed.
 
-- Inside your ZNY-NOMP directory (where the src/init.ts script is) do `git pull` to get the latest ZNY-NOMP code.
+- Inside your NAMP directory (where the src/init.ts script is) do `git pull` to get the latest NAMP code.
 - Remove the dependenices by deleting the `node_modules` directory with `rm -r node_modules`.
 - Run `npm update` to force updating/reinstalling of the dependencies.
 - Compare your `config.json` and `pool_configs/coin.json` configurations to the latest example ones in this repo or the ones in the setup instructions where each config field is explained. <b>You may need to modify or add any new changes.</b>
@@ -627,7 +619,7 @@ Donations for development are greatly appreciated!
 
 ## Credits
 
-### ZNY-NOMP
+### NAMP
 
 - [ROZ](https://github.com/ROZ-MOFUMOFU-ME)
 - [zinntikumugai](https://github.com/zinntikumugai) - great supporter
@@ -707,7 +699,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 <div align="center">
 
-[![Contributors](https://contrib.rocks/image?repo=ROZ-MOFUMOFU-ME/zny-nomp)](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/graphs/contributors)
+[![Contributors](https://contrib.rocks/image?repo=ROZ-MOFUMOFU-ME/namp)](https://github.com/ROZ-MOFUMOFU-ME/namp/graphs/contributors)
 
 </div>
 
@@ -715,21 +707,21 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## 📞 Support
 
-- 🐛 **Bug Reports**: [Issues](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/issues)
-- 💡 **Feature Requests**: [Discussions](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/discussions)
+- 🐛 **Bug Reports**: [Issues](https://github.com/ROZ-MOFUMOFU-ME/namp/issues)
+- 💡 **Feature Requests**: [Discussions](https://github.com/ROZ-MOFUMOFU-ME/namp/discussions)
 - 💬 **Community**: [Discord](https://discord.gg/zHUdQy2NzU)
 
 ---
 
 ## 🌟 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=ROZ-MOFUMOFU-ME/zny-nomp&type=Date&theme=dark)](https://star-history.com/#ROZ-MOFUMOFU-ME/zny-nomp&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=ROZ-MOFUMOFU-ME/namp&type=Date&theme=dark)](https://star-history.com/#ROZ-MOFUMOFU-ME/namp&Date)
 
 ---
 
 ## 📊 Statistics
 
-![GitHub Stats](https://github-readme-stats.vercel.app/api?username=ROZ-MOFUMOFU-ME&repo=zny-nomp&show_icons=true&theme=dark)
+![GitHub Stats](https://github-readme-stats.vercel.app/api?username=ROZ-MOFUMOFU-ME&repo=namp&show_icons=true&theme=dark)
 
 ---
 
@@ -737,9 +729,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 **⭐ If you like this project, please give it a star! ⭐**
 
-[![GitHub stars](https://img.shields.io/github/stars/ROZ-MOFUMOFU-ME/zny-nomp.svg?style=social&label=Star)](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp)
-[![GitHub forks](https://img.shields.io/github/forks/ROZ-MOFUMOFU-ME/zny-nomp.svg?style=social&label=Fork)](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/fork)
-[![GitHub watchers](https://img.shields.io/github/watchers/ROZ-MOFUMOFU-ME/zny-nomp.svg?style=social&label=Watch)](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp)
+[![GitHub stars](https://img.shields.io/github/stars/ROZ-MOFUMOFU-ME/namp.svg?style=social&label=Star)](https://github.com/ROZ-MOFUMOFU-ME/namp)
+[![GitHub forks](https://img.shields.io/github/forks/ROZ-MOFUMOFU-ME/namp.svg?style=social&label=Fork)](https://github.com/ROZ-MOFUMOFU-ME/namp/fork)
+[![GitHub watchers](https://img.shields.io/github/watchers/ROZ-MOFUMOFU-ME/namp.svg?style=social&label=Watch)](https://github.com/ROZ-MOFUMOFU-ME/namp)
 
 Made with ❤️ by [ROZ](https://github.com/ROZ-MOFUMOFU-ME)
 

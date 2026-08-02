@@ -1,4 +1,4 @@
-# Reproducible dev/local stack: the zny-nomp portal + Redis.
+# Reproducible dev/local stack: the NAMP portal + Redis.
 #
 # Coin daemons are NOT included — each coin needs its own synced daemon. Point
 # your pool_configs/*.json `daemons` at a reachable daemon (a host daemon via

@@ -10,9 +10,9 @@ export default function Footer() {
                     <a
                         target="_blank"
                         rel="noreferrer"
-                        href="https://github.com/ROZ-MOFUMOFU-ME/zny-nomp/"
+                        href="https://github.com/ROZ-MOFUMOFU-ME/namp/"
                     >
-                        zny-nomp
+                        NAMP
                     </a>{' '}
                     {t('footer_forked_by')}{' '}
                     <a
@@ -83,14 +83,14 @@ export default function Footer() {
                         button, auto-sized to its content (no stray white box
                         like the old fixed-width ghbtns iframe). */}
                     <a
-                        href="https://github.com/ROZ-MOFUMOFU-ME/zny-nomp"
+                        href="https://github.com/ROZ-MOFUMOFU-ME/namp"
                         target="_blank"
                         rel="noreferrer"
                         className="ml-1 inline-flex align-middle"
-                        aria-label="Star zny-nomp on GitHub"
+                        aria-label="Star NAMP on GitHub"
                     >
                         <img
-                            src="https://img.shields.io/github/stars/ROZ-MOFUMOFU-ME/zny-nomp?style=social"
+                            src="https://img.shields.io/github/stars/ROZ-MOFUMOFU-ME/namp?style=social"
                             alt="GitHub stars"
                             className="h-5"
                         />

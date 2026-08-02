@@ -1,4 +1,4 @@
-// Shapes of the zny-nomp JSON API (see libs/api.ts + libs/stats.ts). Many
+// Shapes of the NAMP portal JSON API (see src/api.ts + src/stats.ts). Many
 // numeric fields arrive as strings (raw Redis HGETALL), so most are widened to
 // `number | string` and coerced in lib/format.ts.
 

@@ -42,7 +42,7 @@ export default function Home() {
     const config = useQuery({ queryKey: ['config'], queryFn: getConfig });
     const branding = config.data?.branding;
     const home = branding?.home;
-    const siteName = branding?.siteName || 'zny-nomp';
+    const siteName = branding?.siteName || 'NAMP';
     // The hero has its own logo, falling back to the header/site logo.
     const logo = home?.logo || branding?.logo || '/logo.svg';
     // Home-hero "facts" come from config.json website.branding.home — render

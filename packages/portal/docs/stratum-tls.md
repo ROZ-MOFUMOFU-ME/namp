@@ -36,8 +36,8 @@ Two things in each `pool_configs/<coin>.json`:
     ```json
     "tlsOptions": {
         "enabled": true,
-        "serverKey":  "/home/POOL_USER/zny-nomp/certs/privkey.pem",
-        "serverCert": "/home/POOL_USER/zny-nomp/certs/fullchain.pem",
+        "serverKey":  "/home/POOL_USER/namp/certs/privkey.pem",
+        "serverCert": "/home/POOL_USER/namp/certs/fullchain.pem",
         "ca": ""
     }
     ```
@@ -79,7 +79,7 @@ sudo tee /etc/letsencrypt/renewal-hooks/deploy/copy-to-pool.sh >/dev/null <<'EOF
 set -e
 DOMAIN=pool.example.com          # your cert's domain
 POOL_USER=aoi                    # the user the pool runs as
-DEST=/home/$POOL_USER/zny-nomp/certs
+DEST=/home/$POOL_USER/namp/certs
 install -d -o "$POOL_USER" -g "$POOL_USER" -m 700 "$DEST"
 install -o "$POOL_USER" -g "$POOL_USER" -m 644 /etc/letsencrypt/live/$DOMAIN/fullchain.pem "$DEST/fullchain.pem"
 install -o "$POOL_USER" -g "$POOL_USER" -m 600 /etc/letsencrypt/live/$DOMAIN/privkey.pem  "$DEST/privkey.pem"

@@ -19,7 +19,7 @@
     },
     "scripts": {
         "typecheck": "npm run typecheck --workspaces --if-present",
-        "test": "npm test --workspace multi-hashing --workspace stratum-pool && npm run test:unit --workspace zny-nomp",
+        "test": "npm test --workspace multi-hashing --workspace stratum-pool && npm run test:unit --workspace namp-portal",
         "lint": "npm run lint --workspaces --if-present",
         "format": "prettier --write .",
         "format:check": "prettier --check ."
