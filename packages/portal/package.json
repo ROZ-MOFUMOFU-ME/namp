@@ -36,8 +36,6 @@
     },
     "scripts": {
         "start": "node --import tsx src/init.ts",
-        "lint": "eslint src/init.ts",
-        "lint:fix": "eslint src/init.ts --fix",
         "test": "node --import tsx src/init.ts",
         "test:unit": "node --test test/*.test.ts test/*.test.mjs",
         "check:config": "node --test test/config.test.ts",

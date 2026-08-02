@@ -38,9 +38,7 @@
     ],
     "scripts": {
         "test": "node --test --test-force-exit",
-        "typecheck": "tsc --noEmit",
-        "lint": "eslint src/ test/",
-        "lint:fix": "eslint src/ test/ --fix"
+        "typecheck": "tsc --noEmit"
     },
     "repository": {
         "type": "git",

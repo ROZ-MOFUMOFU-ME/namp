@@ -49,10 +49,11 @@ are one vX.Y.Z tag matching the root package.json version
   cannot run against TS7 — no JS compiler API). TS is parsed with
   @babel/preset-typescript (no type info); rules that misfire without
   types (no-unused-vars, no-undef) stay off — tsc owns type-aware
-  checking. The whole lint toolchain lives in the root devDependencies;
-  each package keeps its own eslint.config.js (rule sets differ)
-- Root scripts delegate to workspaces: `npm run typecheck` / `npm test` /
-  `npm run lint`
+  checking. The whole lint setup is one root eslint.config.js (per-area
+  rule blocks inside it) plus root devDependencies; run `npm run lint`
+  from the root — packages have no lint/format scripts of their own
+- Root scripts: `npm run typecheck` / `npm test` delegate to the
+  workspaces; `npm run lint` / `npm run format` run directly at the root
 - prettier: singleQuote / semi / tabWidth 4 / trailingComma none (.prettierrc)
 
 ## Commit conventions

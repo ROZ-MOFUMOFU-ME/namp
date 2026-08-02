@@ -20,9 +20,10 @@
     "scripts": {
         "typecheck": "npm run typecheck --workspaces --if-present",
         "test": "npm test --workspace multi-hashing --workspace stratum-pool && npm run test:unit --workspace namp-portal",
-        "lint": "npm run lint --workspaces --if-present",
+        "lint": "eslint packages/portal/src/init.ts packages/stratum-pool/src packages/stratum-pool/test",
         "format": "prettier --write .",
-        "format:check": "prettier --check ."
+        "format:check": "prettier --check .",
+        "lint:fix": "eslint packages/portal/src/init.ts packages/stratum-pool/src packages/stratum-pool/test --fix"
     },
     "devDependencies": {
         "@babel/eslint-parser": "^8.0.1",

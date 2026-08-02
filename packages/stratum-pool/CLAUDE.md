@@ -18,9 +18,8 @@ addition to the package root; `package.json` `exports` publishes `.`,
 ```bash
 npm test              # node --test (test/smoke.test.ts: import + createPool
                       #   + per-chain merkle-leaf regression: Sapling=hash, Bitcoin=txid)
-npm run lint          # eslint src/ test/ (typescript-eslint)
-npm run format / format:check
 npm run typecheck     # tsc --noEmit
+# lint and format run at the monorepo root (root eslint.config.js / prettier)
 ```
 
 ## Architecture
@@ -75,7 +74,6 @@ HAProxy `tcpProxyProtocol` support.
 
 ## Native addon caveat
 
-`multi-hashing` is a NAN addon compiled per Node ABI: after switching
-Node versions, tests fail with `Module did not self-register` — run
-`npm rebuild multi-hashing` at the monorepo root. Node 24 requires the
-C++20 build (set in its binding.gyp).
+See packages/multi-hashing/CLAUDE.md: the addon is ABI-bound — after a
+Node version switch run `npm rebuild multi-hashing` at the root, or
+tests fail with `Module did not self-register`.

@@ -21,15 +21,14 @@ Minimum Node: `>=22.18` (`engines`; Node 24 recommended). The
 koto/zcash addresses) `require()`s an ESM package, so
 require(ESM)-capable Node is mandatory (`ERR_REQUIRE_ESM` otherwise).
 
-Native addon caveat: after a Node version switch, startup fails with
-`Error: Module did not self-register` — run `npm rebuild multi-hashing`
-at the monorepo root (Node 24 needs the C++20 build).
+Native addon caveat: see packages/multi-hashing/CLAUDE.md — after a
+Node version switch run `npm rebuild multi-hashing` at the root.
 
 ## Commands
 
 ```bash
 npm start             # boots the portal (needs Redis and coin daemons)
-npm run lint / lint:fix / format / format:check / typecheck
+npm run typecheck     # lint/format run at the monorepo root
 npm run test:unit     # node:test unit tests (pure logic, no native addon needed)
 npm run check:config  # JSON-parse validation of configs and examples (also in test:unit; CI)
 ```
