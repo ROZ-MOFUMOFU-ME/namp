@@ -11,7 +11,7 @@ jobs:
         name: Lint, format & typecheck
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@v7
             - uses: actions/setup-node@v6
               with:
                   node-version: 24.x
@@ -33,7 +33,7 @@ jobs:
                 # with -std=c++20 on the runner's default toolchain.
                 node-version: [22.x, 24.x]
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@v7
             - uses: actions/setup-node@v6
               with:
                   node-version: ${{ matrix.node-version }}
