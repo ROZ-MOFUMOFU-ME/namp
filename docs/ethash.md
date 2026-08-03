@@ -152,7 +152,19 @@ Credits are split over the block's round shares and held in **wei**
 
 Payouts aggregate every rig of a wallet, and any wallet at or above
 `minimumPayment` is paid with a single `eth_sendTransaction` from the pool
-`address`. That means **the node must hold the pool address's key** (import
+`address` — which **must be an account the node holds a key for**. Check the
+two agree before you rely on payouts:
+
+```bash
+curl -s -X POST -H 'Content-Type: application/json' \
+  --data '{"jsonrpc":"2.0","method":"eth_accounts","params":[],"id":1}' \
+  http://127.0.0.1:8545
+```
+
+If the pool `address` is not in that list, either set it to one that is, or
+import the key (`gvbc account import`). NAMP checks this at startup and says
+so rather than letting the mismatch surface hours later as "no key for given
+address". That means **the node must hold the pool address's key** (import
 it into the node keystore); set `accountPassword` to have NAMP unlock it
 with `personal_unlockAccount` first (requires the `personal` API), or keep
 the account unlocked with `--unlock`. Payments are recorded in

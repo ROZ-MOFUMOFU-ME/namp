@@ -664,6 +664,39 @@ function SetupForPool(
         }
     };
 
+    /*
+     * Payouts sign from poolOptions.address, which must be an account the
+     * node holds a key for. A mismatch only surfaces at the first payout —
+     * hours later, once blocks mature — as "no key for given address", so
+     * check it at startup while the operator is still watching.
+     */
+    (async function checkPayoutAccount() {
+        const accounts: string[] =
+            (await rpc('eth_accounts', []).catch(() => null)) || [];
+        const held = accounts.map((a) => a.toLowerCase());
+        if (!held.length) {
+            logger.warning(
+                logSystem,
+                logComponent,
+                'The daemon holds no accounts, so payouts cannot be signed. ' +
+                    'Import the pool address key into its keystore ' +
+                    '(gvbc account import) — see docs/ethash.md.'
+            );
+            return;
+        }
+        if (!held.includes(String(poolAddress).toLowerCase())) {
+            logger.error(
+                logSystem,
+                logComponent,
+                `Payouts are configured to send from ${poolAddress}, but the ` +
+                    `daemon only holds ${held.join(', ')}. Every payout will ` +
+                    'fail with "no key for given address" until the pool ' +
+                    'address matches an account in the keystore, or that key ' +
+                    'is imported.'
+            );
+        }
+    })();
+
     // createRedisClient() already connects (failures surface on 'error'),
     // and node-redis queues commands until the socket is ready.
     logger.debug(

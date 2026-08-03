@@ -13,6 +13,17 @@ import type { Logger } from './logUtil.ts';
 const SPA_DIR = path.resolve('web/dist');
 const SPA_INDEX = path.join(SPA_DIR, 'index.html');
 
+/**
+ * Stylesheet origins the SPA shell pulls from. Fonts and icon sets come from
+ * these CDNs, and their <link> tags live in index.html rather than the
+ * bundle, so the policy has to name them explicitly.
+ */
+const STYLE_CDNS = [
+    'https://fonts.googleapis.com',
+    'https://cdnjs.cloudflare.com',
+    'https://cdn.jsdelivr.net'
+];
+
 export default function (this: any, logger: Logger) {
     const portalConfig: any = JSON.parse(process.env.portalConfig as string);
     const poolConfigs: any = JSON.parse(process.env.pools as string);
@@ -85,7 +96,10 @@ export default function (this: any, logger: Logger) {
             [
                 "default-src 'self'",
                 ["script-src 'self'", ...inlineScriptHashes].join(' '),
-                "style-src 'self' 'unsafe-inline'",
+                // The SPA shell loads its fonts and icon sets from public
+                // CDNs (Google Fonts, Font Awesome, flag-icons); a bare
+                // 'self' here blocks them and the UI loses every icon.
+                ["style-src 'self' 'unsafe-inline'", ...STYLE_CDNS].join(' '),
                 // Operator branding (logo/favicon) may point at a CDN.
                 "img-src 'self' data: https:",
                 "font-src 'self' data: https:",
