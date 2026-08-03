@@ -353,7 +353,9 @@ const EthashPool = function EthashPool(
                 `Payment Processing:\t${
                     options.paymentProcessing &&
                     options.paymentProcessing.enabled
-                        ? `enabled (prop, minConf ${options.paymentProcessing.minConf || 120})`
+                        ? `enabled (${
+                              options.paymentProcessing.paymentMode || 'prop'
+                          }, minConf ${options.paymentProcessing.minConf || 120})`
                         : 'disabled'
                 }`
             ];
