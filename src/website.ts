@@ -46,6 +46,33 @@ export default function (this: any, logger: Logger) {
     // Never advertise the server stack.
     app.disable('x-powered-by');
 
+    /*
+     * The built index.html carries small inline scripts that must run before
+     * first paint (applying the saved theme, setting <html lang>). A bare
+     * script-src 'self' blocks them — which silently reverted the page to the
+     * light theme on every load — so their hashes go into the policy. Hashing
+     * the shipped file keeps the policy strict and self-maintaining.
+     */
+    const inlineScriptHashes = (function () {
+        try {
+            const html = fs.readFileSync(SPA_INDEX, 'utf8');
+            const hashes: string[] = [];
+            const pattern = /<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g;
+            let match: RegExpExecArray | null;
+            while ((match = pattern.exec(html)) !== null) {
+                hashes.push(
+                    `'sha256-${crypto
+                        .createHash('sha256')
+                        .update(match[1], 'utf8')
+                        .digest('base64')}'`
+                );
+            }
+            return hashes;
+        } catch {
+            return [];
+        }
+    })();
+
     // Security headers. The SPA is self-contained (its own bundle, its own
     // /api), so a strict CSP costs nothing here — the one concession is
     // 'unsafe-inline' for styles, which the bundler emits.
@@ -57,7 +84,7 @@ export default function (this: any, logger: Logger) {
             'Content-Security-Policy',
             [
                 "default-src 'self'",
-                "script-src 'self'",
+                ["script-src 'self'", ...inlineScriptHashes].join(' '),
                 "style-src 'self' 'unsafe-inline'",
                 // Operator branding (logo/favicon) may point at a CDN.
                 "img-src 'self' data: https:",

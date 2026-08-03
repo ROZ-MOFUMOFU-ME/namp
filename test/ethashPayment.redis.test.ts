@@ -104,7 +104,11 @@ function startMockGeth(state: ChainState): Promise<http.Server> {
 
 const cleanup: Array<() => Promise<void> | void> = [];
 
-async function makeProcessor(state: ChainState, config: any = {}) {
+async function makeProcessor(
+    state: ChainState,
+    config: any = {},
+    rewardRecipients: any = undefined
+) {
     const daemon = await startMockGeth(state);
     cleanup.push(() => {
         daemon.close();
@@ -118,6 +122,7 @@ async function makeProcessor(state: ChainState, config: any = {}) {
         {
             coin: { name: COIN, symbol: 'VBC', algorithm: 'ethash' },
             address: POOL_ADDRESS,
+            rewardRecipients,
             redis: { host: HOST, port: PORT },
             daemons: [
                 { host: '127.0.0.1', port: daemonPort, user: '', password: '' }
@@ -591,5 +596,57 @@ test('a pre-1.1.0 wei balance is refused, not paid out', async (t) => {
         await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`),
         '242000000000000000000',
         'the balance is left untouched for the operator to convert'
+    );
+});
+
+test('the pool fee is taken off the block before miners are paid', async (t) => {
+    if (!available) return t.skip('no redis');
+    const FEE_ADDRESS = '0x' + 'dd'.repeat(20);
+    const state: ChainState = {
+        height: 200,
+        blocks: {
+            100: {
+                number: '0x64',
+                nonce: NONCE,
+                difficulty: '0x3e8',
+                uncles: [],
+                transactions: []
+            }
+        },
+        uncles: {},
+        receipts: {},
+        sent: [],
+        unlockCalls: [],
+        unlockAccepts: true
+    };
+    const processor = await makeProcessor(
+        state,
+        { minimumPayment: 1000 },
+        {
+            [FEE_ADDRESS]: 1.0,
+            // The shipped config carries a _comment here; it must not be
+            // treated as a recipient address.
+            _comment: 'Pool fee percentages by address'
+        }
+    );
+    await seedPendingBlock(100, { [`${WALLET_A}.rig1`]: 1 });
+
+    await processor.runOnce();
+
+    // 2 VBC block: 1% to the pool, the rest to the round.
+    assert.equal(
+        Number(await redis.hGet(`${COIN}:balances`, FEE_ADDRESS)),
+        0.02,
+        'the fee recipient is credited'
+    );
+    assert.equal(
+        Number(await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`)),
+        1.98,
+        'the miner gets the block minus the fee'
+    );
+    assert.equal(
+        await redis.hGet(`${COIN}:balances`, '_comment'),
+        null,
+        'a non-address key is never credited'
     );
 });

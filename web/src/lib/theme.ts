@@ -46,6 +46,12 @@ export function setTheme(theme: Theme): void {
 export function useTheme(): [Theme, (t: Theme) => void] {
     const [theme, setThemeState] = useState<Theme>(() => resolveTheme());
     useEffect(() => {
+        // The no-flash script in index.html normally has this handled before
+        // React boots. Re-apply anyway: if that script ever fails to run, the
+        // stored choice must still win rather than the page staying light.
+        applyTheme(theme);
+    }, [theme]);
+    useEffect(() => {
         const mq = window.matchMedia('(prefers-color-scheme: dark)');
         const onChange = () => {
             if (getStoredTheme()) return;

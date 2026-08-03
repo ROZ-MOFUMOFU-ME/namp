@@ -82,6 +82,32 @@ export function weiToCoins(wei: bigint): number {
     return Number(wei / 10n ** 10n) / 1e8;
 }
 
+/**
+ * Pool fee recipients and the total percentage they take, from the pool's
+ * rewardRecipients map. Keys that are not addresses (the shipped `_comment`,
+ * for one) are ignored rather than credited to nothing.
+ */
+export function parseRewardRecipients(
+    rewardRecipients: Record<string, unknown> | undefined
+): { recipients: Array<{ address: string; percent: number }>; total: number } {
+    const recipients: Array<{ address: string; percent: number }> = [];
+    let total = 0;
+    for (const address of Object.keys(rewardRecipients || {})) {
+        if (!/^0x[0-9a-fA-F]{40}$/.test(address)) continue;
+        const percent = parseFloat(String((rewardRecipients as any)[address]));
+        if (!(percent > 0)) continue;
+        recipients.push({ address, percent });
+        total += percent;
+    }
+    return { recipients, total };
+}
+
+/** A percentage of a wei amount, without leaving BigInt. */
+export function percentOfWei(wei: bigint, percent: number): bigint {
+    const SCALE = 1000000n;
+    return (wei * BigInt(Math.round(percent * Number(SCALE)))) / (100n * SCALE);
+}
+
 /** Split a reward over shares; the remainder stays with the pool address. */
 export function splitReward(
     rewardWei: bigint,
@@ -125,6 +151,10 @@ function SetupForPool(
         parseFloat(
             (processingConfig.pplns && processingConfig.pplns.n) as any
         ) || 2;
+    // The pool's cut, taken off every block before miners are paid — the same
+    // contract as the Bitcoin flow's rewardRecipients.
+    const { recipients: feeRecipients, total: feePercent } =
+        parseRewardRecipients(poolOptions.rewardRecipients);
     const rewardSchedule = poolOptions.coin.blockRewardSchedule;
     const fallbackReward = processingConfig.blockReward || 2;
     const rewardWeiAt = (height: number) =>
@@ -273,7 +303,20 @@ function SetupForPool(
             finderWorker,
             blockDifficulty
         );
-        const split = splitReward(rewardWei, shares);
+        // Fee first, miners split what is left.
+        let minersWei = rewardWei;
+        for (const recipient of feeRecipients) {
+            const feeWei = percentOfWei(rewardWei, recipient.percent);
+            if (feeWei <= 0n) continue;
+            minersWei -= feeWei;
+            await redisClient.hIncrByFloat(
+                `${coin}:balances`,
+                recipient.address,
+                weiToCoins(feeWei)
+            );
+        }
+
+        const split = splitReward(minersWei, shares);
         for (const worker of Object.keys(split)) {
             const amount = weiToCoins(split[worker]);
             if (amount > 0) {
@@ -311,7 +354,12 @@ function SetupForPool(
                 finder,
                 block ? parseInt(block.difficulty, 16) || 0 : 0
             );
-            const split = splitReward(rewardWeiAt(height), weights);
+            const gross = rewardWeiAt(height);
+            let net = gross;
+            for (const recipient of feeRecipients) {
+                net -= percentOfWei(gross, recipient.percent);
+            }
+            const split = splitReward(net, weights);
             for (const worker of Object.keys(split)) {
                 immature[worker] =
                     (immature[worker] || 0) + weiToCoins(split[worker]);
@@ -627,7 +675,8 @@ function SetupForPool(
                     ? 'schedule(' + rewardSchedule.length + ' steps)'
                     : fallbackReward
             } ${poolOptions.coin.symbol}, ` +
-            `minimumPayment ${processingConfig.minimumPayment || 0.1}`
+            `minimumPayment ${processingConfig.minimumPayment || 0.1}, ` +
+            `pool fee ${feePercent}%`
     );
     timer = setTimeout(processCycle, intervalSecs * 1000);
     setupFinished(true);
