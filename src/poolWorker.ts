@@ -1,4 +1,6 @@
 import { createPool } from './pool.ts';
+import { createEthashPool } from './ethashPool.ts';
+import { isEthashAlgorithm } from './algoProperties.ts';
 import net from 'net';
 
 import { createRedisClient } from './redisUtil.ts';
@@ -218,6 +220,70 @@ export default function (this: any, logger: Logger) {
                 }
             );
         };
+
+        // Ethash-family coins run on their own pool: no coinbase, no merkle
+        // tree and a different stratum dialect, so none of the Bitcoin-style
+        // job pipeline applies to them.
+        if (isEthashAlgorithm(poolOptions.coin.algorithm)) {
+            // Ethash miners log in with an 0x wallet address, and the
+            // Bitcoin-style authorize path would call validateaddress on a
+            // daemon that has no such RPC (and through a `pool` this branch
+            // never creates). Validate the address shape instead.
+            const ethashAuthorize = function (
+                ip: any,
+                port: any,
+                login: string,
+                _worker: any,
+                callback: any
+            ) {
+                const wallet = String(login || '').split('.')[0];
+                const authorized =
+                    poolOptions.validateWorkerUsername !== true ||
+                    /^0x[0-9a-fA-F]{40}$/.test(wallet);
+                logger[authorized ? 'debug' : 'warning'](
+                    logSystem,
+                    logComponent,
+                    logSubCat,
+                    `${authorized ? 'Authorized' : 'Unauthorized'} ${login} [${ip}]`
+                );
+                callback({ error: null, authorized, disconnect: false });
+            };
+
+            const ethashPool: any = createEthashPool(
+                poolOptions,
+                ethashAuthorize
+            );
+            ethashPool.on('log', function (severity: string, text: string) {
+                (logger as any)[severity](
+                    logSystem,
+                    logComponent,
+                    logSubCat,
+                    text
+                );
+            });
+            ethashPool.on('share', function (data: any, accepted: any) {
+                const isValidShare = !data.error;
+                // A candidate only counts as a block once the daemon accepted
+                // it; shareProcessor records the round on that basis.
+                const isValidBlock =
+                    data.isBlockCandidate === true && accepted === true;
+                if (data.worker)
+                    data.worker = String(data.worker).replace(/:/g, '-');
+                shareProcessor.handleShare(isValidShare, isValidBlock, {
+                    ...data,
+                    // Ethash pays the coinbase to the daemon's etherbase, so
+                    // there is no per-block reward figure to record here.
+                    blockHash: data.isBlockCandidate
+                        ? data.headerHash
+                        : undefined,
+                    height: data.height,
+                    difficulty: data.difficulty
+                });
+            });
+            ethashPool.start();
+            pools[poolOptions.coin.name] = ethashPool;
+            return;
+        }
 
         // createPool takes (options, authorizeFn); a stray third argument
         // used to vanish behind an any-cast.

@@ -332,6 +332,17 @@ for (const algo in algos) {
     if (!algos[algo].multiplier) algos[algo].multiplier = 1;
 }
 
+/**
+ * Algorithms served by the Ethash pool rather than the Bitcoin-style one.
+ * They have no coinbase, merkle tree or pool-serialized header, so they run
+ * on src/ethashPool.ts with its own job model and stratum dialect.
+ */
+export const ETHASH_ALGORITHMS = new Set(['ethash', 'etchash']);
+
+export function isEthashAlgorithm(algorithm: string): boolean {
+    return ETHASH_ALGORITHMS.has(String(algorithm).toLowerCase());
+}
+
 /** Coinbase hasher for a coin, per its algorithm's declared policy. */
 export function getCoinbaseHasher(coin: any): (data: Buffer) => Buffer {
     if (algos[coin.algorithm]?.coinbaseHasher === 'normalHashing') {

@@ -12,7 +12,7 @@ import Website from './website.ts';
 import ProfitSwitch from './profitSwitch.ts';
 import PriceFeed from './priceFeed.ts';
 import BalanceLogger from './balanceLogger.ts';
-import algos from './algoProperties.ts';
+import algos, { isEthashAlgorithm } from './algoProperties.ts';
 import jsonMinify from 'node-json-minify';
 
 // Set JSON.minify for backward compatibility
@@ -298,7 +298,13 @@ const buildPoolConfigs = function () {
 
         configs[poolOptions.coin.name] = poolOptions;
 
-        if (!(coinProfile.algorithm in algos)) {
+        // Ethash-family coins are served by src/ethashPool.ts and are not in
+        // the Bitcoin-style algorithm table, so they pass this gate on their
+        // own terms.
+        if (
+            !isEthashAlgorithm(coinProfile.algorithm) &&
+            !(coinProfile.algorithm in algos)
+        ) {
             logger.error(
                 'Master',
                 coinProfile.name,
