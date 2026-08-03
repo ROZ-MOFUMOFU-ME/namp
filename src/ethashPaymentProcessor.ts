@@ -142,6 +142,17 @@ function SetupForPool(
 
     const minConf = Math.max(processingConfig.minConf || 120, 10);
     const intervalSecs = Math.max(processingConfig.paymentInterval || 120, 30);
+    /*
+     * Maturity and payouts are different jobs on different clocks. Resolving
+     * a matured block credits balances and moves it out of the pending list;
+     * sending money waits for a payout interval and a minimum. Tying both to
+     * paymentInterval meant a long payout cadence left matured blocks sitting
+     * as "pending" in the UI for hours. This loop is the fast one.
+     */
+    const blockCheckSecs = Math.max(
+        processingConfig.blockCheckInterval || Math.min(intervalSecs, 60),
+        15
+    );
     // prop: the block's round shares. solo: the finder takes it all.
     // pplns: the last-N-shares window snapshotted by shareProcessor at find
     // time (worker:diff entries, newest first; window = n x block difficulty,
@@ -599,6 +610,7 @@ function SetupForPool(
 
     let stopped = false;
     let timer: any = null;
+    let blockTimer: any = null;
 
     /** One line an operator can read to see what the cycle did, and why. */
     function summarize() {
@@ -619,7 +631,7 @@ function SetupForPool(
         logger.debug(logSystem, logComponent, `Cycle: ${parts.join(', ')}`);
     }
 
-    async function processCycle() {
+    const resetCycle = () => {
         cycle = {
             pending: 0,
             immature: 0,
@@ -629,27 +641,64 @@ function SetupForPool(
             paid: 0,
             payoutErrors: 0
         };
-        try {
-            const currentHex = await rpc('eth_blockNumber', []);
-            const currentHeight = parseInt(currentHex, 16);
-            await processPendingBlocks(currentHeight);
-            await processPayouts();
-            summarize();
-        } catch (e: any) {
-            logger.error(
-                logSystem,
-                logComponent,
-                `Payment cycle failed: ${e?.message || e}`
-            );
+    };
+
+    // A slow chain query must not let two runs of the same loop overlap and
+    // credit a block twice.
+    let resolving = false;
+    let paying = false;
+
+    async function resolveCycle() {
+        if (!resolving) {
+            resolving = true;
+            resetCycle();
+            try {
+                const currentHeight = parseInt(
+                    await rpc('eth_blockNumber', []),
+                    16
+                );
+                await processPendingBlocks(currentHeight);
+                summarize();
+            } catch (e: any) {
+                logger.error(
+                    logSystem,
+                    logComponent,
+                    `Block maturity check failed: ${e?.message || e}`
+                );
+            } finally {
+                resolving = false;
+            }
         }
         if (!stopped) {
-            timer = setTimeout(processCycle, intervalSecs * 1000);
+            blockTimer = setTimeout(resolveCycle, blockCheckSecs * 1000);
+        }
+    }
+
+    async function payoutCycle() {
+        if (!paying) {
+            paying = true;
+            try {
+                await processPayouts();
+                if (cycle.paid || cycle.payoutErrors) summarize();
+            } catch (e: any) {
+                logger.error(
+                    logSystem,
+                    logComponent,
+                    `Payout cycle failed: ${e?.message || e}`
+                );
+            } finally {
+                paying = false;
+            }
+        }
+        if (!stopped) {
+            timer = setTimeout(payoutCycle, intervalSecs * 1000);
         }
     }
 
     const processor = {
         // Exposed for tests and shutdown; production runs on the timer.
         runOnce: async () => {
+            resetCycle();
             const currentHeight = parseInt(
                 await rpc('eth_blockNumber', []),
                 16
@@ -660,6 +709,7 @@ function SetupForPool(
         stop: async () => {
             stopped = true;
             if (timer) clearTimeout(timer);
+            if (blockTimer) clearTimeout(blockTimer);
             await redisClient.quit().catch(() => {});
         }
     };
@@ -702,7 +752,8 @@ function SetupForPool(
     logger.debug(
         logSystem,
         logComponent,
-        `Ethash payment processing every ${intervalSecs}s: mode ${paymentMode}, minConf ${minConf}, ` +
+        `Ethash payment processing: payouts every ${intervalSecs}s, block ` +
+            `maturity checked every ${blockCheckSecs}s, mode ${paymentMode}, minConf ${minConf}, ` +
             `blockReward ${
                 Array.isArray(rewardSchedule) && rewardSchedule.length
                     ? 'schedule(' + rewardSchedule.length + ' steps)'
@@ -711,7 +762,8 @@ function SetupForPool(
             `minimumPayment ${processingConfig.minimumPayment || 0.1}, ` +
             `pool fee ${feePercent}%`
     );
-    timer = setTimeout(processCycle, intervalSecs * 1000);
+    blockTimer = setTimeout(resolveCycle, blockCheckSecs * 1000);
+    timer = setTimeout(payoutCycle, intervalSecs * 1000);
     setupFinished(true);
 
     return processor;

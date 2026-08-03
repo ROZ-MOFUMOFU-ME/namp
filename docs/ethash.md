@@ -101,13 +101,25 @@ follows the open-ethereum-pool model instead — enable it per pool:
 ```json
 "paymentProcessing": {
     "enabled": true,
-    "paymentInterval": 120,
+    "paymentInterval": 600,
+    "blockCheckInterval": 60,
     "minConf": 120,
     "blockReward": 2,
     "minimumPayment": 0.5,
     "accountPassword": "optional keystore password"
 }
 ```
+
+Two clocks, because maturity and money are different jobs:
+
+- **`blockCheckInterval`** (seconds, default `min(paymentInterval, 60)`,
+  floor 15) — how often matured blocks are resolved, credited to balances
+  and moved out of the pending list. Keep this short: it is what the UI's
+  block list reflects, and it costs only chain reads.
+- **`paymentInterval`** (seconds, floor 30) — how often balances at or above
+  `minimumPayment` are actually sent. Long intervals here are normal; they
+  batch transfers and save fees, and they no longer leave matured blocks
+  showing as pending while they wait.
 
 `blockReward` is the flat per-block subsidy. Chains that step their subsidy
 down over time declare a schedule in the **coin definition** instead, and it

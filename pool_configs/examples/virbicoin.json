@@ -27,6 +27,8 @@
         "_comment_blockReward": "Only used when the coin definition has no blockRewardSchedule (coins/virbicoin.json carries the full VirBiCoin schedule).",
         "minimumPayment": 1,
         "paymentInterval": 120,
+        "_comment_blockCheckInterval": "How often matured blocks are resolved and credited (seconds, floor 15). Keep short so the UI does not show matured blocks as pending while a long paymentInterval waits.",
+        "blockCheckInterval": 60,
         "_comment_accountPassword": "Keystore password for personal_unlockAccount before each payout run.",
         "accountPassword": ""
     },
