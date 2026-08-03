@@ -5,34 +5,12 @@ portal, the stratum servers, the web UI and the native hashing code, all
 installed and run as a single application. It continues the NOMP (Node Open
 Mining Portal) lineage.
 
-<!-- Status: does it build, what is the newest version, when did it last move -->
-
 [![CI](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/ci.yml/badge.svg)](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/ROZ-MOFUMOFU-ME/namp?logo=github&color=success)](https://github.com/ROZ-MOFUMOFU-ME/namp/releases)
-[![Last commit](https://img.shields.io/github/last-commit/ROZ-MOFUMOFU-ME/namp?logo=git&logoColor=white)](https://github.com/ROZ-MOFUMOFU-ME/namp/commits/main)
 [![License](https://img.shields.io/github/license/ROZ-MOFUMOFU-ME/namp?color=blue)](LICENSE)
-
-<!-- Stack: what you need installed, what it is written in -->
-
 [![Node.js](https://img.shields.io/badge/node-%3E%3D22.18-5FA04E?logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
-[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
-[![Redis](https://img.shields.io/badge/Redis-6.2%2B-DC382D?logo=redis&logoColor=white)](https://redis.io)
-[![Docker](https://img.shields.io/badge/Docker-compose-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
-
-<!-- Scope: the numbers a pool operator actually wants -->
-
-[![Algorithms](https://img.shields.io/badge/algorithms-49-8A2BE2)](src/algoProperties.ts)
-[![Ethash](https://img.shields.io/badge/Ethash-ETH%20%C2%B7%20ETC%20%C2%B7%20VBC-3C3C3D?logo=ethereum&logoColor=white)](docs/ethash.md)
-[![Payment schemes](https://img.shields.io/badge/payment%20schemes-10-0E9F6E)](docs/payment-schemes.md)
-[![Tests](https://img.shields.io/badge/tests-308-brightgreen?logo=nodedotjs&logoColor=white)](test/)
-[![Languages](https://img.shields.io/badge/UI%20languages-20-informational)](web/src/i18n/translations.json)
-
-<!-- Community -->
-
 [![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
-[![Stars](https://img.shields.io/github/stars/ROZ-MOFUMOFU-ME/namp?style=flat&logo=github)](https://github.com/ROZ-MOFUMOFU-ME/namp/stargazers)
 
 - Written **NAMP**; the repository/package name is lowercase `namp`
 - TypeScript 7 (typecheck; code runs buildless via Node type stripping), ESM, Node 22.18+
