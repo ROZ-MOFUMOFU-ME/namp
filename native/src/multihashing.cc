@@ -27,7 +27,6 @@ extern "C"
 #include "lyra2z.h"
 #include "lyra2z16m330.h"
 #include "lyra2z330.h"
-#include "m7.h"
 #include "minotaur.h"
 #include "neoscrypt.h"
 #include "nist5.h"
@@ -130,8 +129,6 @@ DECLARE_CALLBACK(lyra2rev3, lyra2rev3_hash, 32);
 DECLARE_CALLBACK(lyra2z, lyra2z_hash, 32);
 DECLARE_CALLBACK(lyra2z16m330, lyra2z16m330_hash, 32);
 DECLARE_CALLBACK(lyra2z330, lyra2z330_hash, 32);
-DECLARE_CALLBACK(m7, m7_hash, 32);
-DECLARE_CALLBACK(m7m, m7m_hash, 32);
 DECLARE_CALLBACK(minotaur, minotaur_hash, 32);
 DECLARE_CALLBACK(nist5, nist5_hash, 32);
 DECLARE_CALLBACK(phi1612, phi1612_hash, 32);
@@ -833,8 +830,6 @@ NAN_MODULE_INIT(init)
     NAN_EXPORT(target, lyra2z);
     NAN_EXPORT(target, lyra2z16m330);
     NAN_EXPORT(target, lyra2z330);
-    NAN_EXPORT(target, m7);
-    NAN_EXPORT(target, m7m);
     NAN_EXPORT(target, minotaur);
     NAN_EXPORT(target, neoscrypt);
     NAN_EXPORT(target, nist5);

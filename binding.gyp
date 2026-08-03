@@ -24,7 +24,6 @@
                 "native/src/lyra2z.c",
                 "native/src/lyra2z16m330.c",
                 "native/src/lyra2z330.c",
-                "native/src/m7.c",
                 "native/src/minotaur.c",
                 "native/src/neoscrypt.c",
                 "native/src/nist5.c",

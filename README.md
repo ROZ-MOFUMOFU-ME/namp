@@ -12,7 +12,7 @@ Mining Portal) lineage.
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
 [![Redis](https://img.shields.io/badge/Redis-6.2%2B-DC382D?logo=redis&logoColor=white)](https://redis.io)
-[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
+[![Discord](https://img.shields.io/discord/1227584289290326106?logo=discord&logoColor=white&label=Discord&color=5865F2)](https://discord.gg/zHUdQy2NzU)
 
 - Written **NAMP**; the repository/package name is lowercase `namp`
 - TypeScript 7 (typecheck; code runs buildless via Node type stripping), ESM, Node 22.18+
@@ -54,6 +54,10 @@ Etchash's ECIP-1099 epoch length, and VirBiCoin. See
 
 ## Quick start
 
+Node 22.18+, a C/C++ toolchain for the hashing addon (`build-essential` and
+`python3` on Debian/Ubuntu — no other system libraries), Redis 6.2+ and a
+synced coin daemon.
+
 ```bash
 git clone https://github.com/ROZ-MOFUMOFU-ME/namp.git && cd namp
 npm install                          # dependencies + the native hashing addon
@@ -67,7 +71,6 @@ npm run build                        # build the web UI
 npm start                            # run the portal
 ```
 
-Redis 6.2+ and a synced coin daemon are the only external requirements.
 [docs/guide.md](docs/guide.md) walks through every configuration key, and
 [docs/security.md](docs/security.md) covers hardening before you expose a
 pool to the internet.
