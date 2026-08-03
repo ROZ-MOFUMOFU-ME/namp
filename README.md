@@ -6,10 +6,12 @@ installed and run as a single application. It continues the NOMP (Node Open
 Mining Portal) lineage.
 
 [![CI](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/ci.yml/badge.svg)](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/ROZ-MOFUMOFU-ME/namp?logo=github&color=success)](https://github.com/ROZ-MOFUMOFU-ME/namp/releases)
 [![License](https://img.shields.io/github/license/ROZ-MOFUMOFU-ME/namp?color=blue)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D22.18-5FA04E?logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
+[![Redis](https://img.shields.io/badge/Redis-6.2%2B-DC382D?logo=redis&logoColor=white)](https://redis.io)
 [![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
 
 - Written **NAMP**; the repository/package name is lowercase `namp`
