@@ -38,5 +38,20 @@
             "height": 16800000,
             "reward": 1
         }
+    ],
+    "explorer": {
+        "txURL": "https://explorer.virbicoin.com/tx/",
+        "blockURL": "https://explorer.virbicoin.com/block/",
+        "address": "https://explorer.virbicoin.com/address/"
+    },
+    "miningTools": [
+        {
+            "name": "lolMiner",
+            "url": "https://github.com/Lolliedieb/lolMiner-releases/releases"
+        },
+        {
+            "name": "T-Rex",
+            "url": "https://github.com/trexminer/t-rex/releases"
+        }
     ]
 }

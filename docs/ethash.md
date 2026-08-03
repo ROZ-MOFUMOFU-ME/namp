@@ -113,6 +113,19 @@ taken from go-virbicoin's calcBlockReward):
 Uncle credits scale with the reward of the block that included the uncle,
 matching the consensus formula.
 
+### Payment modes
+
+`paymentMode` selects how each matured block is divided:
+
+| Mode             | Who gets paid                                                                                                                                                          |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `prop` (default) | The block's round shares, proportionally                                                                                                                               |
+| `solo`           | The block finder takes the entire reward                                                                                                                               |
+| `pplns`          | The last-N-shares window snapshotted at find time; `pplns.n` sizes the window as N x the block's difficulty (share difficulty already counts hashes, so no multiplier) |
+
+An empty PPLNS window (fresh pool) falls back to the round shares rather
+than burning the block.
+
 Each cycle, every pending block candidate old enough (`minConf`
 confirmations) is resolved against the chain itself:
 

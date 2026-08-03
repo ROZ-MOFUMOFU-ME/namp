@@ -461,3 +461,99 @@ test('the reward schedule steps down by height, per the chain consensus', () => 
     // No schedule: the numeric fallback applies.
     assert.equal(rewardWeiForHeight(123, undefined, 2), 2n * 10n ** 18n);
 });
+
+test('solo mode credits the whole reward to the block finder', async (t) => {
+    if (!available) return t.skip('no redis');
+    const state: ChainState = {
+        height: 200,
+        blocks: {
+            100: {
+                number: '0x64',
+                nonce: NONCE,
+                difficulty: '0x3e8',
+                uncles: [],
+                transactions: []
+            }
+        },
+        uncles: {},
+        receipts: {},
+        sent: [],
+        unlockCalls: [],
+        unlockAccepts: true
+    };
+    const processor = await makeProcessor(state, {
+        paymentMode: 'solo',
+        minimumPayment: 1000
+    });
+    // Two workers shared the round, but the FINDER in the pending entry is
+    // WALLET_A.rig1 — solo pays only them.
+    await seedPendingBlock(100, {
+        [`${WALLET_A}.rig1`]: 1,
+        [`${WALLET_B}.rig2`]: 9
+    });
+
+    await processor.runOnce();
+
+    assert.equal(
+        await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`),
+        (2n * 10n ** 18n).toString(),
+        'the finder takes the full reward'
+    );
+    assert.equal(
+        await redis.hGet(`${COIN}:balances`, `${WALLET_B}.rig2`),
+        null,
+        'non-finders get nothing in solo'
+    );
+});
+
+test('pplns mode pays the snapshotted window, newest first with clipping', async (t) => {
+    if (!available) return t.skip('no redis');
+    const state: ChainState = {
+        height: 200,
+        blocks: {
+            100: {
+                number: '0x64',
+                nonce: NONCE,
+                difficulty: '0x64',
+                uncles: [],
+                transactions: []
+            }
+        },
+        uncles: {},
+        receipts: {},
+        sent: [],
+        unlockCalls: [],
+        unlockAccepts: true
+    };
+    const processor = await makeProcessor(state, {
+        paymentMode: 'pplns',
+        pplns: { n: 2 },
+        minimumPayment: 1000
+    });
+    await seedPendingBlock(100, { [`${WALLET_A}.rig1`]: 999 });
+    // Window snapshot as shareProcessor writes it (worker:diff, newest first).
+    // Block difficulty 0x64 = 100, n = 2 -> windowDiff 200: A(150) fills 150,
+    // B(150) clips to 50 -> 75% / 25%.
+    await redis.rPush(`${COIN}:shares:pplnsRound100`, [
+        `${WALLET_A}.rig1:150`,
+        `${WALLET_B}.rig2:150`
+    ]);
+
+    await processor.runOnce();
+
+    assert.equal(
+        await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`),
+        (15n * 10n ** 17n).toString(),
+        'A gets 75% of 2 coins'
+    );
+    assert.equal(
+        await redis.hGet(`${COIN}:balances`, `${WALLET_B}.rig2`),
+        (5n * 10n ** 17n).toString(),
+        'B gets the clipped 25%'
+    );
+    assert.equal(
+        await redis.exists(`${COIN}:shares:pplnsRound100`),
+        0,
+        'the window snapshot is consumed'
+    );
+});

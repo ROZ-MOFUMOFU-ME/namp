@@ -1,5 +1,6 @@
 import daemonModule from './daemon.ts';
 import { createRedisClient } from './redisUtil.ts';
+import { pplnsPercents, parsePplnsEntry } from './pplnsLogic.ts';
 import type { Logger } from './logUtil.ts';
 
 /*
@@ -103,6 +104,15 @@ function SetupForPool(
 
     const minConf = Math.max(processingConfig.minConf || 120, 10);
     const intervalSecs = Math.max(processingConfig.paymentInterval || 120, 30);
+    // prop: the block's round shares. solo: the finder takes it all.
+    // pplns: the last-N-shares window snapshotted by shareProcessor at find
+    // time (worker:diff entries, newest first; window = n x block difficulty,
+    // multiplier 1 — ethash share difficulty already counts hashes).
+    const paymentMode = (processingConfig.paymentMode || 'prop').toLowerCase();
+    const pplnsN =
+        parseFloat(
+            (processingConfig.pplns && processingConfig.pplns.n) as any
+        ) || 2;
     const rewardSchedule = poolOptions.coin.blockRewardSchedule;
     const fallbackReward = processingConfig.blockReward || 2;
     const rewardWeiAt = (height: number) =>
@@ -159,6 +169,8 @@ function SetupForPool(
     interface Resolution {
         kind: 'confirmed' | 'kicked';
         rewardWei: bigint;
+        /** Difficulty of the block that earned the reward (window sizing). */
+        blockDifficulty?: number;
     }
 
     /** Decide what a matured candidate became on chain. */
@@ -174,7 +186,8 @@ function SetupForPool(
                 BigInt((block.uncles || []).length) * (reward / 32n);
             return {
                 kind: 'confirmed',
-                rewardWei: reward + fees + uncleBonus
+                rewardWei: reward + fees + uncleBonus,
+                blockDifficulty: parseInt(block.difficulty, 16) || 0
             };
         }
         for (let depth = 1; depth <= UNCLE_DEPTH; depth++) {
@@ -199,7 +212,8 @@ function SetupForPool(
                     const hostReward = rewardWeiAt(height + depth);
                     return {
                         kind: 'confirmed',
-                        rewardWei: (hostReward * BigInt(8 - depth)) / 8n
+                        rewardWei: (hostReward * BigInt(8 - depth)) / 8n,
+                        blockDifficulty: parseInt(host.difficulty, 16) || 0
                     };
                 }
             }
@@ -207,10 +221,46 @@ function SetupForPool(
         return { kind: 'kicked', rewardWei: 0n };
     }
 
-    /** Credit a resolved block's reward over its round shares. */
-    async function creditRound(height: number, rewardWei: bigint) {
+    /** Per-worker weights for a block, per the configured payment mode. */
+    async function weightsForBlock(
+        height: number,
+        finderWorker: string,
+        blockDifficulty: number
+    ): Promise<Record<string, number | string>> {
+        if (paymentMode === 'solo') {
+            return finderWorker ? { [finderWorker]: 1 } : {};
+        }
+        if (paymentMode === 'pplns') {
+            const entries = await redisClient.lRange(
+                `${coin}:shares:pplnsRound${height}`,
+                0,
+                -1
+            );
+            const parsed = entries
+                .map(parsePplnsEntry)
+                .filter(Boolean) as any[];
+            const windowDiff = pplnsN * blockDifficulty;
+            const percents = pplnsPercents(parsed, windowDiff);
+            if (Object.keys(percents).length) return percents;
+            // An empty window (fresh pool, missing snapshot) must not burn
+            // the block: fall back to the round shares.
+        }
+        return await redisClient.hGetAll(`${coin}:shares:round${height}`);
+    }
+
+    /** Credit a resolved block's reward per the payment mode. */
+    async function creditRound(
+        height: number,
+        rewardWei: bigint,
+        finderWorker: string,
+        blockDifficulty: number
+    ) {
         const roundKey = `${coin}:shares:round${height}`;
-        const shares = await redisClient.hGetAll(roundKey);
+        const shares = await weightsForBlock(
+            height,
+            finderWorker,
+            blockDifficulty
+        );
         const split = splitReward(rewardWei, shares);
         const commands: any[] = [];
         for (const worker of Object.keys(split)) {
@@ -228,6 +278,7 @@ function SetupForPool(
             await (redisClient as any)[command[0]](...command.slice(1));
         }
         await redisClient.del(roundKey);
+        await redisClient.del(`${coin}:shares:pplnsRound${height}`);
     }
 
     /** Return an orphaned round's shares to the live round. */
@@ -242,12 +293,14 @@ function SetupForPool(
             );
         }
         await redisClient.del(roundKey);
+        await redisClient.del(`${coin}:shares:pplnsRound${height}`);
     }
 
     async function processPendingBlocks(currentHeight: number) {
         const pending = await redisClient.sMembers(`${coin}:blocksPending`);
         for (const entry of pending) {
-            const [blockHash, nonce, heightRaw] = entry.split(':');
+            const [blockHash, nonce, heightRaw, finderWorker] =
+                entry.split(':');
             const height = parseInt(heightRaw, 10);
             if (!Number.isFinite(height)) continue;
 
@@ -276,7 +329,12 @@ function SetupForPool(
             }
 
             if (resolution.kind === 'confirmed') {
-                await creditRound(height, resolution.rewardWei);
+                await creditRound(
+                    height,
+                    resolution.rewardWei,
+                    finderWorker,
+                    resolution.blockDifficulty || 0
+                );
                 logger.special(
                     logSystem,
                     logComponent,
@@ -418,7 +476,7 @@ function SetupForPool(
     logger.debug(
         logSystem,
         logComponent,
-        `Ethash payment processing every ${intervalSecs}s: minConf ${minConf}, ` +
+        `Ethash payment processing every ${intervalSecs}s: mode ${paymentMode}, minConf ${minConf}, ` +
             `blockReward ${
                 Array.isArray(rewardSchedule) && rewardSchedule.length
                     ? 'schedule(' + rewardSchedule.length + ' steps)'
