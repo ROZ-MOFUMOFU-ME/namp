@@ -53,6 +53,9 @@
                 "native/src/xevan.c",
                 "native/src/zr5.c",
                 "native/src/kawpow.cpp",
+                "native/src/equihash/equihash.cpp",
+                "native/src/equihash/endian.c",
+                "native/src/equihash/blake/blake2b.cpp",
                 "native/src/kawpow/ethash.cpp",
                 "native/src/kawpow/keccak.c",
                 "native/src/kawpow/keccakf800.c",
@@ -108,7 +111,8 @@
                 "<!(node -e \"require('nan')\")"
             ],
             "cflags_cc": [
-                "-std=c++20"
+                "-std=c++20",
+                "-fexceptions"
             ]
         }
     ]

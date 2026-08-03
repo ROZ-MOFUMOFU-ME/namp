@@ -61,6 +61,12 @@ extern "C"
 }
 
 #include "kawpow.hpp"
+
+// zr5.h defines a WIDTH macro, which would rewrite the template parameter of
+// the same name inside the equihash headers; it is only meant for zr5's own
+// translation unit.
+#undef WIDTH
+#include "equihash/equihash.h"
 #include "boolberry.h"
 #include "odo.h"
 
@@ -669,6 +675,66 @@ DECLARE_FUNC(ethash_hash)
     SET_BUFFER_RETURN(output, 64);
 }
 
+/*
+ * Equihash solution verification (Zcash family: Zcash, Komodo, Horizen,
+ * Bitcoin Gold, …).
+ *
+ * Unlike a nonce-based algorithm, an Equihash miner submits a variable-length
+ * *solution* — 1344 bytes for the (200,9) parameter set — and the pool checks
+ * that it really is a Wagner solution for the header: indices ordered and
+ * distinct, and every round's XOR collision holding. That check is the whole
+ * proof of work, so it happens for every share.
+ *
+ *   equihash_verify(header, solution, personalization, n, k) -> bool
+ *
+ * The personalization string is per chain ("ZcashPoW", "ZcashPoW" for Koto,
+ * "BgoldPoW" for Bitcoin Gold, …) and is mixed into the blake2b state, which
+ * is what keeps solutions from being valid across chains.
+ *
+ * Ported from equihashverify (MIT, Joshua Yabut) — the verifier Z-NOMP and
+ * S-NOMP used, i.e. this pool's own lineage.
+ */
+DECLARE_FUNC(equihash_verify)
+{
+    if (info.Length() < 5)
+        RETURN_EXCEPT(
+            "You must provide 5 arguments: header, solution, personalization, n, k.");
+
+    Local<Object> obj_header = Nan::To<Object>(info[0]).ToLocalChecked();
+    Local<Object> obj_solution = Nan::To<Object>(info[1]).ToLocalChecked();
+
+    if (!Buffer::HasInstance(obj_header))
+        RETURN_EXCEPT("Argument 1 (header) should be a buffer object.");
+    if (!Buffer::HasInstance(obj_solution))
+        RETURN_EXCEPT("Argument 2 (solution) should be a buffer object.");
+    if (!info[2]->IsString())
+        RETURN_EXCEPT("Argument 3 (personalization) should be a string.");
+    if (!info[3]->IsUint32() || !info[4]->IsUint32())
+        RETURN_EXCEPT("Arguments 4 and 5 (n, k) should be unsigned integers.");
+
+    const uint32_t n = Nan::To<uint32_t>(info[3]).ToChecked();
+    const uint32_t k = Nan::To<uint32_t>(info[4]).ToChecked();
+    if (k >= n || (n % 8) != 0 || ((n / (k + 1)) + 1) >= 64)
+        RETURN_EXCEPT("Unsupported equihash parameters.");
+
+    Nan::Utf8String personalization(info[2]);
+
+    const char *header = Buffer::Data(obj_header);
+    const uint32_t header_len = Buffer::Length(obj_header);
+    const uint8_t *solution_data = (const uint8_t *)Buffer::Data(obj_solution);
+    const std::vector<unsigned char> solution(
+        solution_data, solution_data + Buffer::Length(obj_solution));
+
+    blake2b_state state;
+    EhInitialiseState(n, k, &state, *personalization);
+    eh_blake2b_update(&state, (const unsigned char *)header, header_len);
+
+    bool isValid = false;
+    EhIsValidSolution(n, k, &state, solution, isValid);
+
+    info.GetReturnValue().Set(Nan::New<v8::Boolean>(isValid));
+}
+
 DECLARE_FUNC(vipstar)
 {
     if (info.Length() < 1)
@@ -701,6 +767,7 @@ NAN_MODULE_INIT(init)
     NAN_EXPORT(target, ethash_verify_final);
     NAN_EXPORT(target, ethash_verify);
     NAN_EXPORT(target, ethash_hash);
+    NAN_EXPORT(target, equihash_verify);
     NAN_EXPORT(target, c11);
     NAN_EXPORT(target, cryptonight);
     NAN_EXPORT(target, cryptonightfast);

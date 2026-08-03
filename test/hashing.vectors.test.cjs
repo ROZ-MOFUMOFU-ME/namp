@@ -48,7 +48,8 @@ var skipalgos = [
     'scryptjane',
     'ethash_verify',
     'ethash_verify_final',
-    'ethash_hash'
+    'ethash_hash',
+    'equihash_verify'
 ]; // disable bcrypt for now
 if (process.env.SKIPS) {
     skipalgos = process.env.SKIPS.split(',');
