@@ -70,7 +70,12 @@ const StratumClient = function StratumClient(this: any, params: any) {
         switch (message.method) {
             case 'eth_submitLogin': {
                 const login = (message.params && message.params[0]) || '';
-                const worker = (message.params && message.params[1]) || '';
+                // eth-proxy puts the rig name in a top-level "worker" member
+                // of the login message; params[1] is the PASSWORD (usually
+                // "x"). Reading params[1] credited every lolMiner rig as
+                // "wallet.x" — found against the real miner, not in tests.
+                const worker =
+                    typeof message.worker === 'string' ? message.worker : '';
                 _this.emit(
                     'login',
                     { login, worker },
@@ -138,6 +143,14 @@ const StratumClient = function StratumClient(this: any, params: any) {
                 send({ id: message.id, jsonrpc: '2.0', result: true });
                 break;
             default:
+                // Surface the method name: miners that negotiate a different
+                // dialect (NiceHash's EthereumStratum/1.0.0, say) show up here
+                // rather than silently failing to connect.
+                _this.emit(
+                    'unsupportedMethod',
+                    message.method,
+                    JSON.stringify(message.params || []).slice(0, 200)
+                );
                 send({
                     id: message.id,
                     jsonrpc: '2.0',
@@ -250,6 +263,13 @@ const EthashStratumServer = function EthashStratumServer(
             delete clients[client.id];
             _this.emit('client.disconnected', client);
         });
+        client.on('unsupportedMethod', (method: string, params: string) =>
+            _this.emit(
+                'log',
+                'warning',
+                `Miner ${client.remoteAddress} asked for unsupported method ${method} ${params}`
+            )
+        );
         client.on('socketError', (err: any) =>
             _this.emit(
                 'log',

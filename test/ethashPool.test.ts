@@ -307,11 +307,13 @@ class EthProxyClient {
         });
     }
 
-    call(method: string, params: any[]): Promise<any> {
+    call(method: string, params: any[], extra: any = {}): Promise<any> {
         const id = this.nextId++;
         return new Promise((resolve) => {
             this.pending.set(id, resolve);
-            this.socket.write(JSON.stringify({ id, method, params }) + '\n');
+            this.socket.write(
+                JSON.stringify({ id, method, params, ...extra }) + '\n'
+            );
         });
     }
 
@@ -347,7 +349,9 @@ test('serves miners the eth-proxy dialect end to end', async () => {
     await miner.connected();
 
     // eth_submitLogin: wallet plus an optional rig name.
-    const login = await miner.call('eth_submitLogin', ['0xwallet', 'rig1']);
+    const login = await miner.call('eth_submitLogin', ['0xwallet', 'x'], {
+        worker: 'rig1'
+    });
     assert.equal(login.result, true);
 
     // Work arrives unsolicited right after login, and on request.
@@ -396,7 +400,7 @@ test('pushes new work to connected miners when the daemon moves on', async () =>
     const miner = new EthProxyClient(stratumPort);
     cleanup.push(() => miner.close());
     await miner.connected();
-    await miner.call('eth_submitLogin', ['0xwallet', 'rig1']);
+    await miner.call('eth_submitLogin', ['0xwallet', 'x'], { worker: 'rig1' });
     await miner.waitForPush();
 
     const nextHeader = HEADER.replace('0xde', '0xab');
@@ -429,7 +433,7 @@ test('accepts a genuine DAG-derived share through the stratum port', async () =>
     const miner = new EthProxyClient(stratumPort);
     cleanup.push(() => miner.close());
     await miner.connected();
-    await miner.call('eth_submitLogin', ['0xwallet', 'rig1']);
+    await miner.call('eth_submitLogin', ['0xwallet', 'x'], { worker: 'rig1' });
     const work = await miner.call('eth_getWork', []);
 
     // Mine until the share clears the boundary the pool handed out.
@@ -449,6 +453,9 @@ test('accepts a genuine DAG-derived share through the stratum port', async () =>
     }
     assert.ok(solved, 'a share must be findable at difficulty 1');
 
+    const shares: any[] = [];
+    pool.on('share', (data: any) => shares.push(data));
+
     const verdict = await miner.call('eth_submitWork', [
         solved!.nonce,
         work.result[0],
@@ -456,6 +463,10 @@ test('accepts a genuine DAG-derived share through the stratum port', async () =>
     ]);
 
     assert.equal(verdict.result, true, 'a real share must be accepted');
+    // The rig name comes from the login's top-level worker field, never from
+    // params[1] (the password) — lolMiner rigs were credited as "wallet.x"
+    // until this was read correctly.
+    assert.equal(shares[0].worker, '0xwallet.rig1');
     // The loose boundary makes it a block too, so the pool relayed it.
     assert.equal(
         state.submitted.length,
