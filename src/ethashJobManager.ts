@@ -73,6 +73,17 @@ export function boundaryForDifficulty(difficulty: number): Buffer {
     return Buffer.from(clamped.toString(16).padStart(64, '0'), 'hex');
 }
 
+/**
+ * Which Ethash exports the loaded native addon is missing. Non-empty means
+ * the addon was built from older sources than this code — the operator needs
+ * `npm run rebuild:native` (a plain `git pull` does not rebuild it).
+ */
+export function missingEthashNativeExports(): string[] {
+    return ['ethash_verify_final', 'ethash_verify'].filter(
+        (name) => typeof (multiHashing as any)[name] !== 'function'
+    );
+}
+
 export function epochOf(
     height: number,
     epochLength = DEFAULT_EPOCH_LENGTH
@@ -189,16 +200,21 @@ const EthashJobManager = function EthashJobManager(
 
         // The difficulty this share actually achieved (2^256 / final hash):
         // what operators read next to the port difficulty in the share log.
-        const finalHash: Buffer = multiHashing.ethash_final_hash(
-            header,
-            mix,
-            nonce
-        );
-        const finalValue = BigInt('0x' + finalHash.toString('hex'));
-        const shareDiff =
-            finalValue > 0n
-                ? Number((MAX_TARGET * 1000n) / finalValue) / 1000
-                : Infinity;
+        // Optional on purpose: an addon built before this export exists must
+        // degrade the display, not crash the fork on the first share.
+        let shareDiff: number | undefined;
+        if (typeof multiHashing.ethash_final_hash === 'function') {
+            const finalHash: Buffer = multiHashing.ethash_final_hash(
+                header,
+                mix,
+                nonce
+            );
+            const finalValue = BigInt('0x' + finalHash.toString('hex'));
+            shareDiff =
+                finalValue > 0n
+                    ? Number((MAX_TARGET * 1000n) / finalValue) / 1000
+                    : Infinity;
+        }
 
         const networkBoundary = hash256(work.boundary, 'network boundary');
         const isBlockCandidate = multiHashing.ethash_verify_final(

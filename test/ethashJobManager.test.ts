@@ -320,3 +320,28 @@ test('work evicted from the window is genuinely stale', () => {
     });
     assert.deepEqual(result.error, [21, 'job not found']);
 });
+
+test('a stale addon degrades the achieved-difficulty display, not the share', async () => {
+    // Operators pull new JS without rebuilding the .node binary; the display
+    // helper may be missing. The share must still validate — this crashed the
+    // whole fork in production.
+    const { createRequire } = await import('node:module');
+    const require = createRequire(import.meta.url);
+    const native = require('../native/index.cjs');
+    const original = native.ethash_final_hash;
+    delete native.ethash_final_hash;
+    try {
+        const { jm } = makeManager();
+        jm.processWork(WORK);
+        const result = jm.processShare({
+            headerHash: WORK[0],
+            nonce: '0x0102030405060708',
+            mixHash: '0x' + '22'.repeat(32),
+            difficulty: 1e-9
+        });
+        assert.equal(result.valid, true);
+        assert.equal(result.shareDiff, undefined);
+    } finally {
+        native.ethash_final_hash = original;
+    }
+});

@@ -1,6 +1,7 @@
 import { createPool } from './pool.ts';
 import { createEthashPool } from './ethashPool.ts';
 import { isEthashAlgorithm } from './algoProperties.ts';
+import { missingEthashNativeExports } from './ethashJobManager.ts';
 import net from 'net';
 
 import { createRedisClient } from './redisUtil.ts';
@@ -225,6 +226,21 @@ export default function (this: any, logger: Logger) {
         // tree and a different stratum dialect, so none of the Bitcoin-style
         // job pipeline applies to them.
         if (isEthashAlgorithm(poolOptions.coin.algorithm)) {
+            // A stale native addon (pulled JS, unrebuilt .node) used to crash
+            // the fork on the first share and put the master into a respawn
+            // loop. Say what to run instead.
+            const missingExports = missingEthashNativeExports();
+            if (missingExports.length) {
+                logger.error(
+                    logSystem,
+                    logComponent,
+                    logSubCat,
+                    `The native addon is missing ${missingExports.join(', ')} — ` +
+                        'it was built before this code. Run `npm run rebuild:native` ' +
+                        'and restart; this pool stays disabled until then.'
+                );
+                return;
+            }
             // Ethash miners log in with an 0x wallet address, and the
             // Bitcoin-style authorize path would call validateaddress on a
             // daemon that has no such RPC (and through a `pool` this branch
@@ -271,7 +287,7 @@ export default function (this: any, logger: Logger) {
                         `Share accepted at diff ${data.difficulty}/${
                             typeof data.shareDiff === 'number'
                                 ? data.shareDiff.toFixed(3)
-                                : data.shareDiff
+                                : '—'
                         } by ${data.worker} [${data.ip}]${
                             data.isStale ? ' (stale work)' : ''
                         }`
