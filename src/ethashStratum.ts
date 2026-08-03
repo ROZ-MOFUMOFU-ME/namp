@@ -108,6 +108,14 @@ const StratumClient = function StratumClient(this: any, params: any) {
                 break;
             }
             case 'eth_getWork':
+                if (!_this.authorized) {
+                    send({
+                        id: message.id,
+                        jsonrpc: '2.0',
+                        error: { code: -1, message: 'unauthorized' }
+                    });
+                    return;
+                }
                 _this.emit('getWork', function (work: any, boundary: string) {
                     if (!work) {
                         send({
@@ -125,6 +133,15 @@ const StratumClient = function StratumClient(this: any, params: any) {
                 });
                 break;
             case 'eth_submitWork': {
+                if (!_this.authorized) {
+                    send({
+                        id: message.id,
+                        jsonrpc: '2.0',
+                        result: false,
+                        error: { code: -1, message: 'unauthorized' }
+                    });
+                    return;
+                }
                 const [nonce, headerHash, mixHash] = message.params || [];
                 _this.emit(
                     'submit',
@@ -171,8 +188,26 @@ const StratumClient = function StratumClient(this: any, params: any) {
     }
 
     socket.setEncoding('utf8');
+    socket.setKeepAlive(true);
+    // Miners send a handful of messages per second at most; anything wilder
+    // is a scanner or a broken client, and it costs us verification work.
+    let windowStart = Date.now();
+    let windowCount = 0;
+    const RATE_WINDOW_MS = 10000;
+    const RATE_MAX = 600;
+
     socket.on('data', function (chunk: string) {
         _this.lastActivity = Date.now();
+        const now = Date.now();
+        if (now - windowStart > RATE_WINDOW_MS) {
+            windowStart = now;
+            windowCount = 0;
+        }
+        if (++windowCount > RATE_MAX) {
+            _this.emit('floodDetected');
+            socket.destroy();
+            return;
+        }
         buffer += chunk;
         if (buffer.length > 10240) {
             // A miner never sends this much; drop rather than buffer forever.
@@ -322,6 +357,13 @@ const EthashStratumServer = function EthashStratumServer(
             delete clients[client.id];
             _this.emit('client.disconnected', client);
         });
+        client.on('floodDetected', () =>
+            _this.emit(
+                'log',
+                'warning',
+                `Flooding from ${client.remoteAddress}; connection dropped`
+            )
+        );
         client.on('unsupportedMethod', (method: string, params: string) =>
             _this.emit(
                 'log',

@@ -393,6 +393,8 @@ ie: Miner 1 mines at 0.1 difficulty and finds 10 shares, the pool sees it as 1 s
         "paymentInterval": 120, // Payment interval in seconds.
         "minimumPayment": 0.1, // Minimum amount of coins to be paid out.
         "maxBlocksPerPayment": 3, // Maximum number of blocks to include in a single payment.
+        // Hardening (Redis password, firewalling, admin API, TLS):
+        // see docs/security.md before exposing a pool to the internet.
         // IMPORTANT: this is a SEPARATE daemon connection from the pool's
         // top-level `daemons` array — the payment processor opens its own.
         // Leaving the example credentials here while filling in `daemons`

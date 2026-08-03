@@ -6,6 +6,10 @@ on:
     pull_request:
         branches: [main]
 
+# Read-only by default: CI builds and tests, it never writes to the repo.
+permissions:
+    contents: read
+
 jobs:
     lint:
         name: Lint, format & typecheck

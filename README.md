@@ -15,6 +15,14 @@ pool portal, the stratum layer and the hashing module all in one.
 | `src/` (stratum modules) | [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool)   | Stratum protocol layer          |
 | `native/`                | [node-multi-hashing](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing) | Hashing algorithms (C++ native) |
 
+## Supported chains
+
+Bitcoin-family coins (sha256d, scrypt, quark, lyra2, yescrypt/yespower,
+vipstar and ~50 more) run on the stratum pipeline in `src/`. The **Ethash
+family** — Ethereum, Ethereum Classic (Etchash), VirBiCoin — runs beside it
+with its own work model, eth-proxy stratum dialect and chain-side payment
+processing; see [docs/ethash.md](docs/ethash.md).
+
 Dependency direction: `portal → stratum-pool → multi-hashing`.
 Each package carries the full commit history of its source repo,
 imported with git filter-repo path rewrites (nothing squashed).
@@ -44,7 +52,8 @@ SPA, the stack's only build step). Operator documentation lives in
 [docs/](docs/): [guide.md](docs/guide.md) (full setup),
 [payment-schemes.md](docs/payment-schemes.md),
 [reverse-proxy.md](docs/reverse-proxy.md),
-[stratum-tls.md](docs/stratum-tls.md), [ethash.md](docs/ethash.md), and
+[stratum-tls.md](docs/stratum-tls.md), [ethash.md](docs/ethash.md),
+[security.md](docs/security.md) (hardening a deployment), and
 [stratum.md](docs/stratum.md) (the stratum layer's feature reference).
 
 ## Development

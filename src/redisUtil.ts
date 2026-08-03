@@ -13,10 +13,39 @@ export interface RedisConfig {
  * in the client's offline queue, which preserves the fire-and-forget
  * construction style the portal modules use.
  */
+/** Warn once per endpoint rather than per pool fork. */
+const warnedEndpoints = new Set<string>();
+
+/**
+ * An unauthenticated Redis reachable off-host holds the whole pool's share
+ * ledger, balances and payment history in the open — anyone who can connect
+ * can rewrite what miners are owed. Say so, loudly, once per endpoint.
+ */
+function warnIfExposed(redisConfig: RedisConfig) {
+    const host = String(redisConfig.host || '127.0.0.1');
+    const isLoopback =
+        host === '127.0.0.1' ||
+        host === 'localhost' ||
+        host === '::1' ||
+        host.startsWith('127.');
+    if (isLoopback || redisConfig.password) return;
+    const endpoint = `${host}:${redisConfig.port}`;
+    if (warnedEndpoints.has(endpoint)) return;
+    warnedEndpoints.add(endpoint);
+    console.warn(
+        `[SECURITY] Redis at ${endpoint} is configured without a password and ` +
+            'is not on loopback. It holds every share, balance and payment ' +
+            'record for this pool. Set requirepass (and redis.password, or the ' +
+            'REDIS_PASSWORD environment variable) and firewall the port to the ' +
+            'pool hosts. See docs/security.md.'
+    );
+}
+
 export function createRedisClient(
     redisConfig: RedisConfig,
     onError?: (err: unknown) => void
 ) {
+    warnIfExposed(redisConfig);
     const client = createClient({
         socket: {
             host: redisConfig.host,
