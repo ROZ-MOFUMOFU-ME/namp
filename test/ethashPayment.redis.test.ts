@@ -252,18 +252,18 @@ test('a canonical block credits reward plus fees over the round', async (t) => {
 
     await processor.runOnce();
 
-    // 2 VBC + 21000 * 1 gwei fees, split 3:1, exactly.
+    // 2 VBC + 21000 * 1 gwei fees, split 3:1. Balances are persisted in
+    // coins — the unit the whole portal reads — with wei-exact arithmetic
+    // behind them.
     const fees = 21000n * 1000000000n;
     const total = 2n * 10n ** 18n + fees;
-    const shareA = (total * 3n) / 4n;
-    const shareB = total / 4n;
     assert.equal(
-        await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`),
-        shareA.toString()
+        Number(await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`)),
+        weiToCoins((total * 3n) / 4n)
     );
     assert.equal(
-        await redis.hGet(`${COIN}:balances`, `${WALLET_B}.rig2`),
-        shareB.toString()
+        Number(await redis.hGet(`${COIN}:balances`, `${WALLET_B}.rig2`)),
+        weiToCoins(total / 4n)
     );
     assert.equal(await redis.sCard(`${COIN}:blocksPending`), 0);
     assert.equal(await redis.sCard(`${COIN}:blocksConfirmed`), 1);
@@ -307,8 +307,8 @@ test('an uncle at depth 2 credits (8-2)/8 of the reward', async (t) => {
 
     const uncleReward = (2n * 10n ** 18n * 6n) / 8n; // 1.5 coins
     assert.equal(
-        await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`),
-        uncleReward.toString()
+        Number(await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`)),
+        weiToCoins(uncleReward)
     );
     assert.equal(await redis.sCard(`${COIN}:blocksConfirmed`), 1);
 });
@@ -364,21 +364,9 @@ test('payouts aggregate rigs per wallet and zero the paid balances', async (t) =
         accountPassword: 'hunter2'
     });
     // Two rigs of wallet A clear the 0.5 threshold together; B stays below it.
-    await redis.hSet(
-        `${COIN}:balances`,
-        `${WALLET_A}.rig1`,
-        (4n * 10n ** 17n).toString()
-    );
-    await redis.hSet(
-        `${COIN}:balances`,
-        `${WALLET_A}.rig2`,
-        (3n * 10n ** 17n).toString()
-    );
-    await redis.hSet(
-        `${COIN}:balances`,
-        `${WALLET_B}.rig1`,
-        (2n * 10n ** 17n).toString()
-    );
+    await redis.hSet(`${COIN}:balances`, `${WALLET_A}.rig1`, '0.4');
+    await redis.hSet(`${COIN}:balances`, `${WALLET_A}.rig2`, '0.3');
+    await redis.hSet(`${COIN}:balances`, `${WALLET_B}.rig1`, '0.2');
 
     await processor.runOnce();
 
@@ -388,13 +376,30 @@ test('payouts aggregate rigs per wallet and zero the paid balances', async (t) =
     assert.equal(BigInt(state.sent[0].value), 7n * 10n ** 17n);
     assert.deepEqual(state.unlockCalls[0], [POOL_ADDRESS, 'hunter2', 60]);
 
-    assert.equal(await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`), '0');
-    assert.equal(await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig2`), '0');
     assert.equal(
-        await redis.hGet(`${COIN}:balances`, `${WALLET_B}.rig1`),
-        (2n * 10n ** 17n).toString(),
+        Number(await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`)),
+        0
+    );
+    assert.equal(
+        Number(await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig2`)),
+        0
+    );
+    assert.equal(
+        Number(await redis.hGet(`${COIN}:balances`, `${WALLET_B}.rig1`)),
+        0.2,
         'below-threshold balances are untouched'
     );
+
+    // What the UI reads: lifetime paid per worker and the pool total.
+    assert.equal(
+        Number(await redis.hGet(`${COIN}:payouts`, `${WALLET_A}.rig1`)),
+        0.4
+    );
+    assert.equal(
+        Number(await redis.hGet(`${COIN}:payouts`, `${WALLET_A}.rig2`)),
+        0.3
+    );
+    assert.equal(Number(await redis.hGet(`${COIN}:stats`, 'totalPaid')), 0.7);
 
     const payments = await redis.zRange(`${COIN}:payments`, 0, -1);
     assert.equal(payments.length, 1);
@@ -418,11 +423,7 @@ test('a failed unlock keeps every balance and sends nothing', async (t) => {
     const processor = await makeProcessor(state, {
         accountPassword: 'wrong'
     });
-    await redis.hSet(
-        `${COIN}:balances`,
-        `${WALLET_A}.rig1`,
-        (10n ** 18n).toString()
-    );
+    await redis.hSet(`${COIN}:balances`, `${WALLET_A}.rig1`, '1');
 
     await processor.runOnce();
 
@@ -432,8 +433,13 @@ test('a failed unlock keeps every balance and sends nothing', async (t) => {
         'no transaction without an unlocked account'
     );
     assert.equal(
-        await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`),
-        (10n ** 18n).toString()
+        Number(await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`)),
+        1
+    );
+    assert.equal(
+        await redis.exists(`${COIN}:payouts`),
+        0,
+        'nothing recorded as paid'
     );
 });
 
@@ -495,8 +501,8 @@ test('solo mode credits the whole reward to the block finder', async (t) => {
     await processor.runOnce();
 
     assert.equal(
-        await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`),
-        (2n * 10n ** 18n).toString(),
+        Number(await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`)),
+        2,
         'the finder takes the full reward'
     );
     assert.equal(
@@ -542,13 +548,13 @@ test('pplns mode pays the snapshotted window, newest first with clipping', async
     await processor.runOnce();
 
     assert.equal(
-        await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`),
-        (15n * 10n ** 17n).toString(),
+        Number(await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`)),
+        1.5,
         'A gets 75% of 2 coins'
     );
     assert.equal(
-        await redis.hGet(`${COIN}:balances`, `${WALLET_B}.rig2`),
-        (5n * 10n ** 17n).toString(),
+        Number(await redis.hGet(`${COIN}:balances`, `${WALLET_B}.rig2`)),
+        0.5,
         'B gets the clipped 25%'
     );
     assert.equal(

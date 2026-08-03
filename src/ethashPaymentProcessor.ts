@@ -66,8 +66,14 @@ export function coinsToWei(coins: number): bigint {
     return BigInt(Math.round(coins * 1e6)) * 10n ** 12n;
 }
 
+/**
+ * Wei to coins at 8 decimals — the unit every other part of the portal reads
+ * from <coin>:balances, :payouts and :immature. The arithmetic stays in wei
+ * (BigInt); only what is persisted for the UI is converted, exactly like the
+ * Bitcoin flow converts satoshis.
+ */
 export function weiToCoins(wei: bigint): number {
-    return Number(wei / 10n ** 12n) / 1e6;
+    return Number(wei / 10n ** 10n) / 1e8;
 }
 
 /** Split a reward over shares; the remainder stays with the pool address. */
@@ -262,23 +268,59 @@ function SetupForPool(
             blockDifficulty
         );
         const split = splitReward(rewardWei, shares);
-        const commands: any[] = [];
         for (const worker of Object.keys(split)) {
-            const current = BigInt(
-                (await redisClient.hGet(`${coin}:balances`, worker)) || '0'
-            );
-            commands.push([
-                'hSet',
-                `${coin}:balances`,
-                worker,
-                (current + split[worker]).toString()
-            ]);
-        }
-        for (const command of commands) {
-            await (redisClient as any)[command[0]](...command.slice(1));
+            const amount = weiToCoins(split[worker]);
+            if (amount > 0) {
+                await redisClient.hIncrByFloat(
+                    `${coin}:balances`,
+                    worker,
+                    amount
+                );
+            }
         }
         await redisClient.del(roundKey);
         await redisClient.del(`${coin}:shares:pplnsRound${height}`);
+    }
+
+    /**
+     * What each worker stands to earn from blocks that have not matured yet.
+     * Recomputed from scratch every cycle (blocks move out of pending, and an
+     * orphan must not leave a phantom credit behind), so the key is replaced
+     * rather than incremented.
+     */
+    async function refreshImmature(pending: string[], currentHeight: number) {
+        const immature: Record<string, number> = {};
+        for (const entry of pending) {
+            const [, , heightRaw, finder] = entry.split(':');
+            const height = parseInt(heightRaw, 10);
+            if (!Number.isFinite(height)) continue;
+            if (currentHeight - height >= minConf) continue; // resolved below
+
+            const block = await rpc('eth_getBlockByNumber', [
+                hex(height),
+                false
+            ]).catch(() => null);
+            const weights = await weightsForBlock(
+                height,
+                finder,
+                block ? parseInt(block.difficulty, 16) || 0 : 0
+            );
+            const split = splitReward(rewardWeiAt(height), weights);
+            for (const worker of Object.keys(split)) {
+                immature[worker] =
+                    (immature[worker] || 0) + weiToCoins(split[worker]);
+            }
+        }
+        await redisClient.del(`${coin}:immature`);
+        for (const worker of Object.keys(immature)) {
+            if (immature[worker] > 0) {
+                await redisClient.hSet(
+                    `${coin}:immature`,
+                    worker,
+                    immature[worker].toString()
+                );
+            }
+        }
     }
 
     /** Return an orphaned round's shares to the live round. */
@@ -298,6 +340,7 @@ function SetupForPool(
 
     async function processPendingBlocks(currentHeight: number) {
         const pending = await redisClient.sMembers(`${coin}:blocksPending`);
+        await refreshImmature(pending, currentHeight);
         for (const entry of pending) {
             const [blockHash, nonce, heightRaw, finderWorker] =
                 entry.split(':');
@@ -362,14 +405,20 @@ function SetupForPool(
     async function processPayouts() {
         const balances = await redisClient.hGetAll(`${coin}:balances`);
         // Rigs share one wallet: aggregate "0xwallet.rig" entries per wallet.
-        const byWallet: Record<string, { total: bigint; workers: string[] }> =
-            {};
+        // Balances are stored in coins (the portal-wide unit); the transfer
+        // amount is computed back in wei so nothing is lost in the send.
+        const byWallet: Record<
+            string,
+            { total: bigint; workers: Record<string, number> }
+        > = {};
         for (const worker of Object.keys(balances)) {
             const wallet = worker.split('.')[0];
             if (!/^0x[0-9a-fA-F]{40}$/.test(wallet)) continue;
-            byWallet[wallet] = byWallet[wallet] || { total: 0n, workers: [] };
-            byWallet[wallet].total += BigInt(balances[worker] || '0');
-            byWallet[wallet].workers.push(worker);
+            const coins = parseFloat(balances[worker] || '0');
+            if (!(coins > 0)) continue;
+            byWallet[wallet] = byWallet[wallet] || { total: 0n, workers: {} };
+            byWallet[wallet].total += coinsToWei(coins);
+            byWallet[wallet].workers[worker] = coins;
         }
 
         let unlocked = false;
@@ -413,15 +462,39 @@ function SetupForPool(
                 continue;
             }
 
-            for (const worker of workers) {
-                await redisClient.hSet(`${coin}:balances`, worker, '0');
+            const paidCoins = weiToCoins(total);
+            const now = Date.now();
+            for (const worker of Object.keys(workers)) {
+                // Subtract what was paid rather than zeroing: a credit that
+                // landed between reading the balance and sending must survive.
+                await redisClient.hIncrByFloat(
+                    `${coin}:balances`,
+                    worker,
+                    -workers[worker]
+                );
+                // Lifetime paid per worker — what the UI's "paid" column and
+                // the worker stats page read.
+                await redisClient.hIncrByFloat(
+                    `${coin}:payouts`,
+                    worker,
+                    workers[worker]
+                );
             }
+            // Pool-wide total, shown next to the found blocks.
+            await redisClient.hIncrByFloat(
+                `${coin}:stats`,
+                'totalPaid',
+                paidCoins
+            );
             await redisClient.zAdd(`${coin}:payments`, {
-                score: Date.now(),
+                score: now,
                 value: JSON.stringify({
-                    time: Date.now(),
+                    time: now,
                     txid,
-                    paid: weiToCoins(total),
+                    paid: paidCoins,
+                    miners: 1,
+                    blocks: [],
+                    amounts: { [wallet]: paidCoins },
                     address: wallet
                 })
             });
