@@ -29,6 +29,12 @@ import type { Logger } from './logUtil.ts';
 const UNCLE_DEPTH = 7;
 
 /**
+ * No real pool balance reaches a trillion coins; anything above this is a
+ * pre-v1.1.0 wei value sitting in a field that now holds coins.
+ */
+const LEGACY_WEI_THRESHOLD = 1e12;
+
+/**
  * Reward for a block at a given height, in wei.
  *
  * Chains step their subsidy down over time (VirBiCoin: 8 VBC, minus 1 every
@@ -431,6 +437,22 @@ function SetupForPool(
             if (!/^0x[0-9a-fA-F]{40}$/.test(wallet)) continue;
             const coins = parseFloat(balances[worker] || '0');
             if (!(coins > 0)) continue;
+            // Balances before v1.1.0 were stored in wei in this same field.
+            // Paying one out as coins would try to send 1e18 times too much —
+            // refuse and say so rather than hammering the daemon forever.
+            if (coins > LEGACY_WEI_THRESHOLD) {
+                cycle.payoutErrors++;
+                logger.error(
+                    logSystem,
+                    logComponent,
+                    `Balance for ${worker} is ${balances[worker]}, which is not a ` +
+                        'plausible coin amount — it looks like a wei-format balance ' +
+                        'written before v1.1.0. Divide it by 1e18 (see ' +
+                        'docs/ethash.md, "Upgrading from a pre-1.1.0 ledger"); ' +
+                        'this worker is skipped until then.'
+                );
+                continue;
+            }
             byWallet[wallet] = byWallet[wallet] || { total: 0n, workers: {} };
             byWallet[wallet].total += coinsToWei(coins);
             byWallet[wallet].workers[worker] = coins;

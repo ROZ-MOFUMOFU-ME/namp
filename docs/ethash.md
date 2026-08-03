@@ -157,3 +157,26 @@ it into the node keystore); set `accountPassword` to have NAMP unlock it
 with `personal_unlockAccount` first (requires the `personal` API), or keep
 the account unlocked with `--unlock`. Payments are recorded in
 `<coin>:payments` for the web UI.
+
+## Upgrading from a pre-1.1.0 ledger
+
+Before v1.1.0 the Ethash payment processor wrote `<coin>:balances` in **wei**,
+while the rest of the portal reads that field in **coins**. If your pool
+credited any balance before upgrading, those entries are 10^18 times too
+large and the pool will refuse to pay them, logging the worker and this
+section.
+
+Convert them once, with the pool stopped:
+
+```bash
+redis-cli -h <host> hgetall <coin>:balances     # inspect first
+
+# For each wei-format entry, set the coin value:
+redis-cli -h <host> hset <coin>:balances "0xwallet.rig" 391
+```
+
+Balances credited after the upgrade are already in coins, so an entry may be
+a _sum_ of both — for example `242000000000000000149` is 242 VBC of legacy wei
+plus 149 VBC credited since, i.e. 391 VBC. Cross-check against the pool's
+confirmed blocks (`scard <coin>:blocksConfirmed` x the block reward) before
+writing the value.

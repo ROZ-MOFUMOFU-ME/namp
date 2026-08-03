@@ -180,8 +180,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Light",
-        "theme_dark": "Dark"
+        "theme_to_light": "Switch to light theme",
+        "theme_to_dark": "Switch to dark theme"
     },
     "en-US": {
         "getting_started": "Getting Started",
@@ -364,8 +364,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Light",
-        "theme_dark": "Dark"
+        "theme_to_light": "Switch to light theme",
+        "theme_to_dark": "Switch to dark theme"
     },
     "ja": {
         "getting_started": "始め方",
@@ -548,8 +548,8 @@
         "gs_getwork_desc": "getwork 専用マイナー向けです（HTTP getwork でしか掘れず stratum ポートでは弾かれる公式 VIPSTARCOIN/HTMLCOIN ccminer など）。ポートを選び、下記 URL にマイナーを接続してください。",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "例: ccminer-x64 -a html -o http://HOST:PORT -u ウォレット.worker -p x",
-        "theme_light": "ライト",
-        "theme_dark": "ダーク"
+        "theme_to_light": "ライトモードに切り替え",
+        "theme_to_dark": "ダークモードに切り替え"
     },
     "zh": {
         "getting_started": "开始",
@@ -732,8 +732,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "浅色",
-        "theme_dark": "深色"
+        "theme_to_light": "切换到浅色模式",
+        "theme_to_dark": "切换到深色模式"
     },
     "zh-TW": {
         "getting_started": "開始",
@@ -916,8 +916,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "淺色",
-        "theme_dark": "深色"
+        "theme_to_light": "切換至淺色模式",
+        "theme_to_dark": "切換至深色模式"
     },
     "zh-HK": {
         "getting_started": "開始",
@@ -1100,8 +1100,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "淺色",
-        "theme_dark": "深色"
+        "theme_to_light": "切換至淺色模式",
+        "theme_to_dark": "切換至深色模式"
     },
     "fr": {
         "getting_started": "Démarrer",
@@ -1283,8 +1283,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Clair",
-        "theme_dark": "Sombre"
+        "theme_to_light": "Passer au thème clair",
+        "theme_to_dark": "Passer au thème sombre"
     },
     "es": {
         "getting_started": "Inicio",
@@ -1466,8 +1466,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Claro",
-        "theme_dark": "Oscuro"
+        "theme_to_light": "Cambiar al tema claro",
+        "theme_to_dark": "Cambiar al tema oscuro"
     },
     "de": {
         "getting_started": "Starten",
@@ -1649,8 +1649,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Hell",
-        "theme_dark": "Dunkel"
+        "theme_to_light": "Zum hellen Design wechseln",
+        "theme_to_dark": "Zum dunklen Design wechseln"
     },
     "ru": {
         "getting_started": "Начало работы",
@@ -1832,8 +1832,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Светлая",
-        "theme_dark": "Тёмная"
+        "theme_to_light": "Переключить на светлую тему",
+        "theme_to_dark": "Переключить на тёмную тему"
     },
     "hi": {
         "getting_started": "शुरू करें",
@@ -2015,8 +2015,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "लाइट",
-        "theme_dark": "डार्क"
+        "theme_to_light": "लाइट थीम पर स्विच करें",
+        "theme_to_dark": "डार्क थीम पर स्विच करें"
     },
     "ar": {
         "getting_started": "البدء",
@@ -2198,8 +2198,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "فاتح",
-        "theme_dark": "داكن"
+        "theme_to_light": "التبديل إلى المظهر الفاتح",
+        "theme_to_dark": "التبديل إلى المظهر الداكن"
     },
     "pt": {
         "getting_started": "Início",
@@ -2381,8 +2381,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Claro",
-        "theme_dark": "Escuro"
+        "theme_to_light": "Mudar para o tema claro",
+        "theme_to_dark": "Mudar para o tema escuro"
     },
     "it": {
         "getting_started": "Inizio",
@@ -2564,8 +2564,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Chiaro",
-        "theme_dark": "Scuro"
+        "theme_to_light": "Passa al tema chiaro",
+        "theme_to_dark": "Passa al tema scuro"
     },
     "tl": {
         "getting_started": "Simula",
@@ -2747,8 +2747,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Light",
-        "theme_dark": "Dark"
+        "theme_to_light": "Switch to light theme",
+        "theme_to_dark": "Switch to dark theme"
     },
     "id": {
         "getting_started": "Mulai",
@@ -2930,8 +2930,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Terang",
-        "theme_dark": "Gelap"
+        "theme_to_light": "Beralih ke tema terang",
+        "theme_to_dark": "Beralih ke tema gelap"
     },
     "ms": {
         "getting_started": "Mula",
@@ -3113,8 +3113,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Light",
-        "theme_dark": "Dark"
+        "theme_to_light": "Switch to light theme",
+        "theme_to_dark": "Switch to dark theme"
     },
     "ko": {
         "getting_started": "시작하기",
@@ -3296,8 +3296,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "라이트",
-        "theme_dark": "다크"
+        "theme_to_light": "라이트 모드로 전환",
+        "theme_to_dark": "다크 모드로 전환"
     },
     "vi": {
         "getting_started": "Bắt đầu",
@@ -3479,8 +3479,8 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Sáng",
-        "theme_dark": "Tối"
+        "theme_to_light": "Chuyển sang giao diện sáng",
+        "theme_to_dark": "Chuyển sang giao diện tối"
     },
     "tr": {
         "getting_started": "Başlarken",
@@ -3662,7 +3662,7 @@
         "gs_getwork_desc": "For getwork-only miners — e.g. the official VIPSTARCOIN/HTMLCOIN ccminer, which can only mine via HTTP getwork and is rejected on the stratum ports. Pick a port and point your miner at the URL below.",
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
-        "theme_light": "Açık",
-        "theme_dark": "Koyu"
+        "theme_to_light": "Açık temaya geç",
+        "theme_to_dark": "Koyu temaya geç"
     }
 }

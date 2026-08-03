@@ -563,3 +563,33 @@ test('pplns mode pays the snapshotted window, newest first with clipping', async
         'the window snapshot is consumed'
     );
 });
+
+test('a pre-1.1.0 wei balance is refused, not paid out', async (t) => {
+    if (!available) return t.skip('no redis');
+    const state: ChainState = {
+        height: 200,
+        blocks: {},
+        uncles: {},
+        receipts: {},
+        sent: [],
+        unlockCalls: [],
+        unlockAccepts: true
+    };
+    const processor = await makeProcessor(state);
+    // What the old code wrote: 242 VBC expressed in wei. Read as coins it
+    // would try to send 2.42e20 VBC on every cycle.
+    await redis.hSet(
+        `${COIN}:balances`,
+        `${WALLET_A}.rig1`,
+        '242000000000000000000'
+    );
+
+    await processor.runOnce();
+
+    assert.equal(state.sent.length, 0, 'nothing is sent for a wei balance');
+    assert.equal(
+        await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`),
+        '242000000000000000000',
+        'the balance is left untouched for the operator to convert'
+    );
+});
