@@ -334,43 +334,72 @@ const EthashPool = function EthashPool(
                 );
             }, 0);
 
-            const infoLines = [
-                startMessage,
-                `Chain ID:\t\t${chainId !== null ? parseInt(chainId, 16) : '—'}`,
-                `Current Block Height:\t${work.height}`,
-                `Current Epoch:\t\t${epochOf(work.height, epochLen)} (length ${epochLen})`,
-                `Current Connect Peers:\t${peers !== null ? parseInt(peers, 16) : '—'}`,
-                `Network Difficulty:\t${difficulty !== null ? difficulty : '—'}`,
-                `Network Hash Rate:\t${
+            // Label/value pairs padded to a common width. Hand-counted tabs
+            // put "Daemon:" a stop short of everything else — spaces do not
+            // depend on how wide a tab happens to be, and stay aligned when
+            // someone adds a field.
+            const fields: Array<[string, string]> = [
+                [
+                    'Chain ID',
+                    chainId !== null ? String(parseInt(chainId, 16)) : '—'
+                ],
+                ['Current Block Height', String(work.height)],
+                [
+                    'Current Epoch',
+                    `${epochOf(work.height, epochLen)} (length ${epochLen})`
+                ],
+                [
+                    'Current Connect Peers',
+                    peers !== null ? String(parseInt(peers, 16)) : '—'
+                ],
+                [
+                    'Network Difficulty',
+                    difficulty !== null ? String(difficulty) : '—'
+                ],
+                [
+                    'Network Hash Rate',
                     difficulty !== null
                         ? getReadableHashRateString(difficulty / blockTime)
                         : '—'
-                }`,
-                `Etherbase:\t\t${coinbase || '—'}`,
-                `Daemon:\t\t${clientVersion || '—'}`,
-                `Stratum Port(s):\t${Object.keys(options.ports || {}).join(', ') || '—'}`,
-                `Pool Fee Percent:\t${feePercent}%`,
-                `Payment Processing:\t${
+                ],
+                ['Etherbase', coinbase || '—'],
+                ['Daemon', clientVersion || '—'],
+                [
+                    'Stratum Port(s)',
+                    Object.keys(options.ports || {}).join(', ') || '—'
+                ],
+                ['Pool Fee Percent', `${feePercent}%`],
+                [
+                    'Payment Processing',
                     options.paymentProcessing &&
                     options.paymentProcessing.enabled
                         ? `enabled (${
                               options.paymentProcessing.paymentMode || 'prop'
                           }, minConf ${options.paymentProcessing.minConf || 120})`
                         : 'disabled'
-                }`
+                ]
             ];
             if (
                 typeof options.blockRefreshInterval !== 'number' ||
                 options.blockRefreshInterval > 0
             ) {
-                infoLines.push(
-                    `Work polling every:\t${
+                fields.push([
+                    'Work polling every',
+                    `${
                         options.blockRefreshInterval === undefined
                             ? DEFAULT_POLL_MS
                             : options.blockRefreshInterval
                     } ms`
-                );
+                ]);
             }
+            const width =
+                Math.max(...fields.map(([label]) => label.length)) + 2;
+            const infoLines = [
+                startMessage,
+                ...fields.map(
+                    ([label, value]) => `${(label + ':').padEnd(width)}${value}`
+                )
+            ];
             emitSpecialLog(infoLines.join('\n\t\t\t\t\t\t'));
             callback();
         });
