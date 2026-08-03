@@ -17,6 +17,8 @@ import {
     ppsPlusFeePart
 } from './feeRewardLogic.ts';
 import { esmppsAllocate, smppsAllocate, parseDebtEntry } from './smppsLogic.ts';
+import setupEthashPayments from './ethashPaymentProcessor.ts';
+import { isEthashAlgorithm } from './algoProperties.ts';
 import { createCoinAmounts, roundTo } from './statsUtil.ts';
 import async from 'async';
 import * as daemonModule from './daemon.ts';
@@ -50,13 +52,14 @@ export default function (logger: Logger) {
     async.filter(
         enabledPools,
         function (coin: any, callback: any) {
-            SetupForPool(
-                logger,
-                poolConfigs[coin],
-                function (setupResults: any) {
-                    callback(null, setupResults);
-                }
-            );
+            // Ethash chains pay the etherbase directly, so their maturity and
+            // payout model is chain-side; route them to the ethash processor.
+            const setup = isEthashAlgorithm(poolConfigs[coin].coin.algorithm)
+                ? setupEthashPayments
+                : SetupForPool;
+            setup(logger, poolConfigs[coin], function (setupResults: any) {
+                callback(null, setupResults);
+            });
         },
         function (err: any, results: any) {
             results.forEach(function (coin: any) {

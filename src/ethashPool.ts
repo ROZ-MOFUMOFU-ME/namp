@@ -234,6 +234,43 @@ const EthashPool = function EthashPool(
         });
     }
 
+    /**
+     * open-ethereum-pool-style self-configuration: when the node was started
+     * without --mine/--miner.etherbase, engage its sealer over the miner RPC
+     * API instead of demanding command-line flags. miner_start(0) prepares
+     * work without the node competing for it. Needs "miner" in --http.api;
+     * degrades to the flag guidance below when it is not exposed.
+     */
+    function engageSealing(callback: (engaged: boolean) => void) {
+        if (!options.address) return callback(false);
+        _this.daemon.cmd(
+            'miner_setEtherbase',
+            [options.address],
+            function (result: any) {
+                if (result.error) {
+                    emitLog(
+                        'miner API not exposed; cannot self-configure sealing'
+                    );
+                    return callback(false);
+                }
+                _this.daemon.cmd(
+                    'miner_start',
+                    [0],
+                    function (startResult: any) {
+                        if (startResult.error) return callback(false);
+                        emitSpecialLog(
+                            `Engaged the daemon's sealer via the miner API ` +
+                                `(etherbase ${options.address}, 0 local threads)`
+                        );
+                        callback(true);
+                    },
+                    true
+                );
+            },
+            true
+        );
+    }
+
     this.start = function () {
         // No Bitcoin-style liveness probe here: daemon.init()'s check calls
         // getnetworkinfo, which geth-family nodes do not implement. For an
@@ -243,16 +280,24 @@ const EthashPool = function EthashPool(
         );
 
         let attempts = 0;
+        let sealingTried = false;
         const tryStart = function () {
             pollWork(function () {
                 if (!_this.jobManager.currentWork) {
+                    if (!sealingTried) {
+                        sealingTried = true;
+                        engageSealing(() => setTimeout(tryStart, 1000));
+                        return;
+                    }
                     if (++attempts >= 5) {
                         emitErrorLog(
                             'Could not get work from the daemon(s). geth-family ' +
                                 'nodes only prepare sealing work while the miner ' +
-                                'is engaged: run with --mine --miner.threads=0 ' +
-                                '(and --miner.etherbase) so the node produces ' +
-                                'work for external miners without competing for it.'
+                                'is engaged: either expose the miner API ' +
+                                '(--http.api eth,net,web3,miner) and set the ' +
+                                'pool address so NAMP engages it itself, or run ' +
+                                'the node with --mine --miner.threads=0 ' +
+                                '--miner.etherbase <address>.'
                         );
                         return;
                     }

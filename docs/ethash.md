@@ -79,3 +79,40 @@ Share validation is two-tier, which is what keeps a pool both fast and honest:
 
 Only after that does the pool call `eth_submitWork`, and anything other than a
 literal `true` counts as a rejection.
+
+## Block maturity and payouts
+
+An Ethash block pays its reward to the node's etherbase, so there is no
+wallet transaction for the pool to watch. NAMP's ethash payment processor
+follows the open-ethereum-pool model instead — enable it per pool:
+
+```json
+"paymentProcessing": {
+    "enabled": true,
+    "paymentInterval": 120,
+    "minConf": 120,
+    "blockReward": 2,
+    "minimumPayment": 0.5,
+    "accountPassword": "optional keystore password"
+}
+```
+
+Each cycle, every pending block candidate old enough (`minConf`
+confirmations) is resolved against the chain itself:
+
+| On chain                                   | Credit                                                                  |
+| ------------------------------------------ | ----------------------------------------------------------------------- |
+| The block at that height carries our nonce | `blockReward` + tx fees + uncle-inclusion bonus (`blockReward/32` each) |
+| An uncle within 7 blocks carries our nonce | `blockReward × (8 − depth) / 8`                                         |
+| Neither                                    | Orphan — its round's shares return to the current round                 |
+
+Credits are split over the block's round shares and held in **wei**
+(BigInt end to end; a float cannot represent wei) in `<coin>:balances`.
+
+Payouts aggregate every rig of a wallet, and any wallet at or above
+`minimumPayment` is paid with a single `eth_sendTransaction` from the pool
+`address`. That means **the node must hold the pool address's key** (import
+it into the node keystore); set `accountPassword` to have NAMP unlock it
+with `personal_unlockAccount` first (requires the `personal` API), or keep
+the account unlocked with `--unlock`. Payments are recorded in
+`<coin>:payments` for the web UI.

@@ -272,10 +272,14 @@ export default function (this: any, logger: Logger) {
                 shareProcessor.handleShare(isValidShare, isValidBlock, {
                     ...data,
                     // Ethash pays the coinbase to the daemon's etherbase, so
-                    // there is no per-block reward figure to record here.
+                    // there is no per-block reward figure to record here. The
+                    // pending entry's txHash slot carries the NONCE: that is
+                    // how the payment processor later matches the on-chain
+                    // block (or uncle) back to this candidate.
                     blockHash: data.isBlockCandidate
                         ? data.headerHash
                         : undefined,
+                    txHash: data.isBlockCandidate ? data.nonce : undefined,
                     height: data.height,
                     difficulty: data.difficulty
                 });
