@@ -314,6 +314,18 @@ const EthashStratumServer = function EthashStratumServer(
                     bindClient(client);
                 }
             );
+            // An unhandled EADDRINUSE would kill the worker and put the master
+            // into a respawn loop; report it and keep serving the other ports.
+            server.on('error', function (err: any) {
+                _this.emit(
+                    'log',
+                    'error',
+                    err.code === 'EADDRINUSE'
+                        ? `Stratum port ${port} is already in use — another pool instance is probably running (check pm2 list / ss -ltnp). Continuing without it.`
+                        : `Stratum port ${port} failed to open: ${err.message || err}`
+                );
+                if (--pending === 0) callback?.();
+            });
             listeners.push(server);
             server.listen(parseInt(port), '0.0.0.0', function () {
                 if (--pending === 0) callback?.();

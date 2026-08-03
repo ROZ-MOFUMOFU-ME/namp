@@ -1212,6 +1212,22 @@ const StratumServer = function StratumServer(
         const onConnect = function (socket: any) {
             _this.handleNewClient(socket);
         };
+        // An unhandled listen error (EADDRINUSE, typically a second pool
+        // instance) kills the whole worker, and the master respawns it into
+        // the same error forever — a crash loop that buries the actual cause.
+        // Say what happened, skip the port and keep the fork alive.
+        const guardListenErrors = function (server: any, port: string) {
+            server.on('error', function (err: any) {
+                console.error(
+                    err.code === 'EADDRINUSE'
+                        ? `Stratum port ${port} is already in use — another pool instance is probably running (check pm2 list / ss -ltnp). This fork keeps running without it.`
+                        : `Stratum port ${port} failed to open: ${err.message || err}`
+                );
+                markStarted();
+            });
+            return server;
+        };
+
         portKeys.forEach(function (port) {
             const portCfg = options.ports[port] || {};
             // A port declared tls:true MUST be served over TLS. If the cert/key is
@@ -1231,15 +1247,17 @@ const StratumServer = function StratumServer(
                     return;
                 }
                 listeners.push(
-                    tls
-                        .createServer(tlsServerOptions, onConnect)
-                        .listen(parseInt(port), '0.0.0.0', markStarted)
+                    guardListenErrors(
+                        tls.createServer(tlsServerOptions, onConnect),
+                        port
+                    ).listen(parseInt(port), '0.0.0.0', markStarted)
                 );
             } else {
                 listeners.push(
-                    net
-                        .createServer({ allowHalfOpen: false }, onConnect)
-                        .listen(parseInt(port), '0.0.0.0', markStarted)
+                    guardListenErrors(
+                        net.createServer({ allowHalfOpen: false }, onConnect),
+                        port
+                    ).listen(parseInt(port), '0.0.0.0', markStarted)
                 );
             }
         });
