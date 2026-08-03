@@ -340,6 +340,7 @@ function SetupForPool(
 
     async function processPendingBlocks(currentHeight: number) {
         const pending = await redisClient.sMembers(`${coin}:blocksPending`);
+        cycle.pending = pending.length;
         await refreshImmature(pending, currentHeight);
         for (const entry of pending) {
             const [blockHash, nonce, heightRaw, finderWorker] =
@@ -349,6 +350,7 @@ function SetupForPool(
 
             const confirmations = currentHeight - height;
             if (confirmations < minConf) {
+                cycle.immature++;
                 await redisClient.hSet(
                     `${coin}:blocksPendingConfirms`,
                     blockHash,
@@ -378,6 +380,7 @@ function SetupForPool(
                     finderWorker,
                     resolution.blockDifficulty || 0
                 );
+                cycle.matured++;
                 logger.special(
                     logSystem,
                     logComponent,
@@ -386,6 +389,7 @@ function SetupForPool(
                     } credited over its round`
                 );
             } else {
+                cycle.orphaned++;
                 await requeueRound(height);
                 logger.warning(
                     logSystem,
@@ -401,6 +405,17 @@ function SetupForPool(
             await redisClient.hDel(`${coin}:blocksPendingConfirms`, blockHash);
         }
     }
+
+    /** Counters for the per-cycle summary. */
+    let cycle = {
+        pending: 0,
+        immature: 0,
+        matured: 0,
+        orphaned: 0,
+        walletsBelowMinimum: 0,
+        paid: 0,
+        payoutErrors: 0
+    };
 
     async function processPayouts() {
         const balances = await redisClient.hGetAll(`${coin}:balances`);
@@ -424,7 +439,10 @@ function SetupForPool(
         let unlocked = false;
         for (const wallet of Object.keys(byWallet)) {
             const { total, workers } = byWallet[wallet];
-            if (total < minPaymentWei) continue;
+            if (total < minPaymentWei) {
+                cycle.walletsBelowMinimum++;
+                continue;
+            }
 
             if (accountPassword && !unlocked) {
                 try {
@@ -435,6 +453,7 @@ function SetupForPool(
                     ]);
                     unlocked = true;
                 } catch (e: any) {
+                    cycle.payoutErrors++;
                     logger.error(
                         logSystem,
                         logComponent,
@@ -454,6 +473,7 @@ function SetupForPool(
                     }
                 ]);
             } catch (e: any) {
+                cycle.payoutErrors++;
                 logger.error(
                     logSystem,
                     logComponent,
@@ -498,10 +518,11 @@ function SetupForPool(
                     address: wallet
                 })
             });
+            cycle.paid++;
             logger.special(
                 logSystem,
                 logComponent,
-                `Paid ${weiToCoins(total)} ${poolOptions.coin.symbol} to ${wallet} (${txid})`
+                `Paid ${paidCoins} ${poolOptions.coin.symbol} to ${wallet} (${txid})`
             );
         }
     }
@@ -509,12 +530,41 @@ function SetupForPool(
     let stopped = false;
     let timer: any = null;
 
+    /** One line an operator can read to see what the cycle did, and why. */
+    function summarize() {
+        const parts = [
+            `${cycle.pending} pending (${cycle.immature} awaiting ${minConf} confirmations)`,
+            `${cycle.matured} matured`,
+            ...(cycle.orphaned ? [`${cycle.orphaned} orphaned`] : []),
+            cycle.paid ? `${cycle.paid} payout(s) sent` : 'no payouts sent',
+            ...(cycle.walletsBelowMinimum
+                ? [
+                      `${cycle.walletsBelowMinimum} wallet(s) below the ${
+                          processingConfig.minimumPayment || 0.1
+                      } ${poolOptions.coin.symbol} minimum`
+                  ]
+                : []),
+            ...(cycle.payoutErrors ? [`${cycle.payoutErrors} error(s)`] : [])
+        ];
+        logger.debug(logSystem, logComponent, `Cycle: ${parts.join(', ')}`);
+    }
+
     async function processCycle() {
+        cycle = {
+            pending: 0,
+            immature: 0,
+            matured: 0,
+            orphaned: 0,
+            walletsBelowMinimum: 0,
+            paid: 0,
+            payoutErrors: 0
+        };
         try {
             const currentHex = await rpc('eth_blockNumber', []);
             const currentHeight = parseInt(currentHex, 16);
             await processPendingBlocks(currentHeight);
             await processPayouts();
+            summarize();
         } catch (e: any) {
             logger.error(
                 logSystem,
