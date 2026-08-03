@@ -76,13 +76,17 @@ function PoolBlocks({
     const confirmed = (pool.confirmed?.blocks ?? []).slice(0, 8);
     const ps = pool.poolStats ?? {};
 
-    const render = (raw: string, paid: boolean) => {
+    // `confirmed` means the block matured and its round was credited to
+    // miner balances — not that anyone has been paid. Payouts run on their
+    // own schedule and minimum, so the two are hours apart; the payments
+    // page and the pool's "paid" total are what report money leaving.
+    const render = (raw: string, confirmedBlock: boolean) => {
         const b = parseBlockString(raw);
         const href = blockURL ? explorerUrl(blockURL, b.blockHash) : null;
         const conf = confirms[b.blockHash];
-        const status = paid ? (
+        const status = confirmedBlock ? (
             <span className="font-semibold text-green-600">
-                {t('stats_paid')}
+                {t('stats_block_confirmed')}
             </span>
         ) : conf != null ? (
             <span className="font-semibold text-red-600">
@@ -95,7 +99,7 @@ function PoolBlocks({
         );
         return (
             <div
-                key={(paid ? 'c' : 'p') + b.blockHash + b.height}
+                key={(confirmedBlock ? 'c' : 'p') + b.blockHash + b.height}
                 className="rounded-md bg-black/5 dark:bg-white/5 px-3 py-2 text-sm"
             >
                 <div className="flex flex-wrap items-center gap-x-3">

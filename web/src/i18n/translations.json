@@ -181,7 +181,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Switch to light theme",
-        "theme_to_dark": "Switch to dark theme"
+        "theme_to_dark": "Switch to dark theme",
+        "stats_block_confirmed": "*CONFIRMED*"
     },
     "en-US": {
         "getting_started": "Getting Started",
@@ -365,7 +366,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Switch to light theme",
-        "theme_to_dark": "Switch to dark theme"
+        "theme_to_dark": "Switch to dark theme",
+        "stats_block_confirmed": "*CONFIRMED*"
     },
     "ja": {
         "getting_started": "始め方",
@@ -549,7 +551,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "例: ccminer-x64 -a html -o http://HOST:PORT -u ウォレット.worker -p x",
         "theme_to_light": "ライトモードに切り替え",
-        "theme_to_dark": "ダークモードに切り替え"
+        "theme_to_dark": "ダークモードに切り替え",
+        "stats_block_confirmed": "*承認済*"
     },
     "zh": {
         "getting_started": "开始",
@@ -733,7 +736,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "切换到浅色模式",
-        "theme_to_dark": "切换到深色模式"
+        "theme_to_dark": "切换到深色模式",
+        "stats_block_confirmed": "*已确认*"
     },
     "zh-TW": {
         "getting_started": "開始",
@@ -917,7 +921,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "切換至淺色模式",
-        "theme_to_dark": "切換至深色模式"
+        "theme_to_dark": "切換至深色模式",
+        "stats_block_confirmed": "*已確認*"
     },
     "zh-HK": {
         "getting_started": "開始",
@@ -1101,7 +1106,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "切換至淺色模式",
-        "theme_to_dark": "切換至深色模式"
+        "theme_to_dark": "切換至深色模式",
+        "stats_block_confirmed": "*已確認*"
     },
     "fr": {
         "getting_started": "Démarrer",
@@ -1284,7 +1290,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Passer au thème clair",
-        "theme_to_dark": "Passer au thème sombre"
+        "theme_to_dark": "Passer au thème sombre",
+        "stats_block_confirmed": "*CONFIRMÉ*"
     },
     "es": {
         "getting_started": "Inicio",
@@ -1467,7 +1474,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Cambiar al tema claro",
-        "theme_to_dark": "Cambiar al tema oscuro"
+        "theme_to_dark": "Cambiar al tema oscuro",
+        "stats_block_confirmed": "*CONFIRMADO*"
     },
     "de": {
         "getting_started": "Starten",
@@ -1650,7 +1658,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Zum hellen Design wechseln",
-        "theme_to_dark": "Zum dunklen Design wechseln"
+        "theme_to_dark": "Zum dunklen Design wechseln",
+        "stats_block_confirmed": "*BESTÄTIGT*"
     },
     "ru": {
         "getting_started": "Начало работы",
@@ -1833,7 +1842,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Переключить на светлую тему",
-        "theme_to_dark": "Переключить на тёмную тему"
+        "theme_to_dark": "Переключить на тёмную тему",
+        "stats_block_confirmed": "*ПОДТВЕРЖДЁН*"
     },
     "hi": {
         "getting_started": "शुरू करें",
@@ -2016,7 +2026,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "लाइट थीम पर स्विच करें",
-        "theme_to_dark": "डार्क थीम पर स्विच करें"
+        "theme_to_dark": "डार्क थीम पर स्विच करें",
+        "stats_block_confirmed": "*पुष्ट*"
     },
     "ar": {
         "getting_started": "البدء",
@@ -2199,7 +2210,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "التبديل إلى المظهر الفاتح",
-        "theme_to_dark": "التبديل إلى المظهر الداكن"
+        "theme_to_dark": "التبديل إلى المظهر الداكن",
+        "stats_block_confirmed": "*مؤكد*"
     },
     "pt": {
         "getting_started": "Início",
@@ -2382,7 +2394,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Mudar para o tema claro",
-        "theme_to_dark": "Mudar para o tema escuro"
+        "theme_to_dark": "Mudar para o tema escuro",
+        "stats_block_confirmed": "*CONFIRMADO*"
     },
     "it": {
         "getting_started": "Inizio",
@@ -2565,7 +2578,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Passa al tema chiaro",
-        "theme_to_dark": "Passa al tema scuro"
+        "theme_to_dark": "Passa al tema scuro",
+        "stats_block_confirmed": "*CONFERMATO*"
     },
     "tl": {
         "getting_started": "Simula",
@@ -2748,7 +2762,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Switch to light theme",
-        "theme_to_dark": "Switch to dark theme"
+        "theme_to_dark": "Switch to dark theme",
+        "stats_block_confirmed": "*CONFIRMED*"
     },
     "id": {
         "getting_started": "Mulai",
@@ -2931,7 +2946,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Beralih ke tema terang",
-        "theme_to_dark": "Beralih ke tema gelap"
+        "theme_to_dark": "Beralih ke tema gelap",
+        "stats_block_confirmed": "*DIKONFIRMASI*"
     },
     "ms": {
         "getting_started": "Mula",
@@ -3114,7 +3130,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Switch to light theme",
-        "theme_to_dark": "Switch to dark theme"
+        "theme_to_dark": "Switch to dark theme",
+        "stats_block_confirmed": "*CONFIRMED*"
     },
     "ko": {
         "getting_started": "시작하기",
@@ -3297,7 +3314,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "라이트 모드로 전환",
-        "theme_to_dark": "다크 모드로 전환"
+        "theme_to_dark": "다크 모드로 전환",
+        "stats_block_confirmed": "*확인됨*"
     },
     "vi": {
         "getting_started": "Bắt đầu",
@@ -3480,7 +3498,8 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Chuyển sang giao diện sáng",
-        "theme_to_dark": "Chuyển sang giao diện tối"
+        "theme_to_dark": "Chuyển sang giao diện tối",
+        "stats_block_confirmed": "*ĐÃ XÁC NHẬN*"
     },
     "tr": {
         "getting_started": "Başlarken",
@@ -3663,6 +3682,7 @@
         "gs_getwork_url": "getwork URL",
         "gs_getwork_cmd_hint": "Example: ccminer-x64 -a html -o http://HOST:PORT -u WALLET.worker -p x",
         "theme_to_light": "Açık temaya geç",
-        "theme_to_dark": "Koyu temaya geç"
+        "theme_to_dark": "Koyu temaya geç",
+        "stats_block_confirmed": "*ONAYLANDI*"
     }
 }
