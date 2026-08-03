@@ -90,9 +90,16 @@ const EthashJobManager = function EthashJobManager(
 ) {
     const _this = this;
     const epochLength = options.epochLength || DEFAULT_EPOCH_LENGTH;
-    // Submissions already seen for the current work, so a miner cannot be paid
-    // twice for one solution.
-    let submissions = new Set<string>();
+    // geth regenerates the sealing work on every pending-block reassembly
+    // (new transactions, recommit ticks), not only on new blocks — several
+    // times per block. A share computed on the previous header is still a
+    // perfectly good solution for it, and geth's remote sealer keeps recent
+    // works and accepts solutions for any of them. Keeping only the newest
+    // work here rejected every submission that crossed a rotation — including
+    // block solutions, which is fatal for a pool. So recent works stay
+    // acceptable, each with its own duplicate ledger.
+    const maxWorkWindow = options.maxWorkWindow || 8;
+    const works = new Map<string, EthashWork & { submissions: Set<string> }>();
 
     this.currentWork = null as EthashWork | null;
 
@@ -110,13 +117,22 @@ const EthashJobManager = function EthashJobManager(
         const height =
             blockNumber === undefined ? 0 : Number(BigInt(blockNumber));
 
-        if (_this.currentWork && _this.currentWork.headerHash === headerHash) {
-            return false;
-        }
+        if (works.has(headerHash)) return false;
 
-        _this.currentWork = { headerHash, seedHash, boundary, height };
-        submissions = new Set();
-        _this.emit('newWork', _this.currentWork);
+        const work = {
+            headerHash,
+            seedHash,
+            boundary,
+            height,
+            submissions: new Set<string>()
+        };
+        works.set(headerHash, work);
+        while (works.size > maxWorkWindow) {
+            const oldest = works.keys().next().value as string;
+            works.delete(oldest);
+        }
+        _this.currentWork = work;
+        _this.emit('newWork', work);
         return true;
     };
 
@@ -139,11 +155,14 @@ const EthashJobManager = function EthashJobManager(
         difficulty: number;
         worker?: string;
     }) {
-        const work = _this.currentWork;
-        if (!work) return { error: [21, 'no work available'] };
-        if (share.headerHash !== work.headerHash) {
+        if (!_this.currentWork) return { error: [21, 'no work available'] };
+        // Any work still in the window is valid to solve; the daemon is the
+        // final judge for candidates on the older ones.
+        const work = works.get(share.headerHash);
+        if (!work) {
             return { error: [21, 'job not found'] };
         }
+        const isStale = work !== _this.currentWork;
 
         let header: Buffer;
         let mix: Buffer;
@@ -157,8 +176,9 @@ const EthashJobManager = function EthashJobManager(
         }
 
         const key = `${share.nonce}:${share.mixHash}`;
-        if (submissions.has(key)) return { error: [22, 'duplicate share'] };
-        submissions.add(key);
+        if (work.submissions.has(key))
+            return { error: [22, 'duplicate share'] };
+        work.submissions.add(key);
 
         const shareBoundary = boundaryForDifficulty(share.difficulty);
         if (
@@ -196,10 +216,11 @@ const EthashJobManager = function EthashJobManager(
             nonce: share.nonce,
             mixHash: share.mixHash,
             difficulty: share.difficulty,
+            isStale,
             isBlockCandidate
         });
 
-        return { valid: true, isBlockCandidate };
+        return { valid: true, isBlockCandidate, isStale, work };
     };
 };
 

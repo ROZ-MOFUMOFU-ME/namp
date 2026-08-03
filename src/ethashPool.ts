@@ -147,7 +147,10 @@ const EthashPool = function EthashPool(
             return result;
         }
 
-        const work = _this.jobManager.currentWork;
+        // The work the share actually solved: with the recent-works window a
+        // candidate can belong to a slightly older header, and the daemon
+        // accepts solutions for any work it still remembers.
+        const work = result.work;
         emitSpecialLog(`Block candidate found at height ${work.height}`);
         _this.submitWork(
             {

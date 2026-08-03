@@ -239,3 +239,84 @@ test('a block candidate must survive the cache-backed DAG check', () => {
     });
     assert.deepEqual(result.error, [23, 'mix hash does not match the DAG']);
 });
+
+test('a share for the previous work survives a rotation (stale window)', () => {
+    // geth rotates the header several times per block (recommit, new txs); a
+    // share computed on the previous header must stay acceptable or every
+    // rotation throws away in-flight work — including block solutions.
+    const { jm, events } = makeManager();
+    jm.processWork(WORK);
+    const rotated = [
+        WORK[0].replace('0xde', '0xab'),
+        WORK[1],
+        WORK[2],
+        WORK[3] // same height: a recommit, not a new block
+    ];
+    jm.processWork(rotated);
+
+    const result = jm.processShare({
+        headerHash: WORK[0], // the previous header
+        nonce: '0x0102030405060708',
+        mixHash: '0x' + '22'.repeat(32),
+        difficulty: 1e-9
+    });
+    assert.equal(result.valid, true);
+    assert.equal(result.isStale, true, 'flagged, not rejected');
+    assert.equal(result.work.headerHash, WORK[0], 'resolved to its own work');
+    assert.equal(events.shares.at(-1).isStale, true);
+
+    // The freshest work is not stale.
+    const fresh = jm.processShare({
+        headerHash: rotated[0],
+        nonce: '0x0102030405060708',
+        mixHash: '0x' + '22'.repeat(32),
+        difficulty: 1e-9
+    });
+    assert.equal(fresh.isStale, false);
+});
+
+test('duplicates are tracked per work across rotations', () => {
+    const { jm } = makeManager();
+    jm.processWork(WORK);
+    const share = {
+        headerHash: WORK[0],
+        nonce: '0x0102030405060708',
+        mixHash: '0x' + '22'.repeat(32),
+        difficulty: 1e-9
+    };
+    assert.equal(jm.processShare(share).valid, true);
+
+    // A rotation must not reset the previous work's duplicate ledger.
+    jm.processWork([
+        WORK[0].replace('0xde', '0xab'),
+        WORK[1],
+        WORK[2],
+        WORK[3]
+    ]);
+    assert.deepEqual(jm.processShare(share).error, [22, 'duplicate share']);
+});
+
+test('work evicted from the window is genuinely stale', () => {
+    const { jm } = makeManager({ maxWorkWindow: 2 });
+    jm.processWork(WORK);
+    jm.processWork([
+        WORK[0].replace('0xde', '0xab'),
+        WORK[1],
+        WORK[2],
+        WORK[3]
+    ]);
+    jm.processWork([
+        WORK[0].replace('0xde', '0xac'),
+        WORK[1],
+        WORK[2],
+        WORK[3]
+    ]);
+
+    const result = jm.processShare({
+        headerHash: WORK[0], // fell out of the 2-entry window
+        nonce: '0x0102030405060708',
+        mixHash: '0x' + '22'.repeat(32),
+        difficulty: 1e-9
+    });
+    assert.deepEqual(result.error, [21, 'job not found']);
+});
