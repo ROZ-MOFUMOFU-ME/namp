@@ -223,3 +223,54 @@ test('persists the snapshot to statHistory and serialises statsString', async (t
     assert.equal(snapshot.pools[COIN].pending, undefined);
     assert.equal(snapshot.pools[COIN].miners, undefined);
 });
+
+test('an ethash coin gets hash-counted hashrate instead of a crash', async (t) => {
+    if (!available) return t.skip(`no Redis on ${HOST}:${PORT}`);
+    // Ethash algorithms are deliberately absent from the Bitcoin-style algo
+    // table, and stats used to crash the whole website process on them
+    // (algos[algorithm].multiplier of undefined). Their share difficulty
+    // already counts hashes, so no 2^32 scaling applies either.
+    const ETH_COIN = 'ethstatstest';
+    const ethKeys = await redis.keys(`${ETH_COIN}:*`);
+    if (ethKeys.length) await redis.del(ethKeys);
+
+    const now = (Date.now() / 1000) | 0;
+    await redis.zAdd(`${ETH_COIN}:hashrate`, [
+        { score: now, value: '100000000:0xwallet.rig1:1111' },
+        { score: now, value: '100000000:0xwallet.rig1:2222' }
+    ]);
+
+    const ethStats: any = new (Stats as any)(
+        silentLogger,
+        {
+            redis: { host: HOST, port: PORT },
+            website: {
+                stats: { hashrateWindow: WINDOW, historicalRetention: 3600 }
+            }
+        },
+        {
+            [ETH_COIN]: {
+                coin: {
+                    name: ETH_COIN,
+                    symbol: 'vbc',
+                    algorithm: 'ethash',
+                    blockTime: 12
+                },
+                redis: { host: HOST, port: PORT }
+            }
+        }
+    );
+    try {
+        await new Promise<void>((resolve) => ethStats.getGlobalStats(resolve));
+        const pool = ethStats.stats.pools[ETH_COIN];
+        assert.equal(
+            pool.hashrate,
+            (2 * 100000000) / WINDOW,
+            'share difficulty counts hashes directly for ethash'
+        );
+    } finally {
+        await ethStats.shutdown();
+        const leftover = await redis.keys(`${ETH_COIN}:*`);
+        if (leftover.length) await redis.del(leftover);
+    }
+});

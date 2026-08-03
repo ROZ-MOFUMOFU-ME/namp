@@ -1,5 +1,5 @@
 import async from 'async';
-import algos from './algoProperties.ts';
+import algos, { isEthashAlgorithm } from './algoProperties.ts';
 import type { Logger } from './logUtil.ts';
 import { createRedisClient } from './redisUtil.ts';
 import { parsePriceHash } from './priceProviders.ts';
@@ -806,9 +806,18 @@ export default function (
                         true
                     );
 
-                    const shareMultiplier =
-                        Math.pow(2, 32) /
-                        (algos as any)[coinStats.algorithm].multiplier;
+                    // Ethash-family algorithms are deliberately absent from
+                    // the Bitcoin-style algo table, and their share difficulty
+                    // already counts hashes directly — the 2^32 scaling does
+                    // not apply. An unknown algorithm must degrade, not crash
+                    // the website process.
+                    const shareMultiplier = isEthashAlgorithm(
+                        coinStats.algorithm
+                    )
+                        ? 1
+                        : Math.pow(2, 32) /
+                          (((algos as any)[coinStats.algorithm] || {})
+                              .multiplier || 1);
                     coinStats.hashrate =
                         (shareMultiplier * coinStats.shares) /
                         portalConfig.website.stats.hashrateWindow;

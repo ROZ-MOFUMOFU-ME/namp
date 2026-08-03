@@ -136,6 +136,7 @@ function DaemonInterface(this: any, daemons: any, logger: any) {
 
         for (let i = 0; i < cmdArray.length; i++) {
             requestJson.push({
+                jsonrpc: '2.0',
                 method: cmdArray[i][0],
                 params: cmdArray[i][1],
                 id: Date.now() + Math.floor(Math.random() * 10) + i
@@ -194,6 +195,10 @@ function DaemonInterface(this: any, daemons: any, logger: any) {
                 }
 
                 const requestJson = JSON.stringify({
+                    // Declared on every request: Bitcoin-family daemons accept
+                    // the marker, and some geth-family builds refuse requests
+                    // without it ("Unsupported JSON-RPC protocol version").
+                    jsonrpc: '2.0',
                     method:
                         method !== 'getnetworkinfo'
                             ? method
