@@ -61,6 +61,7 @@ extern "C"
 }
 
 #include "kawpow.hpp"
+#include "kawpow/keccak.h"
 
 // zr5.h defines a WIDTH macro, which would rewrite the template parameter of
 // the same name inside the equihash headers; it is only meant for zr5's own
@@ -735,6 +736,42 @@ DECLARE_FUNC(equihash_verify)
     info.GetReturnValue().Set(Nan::New<v8::Boolean>(isValid));
 }
 
+/*
+ * Ethash final hash (keccak only, no cache): two keccaks over
+ * (header || nonce_le) and (seed || mix). Cheap enough to run per share —
+ * pools use it to report the difficulty a share actually achieved.
+ */
+DECLARE_FUNC(ethash_final_hash)
+{
+    if (info.Length() < 3)
+        RETURN_EXCEPT("You must provide 3 arguments: headerHash, mixHash, nonce.");
+
+    Local<Object> obj_header = Nan::To<Object>(info[0]).ToLocalChecked();
+    Local<Object> obj_mix = Nan::To<Object>(info[1]).ToLocalChecked();
+    Local<Object> obj_nonce = Nan::To<Object>(info[2]).ToLocalChecked();
+
+    if (!Buffer::HasInstance(obj_header) || Buffer::Length(obj_header) != 32)
+        RETURN_EXCEPT("Argument 1 (header hash) should be a 32-byte buffer.");
+    if (!Buffer::HasInstance(obj_mix) || Buffer::Length(obj_mix) != 32)
+        RETURN_EXCEPT("Argument 2 (mix hash) should be a 32-byte buffer.");
+    if (!Buffer::HasInstance(obj_nonce) || Buffer::Length(obj_nonce) != 8)
+        RETURN_EXCEPT("Argument 3 (nonce) should be an 8-byte little-endian buffer.");
+
+    uint8_t seed_input[40];
+    std::memcpy(seed_input, Buffer::Data(obj_header), 32);
+    std::memcpy(&seed_input[32], Buffer::Data(obj_nonce), 8);
+    const union ethash_hash512 seed = ethash_keccak512(seed_input, sizeof(seed_input));
+
+    uint8_t final_input[96];
+    std::memcpy(final_input, seed.bytes, 64);
+    std::memcpy(&final_input[64], Buffer::Data(obj_mix), 32);
+    const union ethash_hash256 final_hash = ethash_keccak256(final_input, sizeof(final_input));
+
+    char output[32];
+    std::memcpy(output, final_hash.bytes, 32);
+    SET_BUFFER_RETURN(output, 32);
+}
+
 DECLARE_FUNC(vipstar)
 {
     if (info.Length() < 1)
@@ -767,6 +804,7 @@ NAN_MODULE_INIT(init)
     NAN_EXPORT(target, ethash_verify_final);
     NAN_EXPORT(target, ethash_verify);
     NAN_EXPORT(target, ethash_hash);
+    NAN_EXPORT(target, ethash_final_hash);
     NAN_EXPORT(target, equihash_verify);
     NAN_EXPORT(target, c11);
     NAN_EXPORT(target, cryptonight);

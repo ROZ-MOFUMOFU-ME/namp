@@ -187,6 +187,19 @@ const EthashJobManager = function EthashJobManager(
             return { error: [23, 'low difficulty share'] };
         }
 
+        // The difficulty this share actually achieved (2^256 / final hash):
+        // what operators read next to the port difficulty in the share log.
+        const finalHash: Buffer = multiHashing.ethash_final_hash(
+            header,
+            mix,
+            nonce
+        );
+        const finalValue = BigInt('0x' + finalHash.toString('hex'));
+        const shareDiff =
+            finalValue > 0n
+                ? Number((MAX_TARGET * 1000n) / finalValue) / 1000
+                : Infinity;
+
         const networkBoundary = hash256(work.boundary, 'network boundary');
         const isBlockCandidate = multiHashing.ethash_verify_final(
             header,
@@ -216,11 +229,12 @@ const EthashJobManager = function EthashJobManager(
             nonce: share.nonce,
             mixHash: share.mixHash,
             difficulty: share.difficulty,
+            shareDiff,
             isStale,
             isBlockCandidate
         });
 
-        return { valid: true, isBlockCandidate, isStale, work };
+        return { valid: true, isBlockCandidate, isStale, shareDiff, work };
     };
 };
 

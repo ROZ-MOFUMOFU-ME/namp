@@ -147,7 +147,12 @@ const EthashPool = function EthashPool(
         }
 
         if (!result.isBlockCandidate) {
-            _this.emit('share', { ...submission, isBlockCandidate: false });
+            _this.emit('share', {
+                ...submission,
+                isBlockCandidate: false,
+                isStale: result.isStale,
+                shareDiff: result.shareDiff
+            });
             callback?.(result);
             return result;
         }
@@ -176,6 +181,8 @@ const EthashPool = function EthashPool(
                     {
                         ...submission,
                         isBlockCandidate: true,
+                        isStale: result.isStale,
+                        shareDiff: result.shareDiff,
                         height: work.height
                     },
                     accepted

@@ -263,6 +263,29 @@ export default function (this: any, logger: Logger) {
             });
             ethashPool.on('share', function (data: any, accepted: any) {
                 const isValidShare = !data.error;
+                if (isValidShare) {
+                    logger.debug(
+                        logSystem,
+                        logComponent,
+                        logSubCat,
+                        `Share accepted at diff ${data.difficulty}/${
+                            typeof data.shareDiff === 'number'
+                                ? data.shareDiff.toFixed(3)
+                                : data.shareDiff
+                        } by ${data.worker} [${data.ip}]${
+                            data.isStale ? ' (stale work)' : ''
+                        }`
+                    );
+                } else {
+                    logger.debug(
+                        logSystem,
+                        logComponent,
+                        logSubCat,
+                        `Share rejected (${data.error}) from ${
+                            data.worker || 'unauthorized'
+                        } [${data.ip}]`
+                    );
+                }
                 // A candidate only counts as a block once the daemon accepted
                 // it; shareProcessor records the round on that basis.
                 const isValidBlock =
