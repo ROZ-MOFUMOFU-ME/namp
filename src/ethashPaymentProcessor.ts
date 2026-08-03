@@ -27,6 +27,39 @@ import type { Logger } from './logUtil.ts';
 
 const UNCLE_DEPTH = 7;
 
+/**
+ * Reward for a block at a given height, in wei.
+ *
+ * Chains step their subsidy down over time (VirBiCoin: 8 VBC, minus 1 every
+ * 2,100,000 blocks from block 4,200,000, floor 1 — see go-virbicoin
+ * consensus.go), so the coin definition may carry a schedule:
+ *
+ *   "blockRewardSchedule": [
+ *       { "height": 0, "reward": 8 },
+ *       { "height": 4200000, "reward": 7 },
+ *       ...
+ *   ]
+ *
+ * The entry with the highest height not above the block applies. A plain
+ * numeric blockReward stays supported as a single-entry schedule.
+ */
+export function rewardWeiForHeight(
+    height: number,
+    schedule: Array<{ height: number; reward: number }> | undefined,
+    fallbackCoins: number
+): bigint {
+    if (Array.isArray(schedule) && schedule.length) {
+        const sorted = [...schedule].sort((a, b) => a.height - b.height);
+        let chosen = sorted[0];
+        for (const entry of sorted) {
+            if (entry.height <= height) chosen = entry;
+            else break;
+        }
+        return coinsToWei(chosen.reward);
+    }
+    return coinsToWei(fallbackCoins);
+}
+
 /** Coins (float, as configs express amounts) to wei without float drift. */
 export function coinsToWei(coins: number): bigint {
     return BigInt(Math.round(coins * 1e6)) * 10n ** 12n;
@@ -70,7 +103,10 @@ function SetupForPool(
 
     const minConf = Math.max(processingConfig.minConf || 120, 10);
     const intervalSecs = Math.max(processingConfig.paymentInterval || 120, 30);
-    const blockRewardWei = coinsToWei(processingConfig.blockReward || 2);
+    const rewardSchedule = poolOptions.coin.blockRewardSchedule;
+    const fallbackReward = processingConfig.blockReward || 2;
+    const rewardWeiAt = (height: number) =>
+        rewardWeiForHeight(height, rewardSchedule, fallbackReward);
     const minPaymentWei = coinsToWei(processingConfig.minimumPayment || 0.1);
     const poolAddress = poolOptions.address;
     const accountPassword = processingConfig.accountPassword;
@@ -132,12 +168,13 @@ function SetupForPool(
     ): Promise<Resolution> {
         const block = await rpc('eth_getBlockByNumber', [hex(height), true]);
         if (block && sameNonce(block.nonce, nonce)) {
+            const reward = rewardWeiAt(height);
             const fees = await blockFeesWei(block);
             const uncleBonus =
-                BigInt((block.uncles || []).length) * (blockRewardWei / 32n);
+                BigInt((block.uncles || []).length) * (reward / 32n);
             return {
                 kind: 'confirmed',
-                rewardWei: blockRewardWei + fees + uncleBonus
+                rewardWei: reward + fees + uncleBonus
             };
         }
         for (let depth = 1; depth <= UNCLE_DEPTH; depth++) {
@@ -156,9 +193,13 @@ function SetupForPool(
                     sameNonce(uncle.nonce, nonce) &&
                     parseInt(uncle.number, 16) === height
                 ) {
+                    // The consensus formula scales by the reward of the block
+                    // that INCLUDED the uncle: (uncleHeight + 8 - hostHeight)
+                    // x R(host) / 8, which is (8 - depth) x R / 8 here.
+                    const hostReward = rewardWeiAt(height + depth);
                     return {
                         kind: 'confirmed',
-                        rewardWei: (blockRewardWei * BigInt(8 - depth)) / 8n
+                        rewardWei: (hostReward * BigInt(8 - depth)) / 8n
                     };
                 }
             }
@@ -378,7 +419,11 @@ function SetupForPool(
         logSystem,
         logComponent,
         `Ethash payment processing every ${intervalSecs}s: minConf ${minConf}, ` +
-            `blockReward ${processingConfig.blockReward || 2} ${poolOptions.coin.symbol}, ` +
+            `blockReward ${
+                Array.isArray(rewardSchedule) && rewardSchedule.length
+                    ? 'schedule(' + rewardSchedule.length + ' steps)'
+                    : fallbackReward
+            } ${poolOptions.coin.symbol}, ` +
             `minimumPayment ${processingConfig.minimumPayment || 0.1}`
     );
     timer = setTimeout(processCycle, intervalSecs * 1000);

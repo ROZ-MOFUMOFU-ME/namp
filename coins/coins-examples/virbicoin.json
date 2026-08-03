@@ -1,0 +1,42 @@
+{
+    "name": "virbicoin",
+    "symbol": "VBC",
+    "algorithm": "ethash",
+    "blockTime": 12,
+    "epochLength": 30000,
+    "_comment_blockRewardSchedule": "From go-virbicoin consensus.go calcBlockReward: 8 VBC, minus 1 every 2,100,000 blocks starting at 4,200,000, floor 1 VBC.",
+    "blockRewardSchedule": [
+        {
+            "height": 0,
+            "reward": 8
+        },
+        {
+            "height": 4200000,
+            "reward": 7
+        },
+        {
+            "height": 6300000,
+            "reward": 6
+        },
+        {
+            "height": 8400000,
+            "reward": 5
+        },
+        {
+            "height": 10500000,
+            "reward": 4
+        },
+        {
+            "height": 12600000,
+            "reward": 3
+        },
+        {
+            "height": 14700000,
+            "reward": 2
+        },
+        {
+            "height": 16800000,
+            "reward": 1
+        }
+    ]
+}

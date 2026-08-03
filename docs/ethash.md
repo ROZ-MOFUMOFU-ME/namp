@@ -97,6 +97,22 @@ follows the open-ethereum-pool model instead — enable it per pool:
 }
 ```
 
+`blockReward` is the flat per-block subsidy. Chains that step their subsidy
+down over time declare a schedule in the **coin definition** instead, and it
+takes precedence; the entry with the highest height at or below the block
+applies (see coins-examples/virbicoin.json for the full VirBiCoin schedule
+taken from go-virbicoin's calcBlockReward):
+
+```json
+"blockRewardSchedule": [
+    { "height": 0, "reward": 8 },
+    { "height": 4200000, "reward": 7 }
+]
+```
+
+Uncle credits scale with the reward of the block that included the uncle,
+matching the consensus formula.
+
 Each cycle, every pending block candidate old enough (`minConf`
 confirmations) is resolved against the chain itself:
 

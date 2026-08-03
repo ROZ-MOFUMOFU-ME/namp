@@ -7,7 +7,8 @@ import { createClient } from 'redis';
 import setupEthashPayments, {
     coinsToWei,
     weiToCoins,
-    splitReward
+    splitReward,
+    rewardWeiForHeight
 } from '../src/ethashPaymentProcessor.ts';
 
 /*
@@ -434,4 +435,29 @@ test('a failed unlock keeps every balance and sends nothing', async (t) => {
         await redis.hGet(`${COIN}:balances`, `${WALLET_A}.rig1`),
         (10n ** 18n).toString()
     );
+});
+
+test('the reward schedule steps down by height, per the chain consensus', () => {
+    // VirBiCoin's calcBlockReward: 8 VBC, minus 1 every 2,100,000 blocks from
+    // 4,200,000, floor 1. The entry with the highest height <= block applies.
+    const schedule = [
+        { height: 0, reward: 8 },
+        { height: 4200000, reward: 7 },
+        { height: 6300000, reward: 6 },
+        { height: 16800000, reward: 1 }
+    ];
+    const R = (h: number) => rewardWeiForHeight(h, schedule, 99);
+    assert.equal(R(0), 8n * 10n ** 18n);
+    assert.equal(R(4199999), 8n * 10n ** 18n);
+    assert.equal(R(4200000), 7n * 10n ** 18n);
+    assert.equal(R(6299999), 7n * 10n ** 18n);
+    assert.equal(R(6300000), 6n * 10n ** 18n);
+    assert.equal(R(99999999), 1n * 10n ** 18n);
+    // Order in the file must not matter.
+    assert.equal(
+        rewardWeiForHeight(4200001, [schedule[1], schedule[0]], 99),
+        7n * 10n ** 18n
+    );
+    // No schedule: the numeric fallback applies.
+    assert.equal(rewardWeiForHeight(123, undefined, 2), 2n * 10n ** 18n);
 });
