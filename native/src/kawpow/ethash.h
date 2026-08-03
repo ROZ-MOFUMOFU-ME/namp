@@ -27,6 +27,14 @@ extern "C" {
 #define ETHASH_REVISION "23"
 
 #define ETHASH_EPOCH_LENGTH 7500
+
+/** 512 for KawPow, 256 for classic Ethash; set by the addon per call. */
+#ifdef __cplusplus
+extern "C"
+#else
+extern
+#endif
+    int ethash_full_dataset_item_parents;
 #define ETHASH_LIGHT_CACHE_ITEM_SIZE 64
 #define ETHASH_FULL_DATASET_ITEM_SIZE 128
 #define ETHASH_NUM_DATASET_ACCESSES 64

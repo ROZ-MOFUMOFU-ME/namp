@@ -544,6 +544,8 @@ DECLARE_FUNC(kawpow)
 
     char output[64];
 
+    // KawPow semantics: 7500-block epochs, 512 dataset parents.
+    ethash_full_dataset_item_parents = 512;
     auto context = ethash::create_epoch_context(ethash::get_epoch_number(height));
     const auto result = progpow::k_hash(*context, height, hash, nonce);
 
@@ -562,12 +564,13 @@ DECLARE_FUNC(kawpow)
  *   ethash_verify_final(headerHash, mixHash, nonce, boundary) -> bool
  *       keccak-only, no cache: the cheap check that the submitted mix
  *       produces a hash under the share target.
- *   ethash_verify(headerHash, mixHash, nonce, boundary, height) -> bool
+ *   ethash_verify(headerHash, mixHash, nonce, boundary, epoch) -> bool
  *       full verification against the epoch's light cache: proves the mix
  *       itself was derived from the DAG, which the cheap check cannot.
  *
- * Etchash (Ethereum Classic) uses the same algorithm with ECIP-1099's
- * halved epoch length; pass the epoch-adjusted height from the caller.
+ * The caller passes the EPOCH NUMBER (height / epochLength) directly, which
+ * is what makes Ethash (30000) and Etchash (60000, ECIP-1099) share one
+ * implementation.
  */
 DECLARE_FUNC(ethash_verify_final)
 {
@@ -621,7 +624,7 @@ DECLARE_FUNC(ethash_verify)
     if (!Buffer::HasInstance(obj_boundary) || Buffer::Length(obj_boundary) != 32)
         RETURN_EXCEPT("Argument 4 (boundary) should be a 32-byte buffer.");
     if (!info[4]->IsUint32())
-        RETURN_EXCEPT("Argument 5 (height) should be an unsigned integer.");
+        RETURN_EXCEPT("Argument 5 (epoch) should be an unsigned integer.");
 
     ethash::hash256 header = {};
     ethash::hash256 mix = {};
@@ -633,8 +636,12 @@ DECLARE_FUNC(ethash_verify)
     uint64_t nonce = 0;
     std::memcpy((uint8_t *)&nonce, Buffer::Data(obj_nonce), 8);
 
-    const uint32_t height = Nan::To<uint32_t>(info[4]).ToChecked();
-    auto context = ethash::create_epoch_context(ethash::get_epoch_number(height));
+    const uint32_t epoch = Nan::To<uint32_t>(info[4]).ToChecked();
+    // Classic Ethash: 256 dataset parents (KawPow's 512 gives different mixes
+    // — geth rejected nothing, our verifier rejected everything, and this
+    // constant was the whole story).
+    ethash_full_dataset_item_parents = 256;
+    auto context = ethash::create_epoch_context((int)epoch);
     const bool ok = ethash::e_verify(*context, header, mix, nonce, boundary);
 
     info.GetReturnValue().Set(Nan::New<v8::Boolean>(ok));
@@ -658,7 +665,7 @@ DECLARE_FUNC(ethash_hash)
     if (!Buffer::HasInstance(obj_nonce) || Buffer::Length(obj_nonce) != 8)
         RETURN_EXCEPT("Argument 2 (nonce) should be an 8-byte buffer.");
     if (!info[2]->IsUint32())
-        RETURN_EXCEPT("Argument 3 (height) should be an unsigned integer.");
+        RETURN_EXCEPT("Argument 3 (epoch) should be an unsigned integer.");
 
     ethash::hash256 header = {};
     std::memcpy(header.bytes, Buffer::Data(obj_header), 32);
@@ -666,8 +673,9 @@ DECLARE_FUNC(ethash_hash)
     uint64_t nonce = 0;
     std::memcpy((uint8_t *)&nonce, Buffer::Data(obj_nonce), 8);
 
-    const uint32_t height = Nan::To<uint32_t>(info[2]).ToChecked();
-    auto context = ethash::create_epoch_context(ethash::get_epoch_number(height));
+    const uint32_t epoch = Nan::To<uint32_t>(info[2]).ToChecked();
+    ethash_full_dataset_item_parents = 256;
+    auto context = ethash::create_epoch_context((int)epoch);
     const auto result = ethash::e_hash(*context, header, nonce);
 
     char output[64];

@@ -16,6 +16,13 @@
 #include <cstring>
 #include <limits>
 
+// KawPow (Ravencoin) derives each dataset item from 512 parents; classic
+// Ethash (the Ethereum family) from 256. The addon entry points select the
+// mode per call — calls are serialized on the JS main thread.
+extern "C" {
+int ethash_full_dataset_item_parents = 512;
+}
+
 namespace ethash
 {
 // Internal constants:
@@ -24,7 +31,7 @@ constexpr static int light_cache_growth = 1 << 17;
 constexpr static int light_cache_rounds = 3;
 constexpr static int full_dataset_init_size = 1 << 30;
 constexpr static int full_dataset_growth = 1 << 23;
-constexpr static int full_dataset_item_parents = 512;
+
 
 // Verify constants:
 static_assert(sizeof(hash512) == ETHASH_LIGHT_CACHE_ITEM_SIZE, "");
@@ -209,7 +216,7 @@ struct item_state
 hash512 calculate_dataset_item_512(const epoch_context& context, int64_t index) noexcept
 {
     item_state item0{context, index};
-    for (uint32_t j = 0; j < full_dataset_item_parents; ++j)
+    for (uint32_t j = 0; j < (uint32_t)ethash_full_dataset_item_parents; ++j)
         item0.update(j);
     return item0.final();
 }
@@ -223,7 +230,7 @@ hash1024 calculate_dataset_item_1024(const epoch_context& context, uint32_t inde
     item_state item0{context, int64_t(index) * 2};
     item_state item1{context, int64_t(index) * 2 + 1};
 
-    for (uint32_t j = 0; j < full_dataset_item_parents; ++j)
+    for (uint32_t j = 0; j < (uint32_t)ethash_full_dataset_item_parents; ++j)
     {
         item0.update(j);
         item1.update(j);
@@ -239,7 +246,7 @@ hash2048 calculate_dataset_item_2048(const epoch_context& context, uint32_t inde
     item_state item2{context, int64_t(index) * 4 + 2};
     item_state item3{context, int64_t(index) * 4 + 3};
 
-    for (uint32_t j = 0; j < full_dataset_item_parents; ++j)
+    for (uint32_t j = 0; j < (uint32_t)ethash_full_dataset_item_parents; ++j)
     {
         item0.update(j);
         item1.update(j);

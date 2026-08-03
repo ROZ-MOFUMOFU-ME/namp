@@ -419,7 +419,8 @@ test('accepts a genuine DAG-derived share through the stratum port', async () =>
     const require = createRequire(import.meta.url);
     const mh = require('../native/index.cjs');
 
-    const height = 1; // epoch 0: the smallest cache to build
+    const height = 1;
+    const epoch = 0; // the native calls take the epoch, not the height
     const state: MockState = {
         calls: [],
         submitted: [],
@@ -443,7 +444,7 @@ test('accepts a genuine DAG-derived share through the stratum port', async () =>
     for (let n = 0; n < 500 && !solved; n++) {
         const nonce = Buffer.alloc(8);
         nonce.writeUInt32LE(n, 0);
-        const out = mh.ethash_hash(headerBuf, nonce, height);
+        const out = mh.ethash_hash(headerBuf, nonce, epoch);
         if (BigInt('0x' + out.subarray(0, 32).toString('hex')) <= boundary) {
             solved = {
                 nonce: '0x' + Buffer.from(nonce).reverse().toString('hex'),

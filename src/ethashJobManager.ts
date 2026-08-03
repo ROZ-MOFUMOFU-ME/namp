@@ -232,7 +232,7 @@ const EthashJobManager = function EthashJobManager(
                 mix,
                 nonce,
                 networkBoundary,
-                work.height
+                epochOf(work.height, epochLength)
             );
             if (!proven)
                 return { error: [23, 'mix hash does not match the DAG'] };

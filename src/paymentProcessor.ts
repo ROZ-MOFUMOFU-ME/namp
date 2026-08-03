@@ -68,15 +68,21 @@ export default function (logger: Logger) {
                 const logSystem = 'Payments';
                 const logComponent = coin;
 
+                // Ethash pools may omit the dedicated payment daemon and
+                // fall back to the pool's own; announce whichever is in use.
+                const paymentDaemon =
+                    processingConfig.daemon ||
+                    (poolOptions.daemons && poolOptions.daemons[0]) ||
+                    {};
                 logger.debug(
                     logSystem,
                     logComponent,
                     'Payment processing setup with daemon (' +
-                        processingConfig.daemon.user +
+                        (paymentDaemon.user || '') +
                         '@' +
-                        processingConfig.daemon.host +
+                        paymentDaemon.host +
                         ':' +
-                        processingConfig.daemon.port +
+                        paymentDaemon.port +
                         ') and redis (' +
                         poolOptions.redis.host +
                         ':' +

@@ -77,7 +77,7 @@ test('the full check rejects a mix that was never derived from the DAG', () => {
         'the cheap check accepts an arbitrary mix under a loose boundary'
     );
     assert.equal(
-        multiHashing.ethash_verify(header, mix, nonce, MAX_BOUNDARY, 1),
+        multiHashing.ethash_verify(header, mix, nonce, MAX_BOUNDARY, 0),
         false,
         'the cache-backed check must reject it'
     );
@@ -109,14 +109,14 @@ test('a computed mix verifies against the cache it came from', () => {
     // epoch cache. Feeding that mix back must satisfy the full check — this is
     // the positive path the two verification tiers exist to separate from an
     // invented mix.
-    const out = multiHashing.ethash_hash(header, nonce, 1);
+    const out = multiHashing.ethash_hash(header, nonce, 0);
     assert.equal(out.length, 64, 'final hash followed by mix hash');
 
     const finalHash = out.subarray(0, 32);
     const computedMix = out.subarray(32);
 
     assert.equal(
-        multiHashing.ethash_verify(header, computedMix, nonce, MAX_BOUNDARY, 1),
+        multiHashing.ethash_verify(header, computedMix, nonce, MAX_BOUNDARY, 0),
         true,
         'the DAG-derived mix must pass the cache-backed check'
     );
@@ -129,7 +129,7 @@ test('a computed mix verifies against the cache it came from', () => {
     // Same header, different nonce: a different mix, and the old one is no
     // longer valid for it.
     const otherNonce = Buffer.alloc(8, 0x34);
-    const otherOut = multiHashing.ethash_hash(header, otherNonce, 1);
+    const otherOut = multiHashing.ethash_hash(header, otherNonce, 0);
     assert.notDeepEqual(otherOut.subarray(32), computedMix);
     assert.equal(
         multiHashing.ethash_verify(
@@ -140,5 +140,34 @@ test('a computed mix verifies against the cache it came from', () => {
             1
         ),
         false
+    );
+});
+
+test('agrees with geth on a real sealed block (canonical ground truth)', () => {
+    // This exact solution was produced by lolMiner and ACCEPTED BY GETH on a
+    // private Ethash chain (chainId 33329, epoch 0) — it is sealed in a real
+    // block. The vendored library shipped with KawPow constants
+    // (full_dataset_item_parents 512 vs classic 256), so the verifier
+    // rejected every genuine block solution while accepting its own
+    // self-generated mixes; only a live geth could expose that. Never let it
+    // regress.
+    const header = Buffer.from(
+        '8345255d569a0e86d7db57159486116695d0e2cdbb7f09202110d3f98194e775',
+        'hex'
+    );
+    const nonce = Buffer.from('d8e3a2f82eac4518', 'hex').reverse();
+    const gethMix = Buffer.from(
+        'a1e1eb40a6316b6b33a1858919754a283ae2859992b6934573886057af9e1a23',
+        'hex'
+    );
+
+    assert.equal(
+        multiHashing.ethash_verify(header, gethMix, nonce, MAX_BOUNDARY, 0),
+        true,
+        'a geth-sealed solution must verify'
+    );
+    assert.ok(
+        multiHashing.ethash_hash(header, nonce, 0).subarray(32).equals(gethMix),
+        'our DAG derivation must produce the mix geth sealed'
     );
 });
