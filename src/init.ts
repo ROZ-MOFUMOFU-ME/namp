@@ -586,6 +586,19 @@ const dispatchCliCommand = function (
 const startCliListener = function () {
     const cliPort = portalConfig.cliPort;
 
+    // A config typo here (a port >= 65536) used to surface as a RangeError
+    // stack from net.Server; say what is wrong and where instead. The portal
+    // runs fine without the CLI listener.
+    if (!Number.isInteger(cliPort) || cliPort <= 0 || cliPort >= 65536) {
+        logger.error(
+            'Master',
+            'CLI',
+            `cliPort ${JSON.stringify(cliPort)} in config.json is not a valid ` +
+                'TCP port (1-65535); the CLI listener stays disabled'
+        );
+        return;
+    }
+
     const listener = new (CliListener as any)(cliPort);
     listener
         .on('log', function (text: any) {
