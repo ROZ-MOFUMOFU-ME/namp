@@ -44,7 +44,7 @@ SPA, the stack's only build step). Operator documentation lives in
 [docs/](docs/): [guide.md](docs/guide.md) (full setup),
 [payment-schemes.md](docs/payment-schemes.md),
 [reverse-proxy.md](docs/reverse-proxy.md),
-[stratum-tls.md](docs/stratum-tls.md), and
+[stratum-tls.md](docs/stratum-tls.md), [ethash.md](docs/ethash.md), and
 [stratum.md](docs/stratum.md) (the stratum layer's feature reference).
 
 ## Development

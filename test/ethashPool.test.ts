@@ -64,7 +64,7 @@ function startMockDaemon(state: MockState): Promise<http.Server> {
 const cleanup: Array<() => void> = [];
 after(() => cleanup.forEach((fn) => fn()));
 
-async function startPool(state: MockState, coin: any = {}) {
+async function startPool(state: MockState, coin: any = {}, ports?: any) {
     const daemon = await startMockDaemon(state);
     cleanup.push(() => daemon.close());
     const port = (daemon.address() as net.AddressInfo).port;
@@ -78,6 +78,7 @@ async function startPool(state: MockState, coin: any = {}) {
                 ...coin
             },
             blockRefreshInterval: 0, // the tests drive polling themselves
+            ports,
             daemons: [{ host: HOST, port, user: '', password: '' }]
         },
         (_ip: any, _port: any, _worker: any, _pw: any, cb: any) =>
@@ -263,4 +264,142 @@ test('submitWork reports the daemon verdict, including a rejection', async () =>
         HEADER,
         '0x' + '22'.repeat(32)
     ]);
+});
+
+/*
+ * Stratum layer: the eth-proxy dialect every ethash miner speaks
+ * (ethminer, T-Rex, lolMiner, NBMiner, …). The client below sends exactly
+ * what those miners send.
+ */
+
+class EthProxyClient {
+    socket: net.Socket;
+    private buffer = '';
+    private nextId = 1;
+    private pending = new Map<number, (m: any) => void>();
+    pushed: any[] = [];
+
+    constructor(port: number) {
+        this.socket = net.connect(port, HOST);
+        this.socket.setEncoding('utf8');
+        this.socket.on('data', (chunk: string) => {
+            this.buffer += chunk;
+            let i: number;
+            while ((i = this.buffer.indexOf('\n')) !== -1) {
+                const line = this.buffer.slice(0, i);
+                this.buffer = this.buffer.slice(i + 1);
+                if (!line.trim()) continue;
+                const msg = JSON.parse(line);
+                // id 0 is an unsolicited job push in eth-proxy.
+                if (msg.id === 0) this.pushed.push(msg.result);
+                else if (this.pending.has(msg.id)) {
+                    this.pending.get(msg.id)!(msg);
+                    this.pending.delete(msg.id);
+                }
+            }
+        });
+    }
+
+    connected() {
+        return new Promise<void>((resolve, reject) => {
+            this.socket.once('connect', resolve);
+            this.socket.once('error', reject);
+        });
+    }
+
+    call(method: string, params: any[]): Promise<any> {
+        const id = this.nextId++;
+        return new Promise((resolve) => {
+            this.pending.set(id, resolve);
+            this.socket.write(JSON.stringify({ id, method, params }) + '\n');
+        });
+    }
+
+    async waitForPush(count = 1, timeoutMs = 3000) {
+        const deadline = Date.now() + timeoutMs;
+        while (Date.now() < deadline) {
+            if (this.pushed.length >= count) return this.pushed[count - 1];
+            await new Promise((r) => setTimeout(r, 20));
+        }
+        throw new Error('no work pushed');
+    }
+
+    close() {
+        this.socket.destroy();
+    }
+}
+
+test('serves miners the eth-proxy dialect end to end', async () => {
+    const state: MockState = {
+        calls: [],
+        submitted: [],
+        work: [HEADER, SEED, TIGHT_BOUNDARY, '0x2624a9'],
+        submitAccepts: true,
+        sawContentType: []
+    };
+    const stratumPort = 3600 + (process.pid % 100);
+    // A realistic pool difficulty: below 1 the boundary clamps to the whole
+    // 256-bit space and every submission would pass.
+    const pool = await startPool(state, {}, { [stratumPort]: { diff: 4e9 } });
+
+    const miner = new EthProxyClient(stratumPort);
+    cleanup.push(() => miner.close());
+    await miner.connected();
+
+    // eth_submitLogin: wallet plus an optional rig name.
+    const login = await miner.call('eth_submitLogin', ['0xwallet', 'rig1']);
+    assert.equal(login.result, true);
+
+    // Work arrives unsolicited right after login, and on request.
+    const pushedWork = await miner.waitForPush();
+    assert.equal(pushedWork[0], HEADER, 'header hash');
+    assert.equal(pushedWork[1], SEED, 'seed hash');
+
+    const requested = await miner.call('eth_getWork', []);
+    assert.deepEqual(requested.result, pushedWork);
+
+    // The third element is the SHARE boundary from the port difficulty, not
+    // the network boundary: miners must hash against what the pool asks.
+    assert.notEqual(requested.result[2], TIGHT_BOUNDARY);
+    assert.equal(requested.result[2].length, 66);
+
+    // A submission that misses the share difficulty is rejected, with the
+    // reason, and never reaches the daemon.
+    const rejected = await miner.call('eth_submitWork', [
+        '0x0102030405060708',
+        HEADER,
+        '0x' + '22'.repeat(32)
+    ]);
+    assert.equal(rejected.result, false);
+    assert.match(rejected.error.message, /low difficulty share/);
+    assert.equal(state.submitted.length, 0);
+
+    // Hashrate reports are acknowledged so miners do not treat it as an error.
+    const hashrate = await miner.call('eth_submitHashrate', ['0x500000', '0xid']);
+    assert.equal(hashrate.result, true);
+});
+
+test('pushes new work to connected miners when the daemon moves on', async () => {
+    const state: MockState = {
+        calls: [],
+        submitted: [],
+        work: [HEADER, SEED, TIGHT_BOUNDARY, '0x2624a9'],
+        submitAccepts: true,
+        sawContentType: []
+    };
+    const stratumPort = 3700 + (process.pid % 100);
+    const pool = await startPool(state, {}, { [stratumPort]: { diff: 1 } });
+
+    const miner = new EthProxyClient(stratumPort);
+    cleanup.push(() => miner.close());
+    await miner.connected();
+    await miner.call('eth_submitLogin', ['0xwallet', 'rig1']);
+    await miner.waitForPush();
+
+    const nextHeader = HEADER.replace('0xde', '0xab');
+    state.work = [nextHeader, SEED, TIGHT_BOUNDARY, '0x2624aa'];
+    await new Promise<void>((r) => pool.pollWork(() => r()));
+
+    const pushed = await miner.waitForPush(2);
+    assert.equal(pushed[0], nextHeader, 'a new block must reach the miner');
 });

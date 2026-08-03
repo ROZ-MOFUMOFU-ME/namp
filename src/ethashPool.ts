@@ -1,7 +1,8 @@
 import events from 'events';
 
 import daemonModule from './daemon.ts';
-import EthashJobManager from './ethashJobManager.ts';
+import EthashJobManager, { boundaryForDifficulty } from './ethashJobManager.ts';
+import EthashStratumServer from './ethashStratum.ts';
 
 /*
  * Ethash pool: the daemon side of the Ethash/Etchash family.
@@ -177,6 +178,62 @@ const EthashPool = function EthashPool(
         return result;
     };
 
+    /** Serve miners the eth-proxy dialect and route their submissions. */
+    function startStratum(callback: () => void) {
+        if (!options.ports || !Object.keys(options.ports).length) {
+            emitLog('No stratum ports configured; running daemon-side only');
+            callback();
+            return;
+        }
+
+        const server: any = new (EthashStratumServer as any)(
+            {
+                ports: options.ports,
+                connectionTimeout: options.connectionTimeout
+            },
+            authorizeFn
+        );
+        // Miners hash against the port's share boundary, never the network one.
+        const boundaries: Record<string, string> = {};
+        server.boundaryForPort = function (port: string) {
+            if (!boundaries[port]) {
+                boundaries[port] =
+                    '0x' +
+                    boundaryForDifficulty(options.ports[port].diff).toString(
+                        'hex'
+                    );
+            }
+            return boundaries[port];
+        };
+
+        server.on('log', (severity: string, message: string) =>
+            _this.emit('log', severity, message)
+        );
+        server.on('client.connected', (client: any) =>
+            emitLog(
+                `Miner connected: ${client.workerName} (${client.remoteAddress})`
+            )
+        );
+        server.on('share', function (submission: any, respond: any) {
+            _this.processShare(submission, function (outcome: any) {
+                respond(!outcome.error, outcome.error);
+            });
+        });
+
+        _this.on('newWork', (work: any) => server.broadcastWork(work));
+        // The first work arrived before this server existed; seed it so the
+        // miner that logs in next gets a job instead of waiting for a block.
+        server.broadcastWork(_this.jobManager.currentWork);
+
+        _this.stratumServer = server;
+        server.start(function () {
+            emitLog(
+                `Stratum listening on ${Object.keys(options.ports).join(', ')}`
+            );
+            callback();
+        });
+    }
+
     this.start = function () {
         // No Bitcoin-style liveness probe here: daemon.init()'s check calls
         // getnetworkinfo, which geth-family nodes do not implement. For an
@@ -191,7 +248,11 @@ const EthashPool = function EthashPool(
                 if (!_this.jobManager.currentWork) {
                     if (++attempts >= 5) {
                         emitErrorLog(
-                            'Could not get work from the daemon(s) - is the node mining-enabled?'
+                            'Could not get work from the daemon(s). geth-family ' +
+                                'nodes only prepare sealing work while the miner ' +
+                                'is engaged: run with --mine --miner.threads=0 ' +
+                                '(and --miner.etherbase) so the node produces ' +
+                                'work for external miners without competing for it.'
                         );
                         return;
                     }
@@ -211,25 +272,28 @@ const EthashPool = function EthashPool(
                 } else {
                     emitLog('Work polling has been disabled');
                 }
-                emitSpecialLog(
-                    `Ethash pool started for ${options.coin.name} [${
-                        options.coin.symbol
-                    }] {${options.coin.algorithm}} at height ${
-                        _this.jobManager.currentWork.height
-                    }`
-                );
-                _this.emit('started');
+                startStratum(function () {
+                    emitSpecialLog(
+                        `Ethash pool started for ${options.coin.name} [${
+                            options.coin.symbol
+                        }] {${options.coin.algorithm}} at height ${
+                            _this.jobManager.currentWork.height
+                        }`
+                    );
+                    _this.emit('started');
+                });
             });
         };
         tryStart();
     };
 
-    /** Stop polling; the caller owns any stratum server on top. */
+    /** Stop polling and close the stratum server. */
     this.stop = function (callback?: () => void) {
         stopped = true;
         if (pollTimer) clearInterval(pollTimer);
         pollTimer = null;
-        callback?.();
+        if (_this.stratumServer) _this.stratumServer.stop(callback);
+        else callback?.();
     };
 };
 
