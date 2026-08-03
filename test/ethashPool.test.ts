@@ -375,7 +375,10 @@ test('serves miners the eth-proxy dialect end to end', async () => {
     assert.equal(state.submitted.length, 0);
 
     // Hashrate reports are acknowledged so miners do not treat it as an error.
-    const hashrate = await miner.call('eth_submitHashrate', ['0x500000', '0xid']);
+    const hashrate = await miner.call('eth_submitHashrate', [
+        '0x500000',
+        '0xid'
+    ]);
     assert.equal(hashrate.result, true);
 });
 

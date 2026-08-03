@@ -62,7 +62,7 @@ const StratumClient = function StratumClient(this: any, params: any) {
         send({
             id: 0,
             jsonrpc: '2.0',
-            result: [work.headerHash, work.seedHash, boundary],
+            result: [work.headerHash, work.seedHash, boundary]
         });
     };
 
@@ -78,8 +78,14 @@ const StratumClient = function StratumClient(this: any, params: any) {
                         _this.authorized = authorized;
                         // Miners send the wallet as the login and an optional
                         // rig name; the pool credits "wallet.rig".
-                        _this.workerName = worker ? `${login}.${worker}` : login;
-                        send({ id: message.id, jsonrpc: '2.0', result: authorized });
+                        _this.workerName = worker
+                            ? `${login}.${worker}`
+                            : login;
+                        send({
+                            id: message.id,
+                            jsonrpc: '2.0',
+                            result: authorized
+                        });
                         if (!authorized) socket.destroy();
                     }
                 );
@@ -91,14 +97,14 @@ const StratumClient = function StratumClient(this: any, params: any) {
                         send({
                             id: message.id,
                             jsonrpc: '2.0',
-                            error: { code: -1, message: 'no work available' },
+                            error: { code: -1, message: 'no work available' }
                         });
                         return;
                     }
                     send({
                         id: message.id,
                         jsonrpc: '2.0',
-                        result: [work.headerHash, work.seedHash, boundary],
+                        result: [work.headerHash, work.seedHash, boundary]
                     });
                 });
                 break;
@@ -114,7 +120,10 @@ const StratumClient = function StratumClient(this: any, params: any) {
                             result: accepted,
                             error: accepted
                                 ? null
-                                : { code: error?.[0] ?? -1, message: error?.[1] },
+                                : {
+                                      code: error?.[0] ?? -1,
+                                      message: error?.[1]
+                                  }
                         });
                     }
                 );
@@ -122,14 +131,17 @@ const StratumClient = function StratumClient(this: any, params: any) {
             }
             case 'eth_submitHashrate':
                 // Informational only; miners expect an acknowledgement.
-                _this.emit('hashrate', (message.params && message.params[0]) || '0x0');
+                _this.emit(
+                    'hashrate',
+                    (message.params && message.params[0]) || '0x0'
+                );
                 send({ id: message.id, jsonrpc: '2.0', result: true });
                 break;
             default:
                 send({
                     id: message.id,
                     jsonrpc: '2.0',
-                    error: { code: -3, message: 'method not supported' },
+                    error: { code: -3, message: 'method not supported' }
                 });
         }
     }
@@ -207,7 +219,10 @@ const EthashStratumServer = function EthashStratumServer(
                     if (result.authorized) {
                         _this.emit('client.connected', client);
                         // Miners expect work immediately after logging in.
-                        client.sendWork(currentWork, _this.boundaryForPort(client.port));
+                        client.sendWork(
+                            currentWork,
+                            _this.boundaryForPort(client.port)
+                        );
                     }
                 }
             );
@@ -225,7 +240,7 @@ const EthashStratumServer = function EthashStratumServer(
                     difficulty: client.difficulty,
                     worker: client.workerName,
                     ip: client.remoteAddress,
-                    port: client.port,
+                    port: client.port
                 },
                 callback
             );
@@ -236,7 +251,11 @@ const EthashStratumServer = function EthashStratumServer(
             _this.emit('client.disconnected', client);
         });
         client.on('socketError', (err: any) =>
-            _this.emit('log', 'warning', `Socket error from ${client.remoteAddress}: ${err}`)
+            _this.emit(
+                'log',
+                'warning',
+                `Socket error from ${client.remoteAddress}: ${err}`
+            )
         );
         client.on('malformedMessage', (line: string) =>
             _this.emit(
@@ -264,14 +283,17 @@ const EthashStratumServer = function EthashStratumServer(
         if (!pending) return callback?.();
 
         for (const port of ports) {
-            const server = net.createServer({ allowHalfOpen: false }, function (socket: any) {
-                const client = new (StratumClient as any)({
-                    socket,
-                    port,
-                    difficulty: options.ports[port].diff,
-                });
-                bindClient(client);
-            });
+            const server = net.createServer(
+                { allowHalfOpen: false },
+                function (socket: any) {
+                    const client = new (StratumClient as any)({
+                        socket,
+                        port,
+                        difficulty: options.ports[port].diff
+                    });
+                    bindClient(client);
+                }
+            );
             listeners.push(server);
             server.listen(parseInt(port), '0.0.0.0', function () {
                 if (--pending === 0) callback?.();
@@ -279,11 +301,13 @@ const EthashStratumServer = function EthashStratumServer(
         }
 
         // Drop miners that went away without closing the socket.
-        const timeout = (options.connectionTimeout || 600) * 1000 || CLIENT_TIMEOUT_MS;
+        const timeout =
+            (options.connectionTimeout || 600) * 1000 || CLIENT_TIMEOUT_MS;
         timeoutTimer = setInterval(function () {
             const now = Date.now();
             for (const id of Object.keys(clients)) {
-                if (now - clients[id].lastActivity > timeout) clients[id].disconnect();
+                if (now - clients[id].lastActivity > timeout)
+                    clients[id].disconnect();
             }
         }, 30000);
         timeoutTimer.unref?.();
@@ -302,7 +326,10 @@ const EthashStratumServer = function EthashStratumServer(
         }
     };
 };
-Object.setPrototypeOf(EthashStratumServer.prototype, events.EventEmitter.prototype);
+Object.setPrototypeOf(
+    EthashStratumServer.prototype,
+    events.EventEmitter.prototype
+);
 
 export { StratumClient };
 export default EthashStratumServer;
