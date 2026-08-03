@@ -204,21 +204,21 @@ const EthashPool = function EthashPool(
         const server: any = new (EthashStratumServer as any)(
             {
                 ports: options.ports,
-                connectionTimeout: options.connectionTimeout
+                connectionTimeout: options.connectionTimeout,
+                banning: options.banning
             },
             authorizeFn
         );
-        // Miners hash against the port's share boundary, never the network one.
-        const boundaries: Record<string, string> = {};
-        server.boundaryForPort = function (port: string) {
-            if (!boundaries[port]) {
-                boundaries[port] =
-                    '0x' +
-                    boundaryForDifficulty(options.ports[port].diff).toString(
-                        'hex'
-                    );
+        // Miners hash against their SHARE boundary, never the network one.
+        // Cached per difficulty: varDiff moves clients between a small set of
+        // values.
+        const boundaries: Record<number, string> = {};
+        server.boundaryForDifficulty = function (difficulty: number) {
+            if (!boundaries[difficulty]) {
+                boundaries[difficulty] =
+                    '0x' + boundaryForDifficulty(difficulty).toString('hex');
             }
-            return boundaries[port];
+            return boundaries[difficulty];
         };
 
         server.on('log', (severity: string, message: string) =>

@@ -1,6 +1,8 @@
 import events from 'events';
 import net from 'net';
 
+import VarDiff from './varDiff.ts';
+
 /*
  * Ethash stratum server (eth-proxy dialect).
  *
@@ -27,9 +29,15 @@ import net from 'net';
 const CLIENT_TIMEOUT_MS = 600000;
 
 export interface EthashStratumOptions {
-    ports: Record<string, { diff: number }>;
+    ports: Record<string, { diff: number; varDiff?: any }>;
     connectionTimeout?: number;
-    banning?: { enabled?: boolean };
+    banning?: {
+        enabled?: boolean;
+        time?: number;
+        invalidPercent?: number;
+        checkThreshold?: number;
+        purgeInterval?: number;
+    };
 }
 
 let clientCounter = 0;
@@ -44,12 +52,15 @@ const StratumClient = function StratumClient(this: any, params: any) {
     let buffer = '';
 
     this.id = `${++clientCounter}`;
+    this.socket = socket; // varDiff reads socket.localPort
     this.remoteAddress = socket.remoteAddress;
     this.port = params.port;
     this.difficulty = params.difficulty;
     this.authorized = false;
     this.workerName = null as string | null;
     this.lastActivity = Date.now();
+    // Rolling accept/reject counts for the ban check.
+    this.shares = { valid: 0, invalid: 0 };
 
     function send(payload: any) {
         if (socket.writable) socket.write(`${JSON.stringify(payload)}\n`);
@@ -210,13 +221,58 @@ const EthashStratumServer = function EthashStratumServer(
     const listeners: any[] = [];
     let currentWork: any = null;
     let timeoutTimer: any = null;
+    let banPurgeTimer: any = null;
+    const bannedIPs: Record<string, number> = {};
+    const banning = options.banning || {};
 
     this.clients = clients;
+    /** Per-port varDiff managers (exposed for tests). */
+    this.varDiffs = {} as Record<string, any>;
 
-    /** Boundary a miner hashes against, provided by the pool per difficulty. */
-    this.boundaryForPort = function (_port: string): string {
-        throw new Error('boundaryForPort must be provided by the pool');
+    /** diff -> boundary hex, provided by the pool. */
+    this.boundaryForDifficulty = function (_difficulty: number): string {
+        throw new Error('boundaryForDifficulty must be provided by the pool');
     };
+    const boundaryFor = (client: any) =>
+        _this.boundaryForDifficulty(client.difficulty);
+
+    this.addBannedIP = function (ip: string) {
+        bannedIPs[ip] = Date.now();
+    };
+    this.isBanned = function (ip: string): boolean {
+        if (!banning.enabled || !bannedIPs[ip]) return false;
+        const banTimeMs = (banning.time || 600) * 1000;
+        if (Date.now() - bannedIPs[ip] > banTimeMs) {
+            delete bannedIPs[ip];
+            return false;
+        }
+        return true;
+    };
+
+    /**
+     * The Bitcoin stratum's ban policy: once a client has checkThreshold
+     * shares, ban the IP when the invalid fraction is too high; otherwise
+     * restart the window.
+     */
+    function checkBan(client: any) {
+        if (!banning.enabled) return;
+        const total = client.shares.valid + client.shares.invalid;
+        if (total < (banning.checkThreshold || 500)) return;
+        const invalidPercent = (client.shares.invalid / total) * 100;
+        if (invalidPercent < (banning.invalidPercent || 50)) {
+            client.shares = { valid: 0, invalid: 0 };
+            return;
+        }
+        _this.addBannedIP(client.remoteAddress);
+        _this.emit(
+            'log',
+            'warning',
+            `Banned ${client.workerName || 'unauthorized'} [${
+                client.remoteAddress
+            }]: ${invalidPercent.toFixed(0)}% of ${total} shares invalid`
+        );
+        client.disconnect();
+    }
 
     function bindClient(client: any) {
         clients[client.id] = client;
@@ -232,17 +288,14 @@ const EthashStratumServer = function EthashStratumServer(
                     if (result.authorized) {
                         _this.emit('client.connected', client);
                         // Miners expect work immediately after logging in.
-                        client.sendWork(
-                            currentWork,
-                            _this.boundaryForPort(client.port)
-                        );
+                        client.sendWork(currentWork, boundaryFor(client));
                     }
                 }
             );
         });
 
         client.on('getWork', function (callback: any) {
-            callback(currentWork, _this.boundaryForPort(client.port));
+            callback(currentWork, boundaryFor(client));
         });
 
         client.on('submit', function (submission: any, callback: any) {
@@ -255,7 +308,13 @@ const EthashStratumServer = function EthashStratumServer(
                     ip: client.remoteAddress,
                     port: client.port
                 },
-                callback
+                function (accepted: boolean, error?: any) {
+                    // Answer first: the miner should see the verdict before a
+                    // ban cuts the socket.
+                    callback(accepted, error);
+                    client.shares[accepted ? 'valid' : 'invalid']++;
+                    checkBan(client);
+                }
             );
         });
 
@@ -292,7 +351,7 @@ const EthashStratumServer = function EthashStratumServer(
         for (const id of Object.keys(clients)) {
             const client = clients[id];
             if (client.authorized) {
-                client.sendWork(work, _this.boundaryForPort(client.port));
+                client.sendWork(work, boundaryFor(client));
             }
         }
     };
@@ -303,15 +362,35 @@ const EthashStratumServer = function EthashStratumServer(
         if (!pending) return callback?.();
 
         for (const port of ports) {
+            // Bitcoin-style variable difficulty: retarget each miner toward
+            // varDiff.targetTime seconds per share; the new boundary reaches
+            // the miner with the next pushed job.
+            const varDiffConfig = options.ports[port].varDiff;
+            if (varDiffConfig && varDiffConfig.minDiff > 0) {
+                const manager: any = new (VarDiff as any)(port, varDiffConfig);
+                manager.on(
+                    'newDifficulty',
+                    function (client: any, newDiff: number) {
+                        client.difficulty = newDiff;
+                        client.sendWork(currentWork, boundaryFor(client));
+                    }
+                );
+                _this.varDiffs[port] = manager;
+            }
             const server = net.createServer(
                 { allowHalfOpen: false },
                 function (socket: any) {
+                    if (_this.isBanned(socket.remoteAddress)) {
+                        socket.destroy();
+                        return;
+                    }
                     const client = new (StratumClient as any)({
                         socket,
                         port,
                         difficulty: options.ports[port].diff
                     });
                     bindClient(client);
+                    _this.varDiffs[port]?.manageClient(client);
                 }
             );
             // An unhandled EADDRINUSE would kill the worker and put the master
@@ -332,6 +411,21 @@ const EthashStratumServer = function EthashStratumServer(
             });
         }
 
+        if (banning.enabled) {
+            banPurgeTimer = setInterval(
+                function () {
+                    const banTimeMs = (banning.time || 600) * 1000;
+                    const now = Date.now();
+                    for (const ip of Object.keys(bannedIPs)) {
+                        if (now - bannedIPs[ip] > banTimeMs)
+                            delete bannedIPs[ip];
+                    }
+                },
+                (banning.purgeInterval || 300) * 1000
+            );
+            banPurgeTimer.unref?.();
+        }
+
         // Drop miners that went away without closing the socket.
         const timeout =
             (options.connectionTimeout || 600) * 1000 || CLIENT_TIMEOUT_MS;
@@ -348,6 +442,7 @@ const EthashStratumServer = function EthashStratumServer(
     /** Stop listening and drop every client. */
     this.stop = function (callback?: () => void) {
         if (timeoutTimer) clearInterval(timeoutTimer);
+        if (banPurgeTimer) clearInterval(banPurgeTimer);
         for (const id of Object.keys(clients)) clients[id].disconnect();
         let pending = listeners.length;
         if (!pending) return callback?.();

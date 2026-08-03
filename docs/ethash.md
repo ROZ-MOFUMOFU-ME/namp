@@ -46,6 +46,18 @@ gvbc --http --http.addr 127.0.0.1 --http.api eth,net,web3 \
 share boundary from it and sends that to miners — never the network boundary —
 then decides separately whether a share also solved the block.
 
+Ports take the same knobs as the Bitcoin-family stratum
+(pool_configs/examples/virbicoin.json shows the full shape):
+
+- **varDiff** retargets each miner toward `targetTime` seconds per share
+  within `[minDiff, maxDiff]`; the new boundary reaches the miner with the
+  next pushed job. This is what keeps one port usable for rigs of very
+  different sizes and the hashrate chart smooth.
+- **banning** applies the standard policy: after `checkThreshold` shares, an
+  IP whose invalid percentage exceeds `invalidPercent` is banned for `time`
+  seconds (with the verdict still delivered before the socket closes).
+- **connectionTimeout** drops miners that stopped talking.
+
 Coin definitions take an optional `epochLength`:
 
 | Chain                        | epochLength     | Note                        |

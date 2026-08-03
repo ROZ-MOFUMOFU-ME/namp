@@ -64,7 +64,12 @@ function startMockDaemon(state: MockState): Promise<http.Server> {
 const cleanup: Array<() => void> = [];
 after(() => cleanup.forEach((fn) => fn()));
 
-async function startPool(state: MockState, coin: any = {}, ports?: any) {
+async function startPool(
+    state: MockState,
+    coin: any = {},
+    ports?: any,
+    banning?: any
+) {
     const daemon = await startMockDaemon(state);
     cleanup.push(() => daemon.close());
     const port = (daemon.address() as net.AddressInfo).port;
@@ -79,6 +84,7 @@ async function startPool(state: MockState, coin: any = {}, ports?: any) {
             },
             blockRefreshInterval: 0, // the tests drive polling themselves
             ports,
+            banning,
             daemons: [{ host: HOST, port, user: '', password: '' }]
         },
         (_ip: any, _port: any, _worker: any, _pw: any, cb: any) =>
@@ -475,4 +481,107 @@ test('accepts a genuine DAG-derived share through the stratum port', async () =>
         'the solved block reached the daemon'
     );
     assert.deepEqual(state.submitted[0], [solved!.nonce, HEADER, solved!.mix]);
+});
+
+test('varDiff retargets a miner and the next push carries the new boundary', async () => {
+    const state: MockState = {
+        calls: [],
+        submitted: [],
+        work: [HEADER, SEED, TIGHT_BOUNDARY, '0x2624a9'],
+        submitAccepts: true,
+        sawContentType: []
+    };
+    const stratumPort = 3900 + (process.pid % 100);
+    const pool = await startPool(
+        state,
+        {},
+        {
+            [stratumPort]: {
+                diff: 1000,
+                varDiff: {
+                    minDiff: 10,
+                    maxDiff: 100000,
+                    targetTime: 4,
+                    retargetTime: 30,
+                    variancePercent: 30
+                }
+            }
+        }
+    );
+
+    const miner = new EthProxyClient(stratumPort);
+    cleanup.push(() => miner.close());
+    await miner.connected();
+    await miner.call('eth_submitLogin', ['0xwallet', 'x'], { worker: 'rig1' });
+    const first = await miner.call('eth_getWork', []);
+
+    // Drive the retarget directly through the manager (time-based retargeting
+    // is varDiff.ts's own tested concern); the stratum contract is that the
+    // client's difficulty moves and the NEXT job carries the new boundary.
+    const server = pool.stratumServer;
+    const manager = server.varDiffs[String(stratumPort)];
+    assert.ok(manager, 'a varDiff manager exists for the port');
+    const client = Object.values(server.clients)[0] as any;
+    manager.emit('newDifficulty', client, 250);
+
+    const pushed = await miner.waitForPush(2);
+    assert.equal(client.difficulty, 250);
+    assert.notEqual(pushed[2], first.result[2], 'boundary changed');
+    assert.equal(
+        pushed[2],
+        server.boundaryForDifficulty(250),
+        'the push carries the retargeted boundary'
+    );
+});
+
+test('banning drops a miner that spams invalid shares and blocks reconnects', async () => {
+    const state: MockState = {
+        calls: [],
+        submitted: [],
+        work: [HEADER, SEED, TIGHT_BOUNDARY, '0x2624a9'],
+        submitAccepts: true,
+        sawContentType: []
+    };
+    const stratumPort = 4000 + (process.pid % 100);
+    const pool = await startPool(
+        state,
+        {},
+        { [stratumPort]: { diff: 4e9 } },
+        {
+            enabled: true,
+            time: 600,
+            invalidPercent: 50,
+            checkThreshold: 3,
+            purgeInterval: 600
+        }
+    );
+
+    const miner = new EthProxyClient(stratumPort);
+    cleanup.push(() => miner.close());
+    await miner.connected();
+    await miner.call('eth_submitLogin', ['0xwallet', 'x'], { worker: 'rig1' });
+
+    // Three garbage submissions at diff 4e9: all rejected -> 100% invalid at
+    // the threshold -> banned and disconnected.
+    const closed = new Promise<void>((resolve) =>
+        miner.socket.once('close', () => resolve())
+    );
+    for (let i = 0; i < 3; i++) {
+        await miner.call('eth_submitWork', [
+            '0x000000000000000' + i,
+            HEADER,
+            '0x' + '22'.repeat(32)
+        ]);
+    }
+    await closed;
+
+    // The IP is banned: a fresh connection gets destroyed immediately.
+    const again = new EthProxyClient(stratumPort);
+    cleanup.push(() => again.close());
+    await again.connected();
+    const rejected = new Promise<boolean>((resolve) => {
+        again.socket.once('close', () => resolve(true));
+        setTimeout(() => resolve(false), 3000);
+    });
+    assert.equal(await rejected, true, 'banned IPs are dropped on connect');
 });
