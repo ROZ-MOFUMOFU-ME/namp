@@ -8,7 +8,9 @@ import setupEthashPayments, {
     coinsToWei,
     weiToCoins,
     splitReward,
-    rewardWeiForHeight
+    rewardWeiForHeight,
+    parseRewardRecipients,
+    percentOfWei
 } from '../src/ethashPaymentProcessor.ts';
 
 /*
@@ -196,6 +198,33 @@ test('wei conversion and reward splitting hold BigInt precision', () => {
 
     assert.deepEqual(splitReward(10n ** 18n, {}), {});
     assert.deepEqual(splitReward(10n ** 18n, { a: '0' }), {});
+});
+
+test('fee parsing ignores anything that is not an address', () => {
+    const FEE = '0x' + 'ee'.repeat(20);
+    const parsed = parseRewardRecipients({
+        [FEE]: 1.5,
+        // What the shipped example carries, and what a typo looks like.
+        _comment: 'Pool fee percentages by address',
+        'not-an-address': 5,
+        [('0x' + 'ff'.repeat(20)) as string]: 0
+    });
+    assert.deepEqual(parsed.recipients, [{ address: FEE, percent: 1.5 }]);
+    assert.equal(parsed.total, 1.5, 'a zero percent recipient adds nothing');
+    assert.deepEqual(parseRewardRecipients(undefined), {
+        recipients: [],
+        total: 0
+    });
+});
+
+test('percentOfWei keeps fractional percentages exact in wei', () => {
+    const oneCoin = 10n ** 18n;
+    assert.equal(percentOfWei(oneCoin, 1), 10n ** 16n); // 1%
+    assert.equal(percentOfWei(oneCoin, 0.5), 5n * 10n ** 15n); // 0.5%
+    assert.equal(percentOfWei(oneCoin, 100), oneCoin);
+    assert.equal(percentOfWei(oneCoin, 0), 0n);
+    // The fee must never round up into the miners' share.
+    assert.ok(percentOfWei(3n, 33.333333) <= 1n);
 });
 
 test('an immature candidate only updates its confirmation count', async (t) => {

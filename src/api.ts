@@ -232,8 +232,8 @@ export default function (
                     res.end(JSON.stringify(data));
                 });
                 break;
-            case 'payments':
-                var poolBlocks = [];
+            case 'payments': {
+                const poolBlocks = [];
                 for (const pool in portalStats.stats.pools) {
                     poolBlocks.push({
                         name: pool,
@@ -244,6 +244,7 @@ export default function (
                 res.header('Content-Type', 'application/json');
                 res.end(JSON.stringify(poolBlocks));
                 return;
+            }
             case 'worker_stats':
                 res.header('Content-Type', 'application/json');
                 if (req.url.indexOf('?') > 0) {
@@ -270,9 +271,9 @@ export default function (
                                             const totalShares = shares;
                                             let networkHash = 0;
                                             for (const h in portalStats.statHistory) {
-                                                for (var pool in portalStats
+                                                for (const pool in portalStats
                                                     .statHistory[h].pools) {
-                                                    for (var w in portalStats
+                                                    for (const w in portalStats
                                                         .statHistory[h].pools[
                                                         pool
                                                     ].workers) {
@@ -322,10 +323,11 @@ export default function (
                                                     //console.log(portalStats.statHistory[h].time);
                                                 }
                                             }
-                                            for (var pool in portalStats.stats
+                                            for (const pool in portalStats.stats
                                                 .pools) {
-                                                for (var w in portalStats.stats
-                                                    .pools[pool].workers) {
+                                                for (const w in portalStats
+                                                    .stats.pools[pool]
+                                                    .workers) {
                                                     if (w.startsWith(address)) {
                                                         workers[w] =
                                                             portalStats.stats.pools[
@@ -406,7 +408,7 @@ export default function (
                     Connection: 'keep-alive'
                 });
                 res.write('\n');
-                var uid = Math.random().toString();
+                const uid = Math.random().toString();
                 _this.liveStatConnections[uid] = res;
                 // Push the current snapshot immediately so clients render right
                 // away instead of waiting for the next updateInterval tick.

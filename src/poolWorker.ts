@@ -43,9 +43,9 @@ export default function (this: any, logger: Logger) {
                 }
                 break;
 
-            case 'blocknotify':
-                var messageCoin = message.coin.toLowerCase();
-                var poolTarget = Object.keys(pools).filter(function (p) {
+            case 'blocknotify': {
+                const messageCoin = message.coin.toLowerCase();
+                const poolTarget = Object.keys(pools).filter(function (p) {
                     return p.toLowerCase() === messageCoin;
                 })[0];
 
@@ -56,23 +56,24 @@ export default function (this: any, logger: Logger) {
                     );
 
                 break;
+            }
 
             // IPC message for pool switching
-            case 'coinswitch':
-                var logSystem = 'Proxy';
-                var logComponent = 'Switch';
-                var logSubCat = 'Thread ' + (parseInt(forkId as string) + 1);
+            case 'coinswitch': {
+                const logSystem = 'Proxy';
+                const logComponent = 'Switch';
+                const logSubCat = 'Thread ' + (parseInt(forkId as string) + 1);
 
-                var switchName = message.switchName;
+                const switchName = message.switchName;
 
-                var newCoin = message.coin;
+                const newCoin = message.coin;
 
-                var algo = poolConfigs[newCoin].coin.algorithm;
+                const algo = poolConfigs[newCoin].coin.algorithm;
 
-                var newPool = pools[newCoin];
-                var oldCoin = proxySwitch[switchName].currentPool;
-                var oldPool = pools[oldCoin];
-                var proxyPorts = Object.keys(proxySwitch[switchName].ports);
+                const newPool = pools[newCoin];
+                const oldCoin = proxySwitch[switchName].currentPool;
+                const oldPool = pools[oldCoin];
+                const proxyPorts = Object.keys(proxySwitch[switchName].ports);
 
                 if (newCoin == oldCoin) {
                     logger.debug(
@@ -134,6 +135,7 @@ export default function (this: any, logger: Logger) {
                         });
                 }
                 break;
+            }
         }
     });
 
@@ -375,7 +377,7 @@ export default function (this: any, logger: Logger) {
 
         // createPool takes (options, authorizeFn); a stray third argument
         // used to vanish behind an any-cast.
-        var pool = createPool(poolOptions, authorizeFN);
+        const pool = createPool(poolOptions, authorizeFN);
         pool.on(
             'share',
             function (isValidShare: any, isValidBlock: any, data: any) {
@@ -488,9 +490,12 @@ export default function (this: any, logger: Logger) {
         pools[poolOptions.coin.name] = pool;
     });
 
+    // Shared by the proxy setup below and setDifficultyForProxyPort, which
+    // used to reach them through `var` hoisting out of the block.
+    const logSystem = 'Switching';
+    const logComponent = 'Setup';
+
     if (portalConfig.switching) {
-        var logSystem = 'Switching';
-        var logComponent = 'Setup';
         const logSubCat = 'Thread ' + (parseInt(forkId as string) + 1);
 
         let proxyState: any = {};

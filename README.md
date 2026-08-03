@@ -28,8 +28,9 @@ Mining Portal) lineage.
   smpps, esmpps — see [docs/payment-schemes.md](docs/payment-schemes.md).
   Ethash pools support prop, solo and pplns.
 - **Payment processing that understands the chain.** Block maturity, orphan
-  and uncle handling, per-height block reward schedules, and payouts with
-  balances tracked per worker.
+  and uncle handling, per-height block reward schedules, pool fees, and
+  payouts with balances tracked per worker. Maturity and payouts run on
+  separate clocks, so a slow payout cadence never misreports the blocks.
 - **Variable difficulty and banning** on every stratum port, per-port TLS,
   and an HTTP getwork bridge for miners that cannot speak the qtum stratum.
 - **Web UI** with live stats over server-sent events, per-worker pages,
@@ -150,11 +151,12 @@ The image builds the addon and the SPA; mount `config.json`, `coins/` and
 npm test
 ```
 
-308 tests run in one `node --test` pass: known-answer vectors for the
-hashing algorithms, the stratum protocols, share validation and block
-serialization, the Ethash job/payment paths, and integration tests that
-drive a real pool against a mock daemon over a socket. Redis-backed tests
-skip when no Redis is reachable (CI provides one on 6379).
+One `node --test` pass covers known-answer vectors for the hashing
+algorithms, the stratum protocols, share validation and block
+serialization, the Ethash job and payment paths, the security guards on the
+public surfaces, and integration tests that drive a real pool against a
+mock daemon over a socket — including mining a block end to end.
+Redis-backed tests skip when no Redis is reachable (CI provides one).
 
 ## Community
 

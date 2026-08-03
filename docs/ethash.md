@@ -137,6 +137,21 @@ taken from go-virbicoin's calcBlockReward):
 Uncle credits scale with the reward of the block that included the uncle,
 matching the consensus formula.
 
+### Pool fees
+
+The pool's cut comes from `rewardRecipients` in the pool config, the same key
+the Bitcoin-family pools use, and is taken off each block before miners are
+paid:
+
+```json
+"rewardRecipients": { "0xYourFeeAddress": 1.0 }
+```
+
+Each recipient is credited in the same ledger as a miner, so the fee is paid
+out by the normal payout run. Keys that are not addresses are ignored, which
+is what keeps the `_comment` in the shipped example from being treated as a
+recipient.
+
 ### Payment modes
 
 `paymentMode` selects how each matured block is divided:
