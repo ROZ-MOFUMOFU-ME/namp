@@ -1,11 +1,96 @@
 # NAMP — Node All-in-One Mining Portal
 
-**NAMP** is a monorepo unifying the ROZ-MOFUMOFU-ME mining pool stack.
-It continues the NOMP (Node Open Mining Portal) lineage and provides the
-pool portal, the stratum layer and the hashing module all in one.
+**NAMP** is a complete cryptocurrency mining pool in one repository: the pool
+portal, the stratum servers, the web UI and the native hashing code, all
+installed and run as a single application. It continues the NOMP (Node Open
+Mining Portal) lineage.
+
+<!-- Status: does it build, what is the newest version, when did it last move -->
+
+[![CI](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/ci.yml/badge.svg)](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/ROZ-MOFUMOFU-ME/namp?logo=github&color=success)](https://github.com/ROZ-MOFUMOFU-ME/namp/releases)
+[![Last commit](https://img.shields.io/github/last-commit/ROZ-MOFUMOFU-ME/namp?logo=git&logoColor=white)](https://github.com/ROZ-MOFUMOFU-ME/namp/commits/main)
+[![License](https://img.shields.io/github/license/ROZ-MOFUMOFU-ME/namp?color=blue)](LICENSE)
+
+<!-- Stack: what you need installed, what it is written in -->
+
+[![Node.js](https://img.shields.io/badge/node-%3E%3D22.18-5FA04E?logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
+[![Redis](https://img.shields.io/badge/Redis-6.2%2B-DC382D?logo=redis&logoColor=white)](https://redis.io)
+[![Docker](https://img.shields.io/badge/Docker-compose-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
+
+<!-- Scope: the numbers a pool operator actually wants -->
+
+[![Algorithms](https://img.shields.io/badge/algorithms-49-8A2BE2)](src/algoProperties.ts)
+[![Ethash](https://img.shields.io/badge/Ethash-ETH%20%C2%B7%20ETC%20%C2%B7%20VBC-3C3C3D?logo=ethereum&logoColor=white)](docs/ethash.md)
+[![Payment schemes](https://img.shields.io/badge/payment%20schemes-10-0E9F6E)](docs/payment-schemes.md)
+[![Tests](https://img.shields.io/badge/tests-308-brightgreen?logo=nodedotjs&logoColor=white)](test/)
+[![Languages](https://img.shields.io/badge/UI%20languages-20-informational)](web/src/i18n/translations.json)
+
+<!-- Community -->
+
+[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
+[![Stars](https://img.shields.io/github/stars/ROZ-MOFUMOFU-ME/namp?style=flat&logo=github)](https://github.com/ROZ-MOFUMOFU-ME/namp/stargazers)
 
 - Written **NAMP**; the repository/package name is lowercase `namp`
 - TypeScript 7 (typecheck; code runs buildless via Node type stripping), ESM, Node 22.18+
+
+## Features
+
+- **Two mining families in one portal.** 49 Bitcoin-family algorithms
+  (sha256d, scrypt, quark, x11/x16r, lyra2, yescrypt/yespower, vipstar and
+  more) on the classic stratum pipeline, plus the **Ethash family** —
+  Ethereum, Ethereum Classic (Etchash) and VirBiCoin — with its own work
+  model, eth-proxy stratum dialect and chain-side payment processing.
+- **10 payment schemes.** prop, pplnt, pplns, solo, pps, dpps, fpps, ppsplus,
+  smpps, esmpps — see [docs/payment-schemes.md](docs/payment-schemes.md).
+  Ethash pools support prop, solo and pplns.
+- **Payment processing that understands the chain.** Block maturity, orphan
+  and uncle handling, per-height block reward schedules, and payouts with
+  balances tracked per worker.
+- **Variable difficulty and banning** on every stratum port, per-port TLS,
+  and an HTTP getwork bridge for miners that cannot speak the qtum stratum.
+- **Web UI** with live stats over server-sent events, per-worker pages,
+  found blocks, payments, and operator branding — in 20 languages.
+- **Multi-process by design.** Clustered pool workers share the stratum
+  ports; the website, payment processing and CLI run as their own forks.
+- **Buildless TypeScript.** `npm start` runs the sources directly under
+  Node's native type stripping; the only build step is the web SPA.
+
+## Supported chains
+
+Any Bitcoin-family coin whose daemon speaks `getblocktemplate` works by
+writing a coin definition — 10 are shipped as examples (BitZeny, Koto,
+MonaCoin, VIPSTARCOIN, Sugarchain, Bellcoin, Yenten, KumaCoin, Susucoin,
+VirBiCoin), covering PoW/PoS hybrids, Sapling/Koto-style block
+construction and the qtum-style 181-byte header.
+
+The **Ethash family** runs beside them against any geth-family node
+(`eth_getWork` / `eth_submitWork`): Ethereum, Ethereum Classic via
+Etchash's ECIP-1099 epoch length, and VirBiCoin. See
+[docs/ethash.md](docs/ethash.md).
+
+## Quick start
+
+```bash
+git clone https://github.com/ROZ-MOFUMOFU-ME/namp.git && cd namp
+npm install                          # dependencies + the native hashing addon
+
+cp config_example.json config.json   # portal: redis, website, cli port
+cp coins/coins-examples/bitzeny.json coins/
+cp pool_configs/examples/bitzeny.json pool_configs/
+#   edit pool_configs/bitzeny.json: daemon credentials, your pool address, ports
+
+npm run build                        # build the web UI
+npm start                            # run the portal
+```
+
+Redis 6.2+ and a synced coin daemon are the only external requirements.
+[docs/guide.md](docs/guide.md) walks through every configuration key, and
+[docs/security.md](docs/security.md) covers hardening before you expose a
+pool to the internet.
 
 ## Packages
 
@@ -14,14 +99,6 @@ pool portal, the stratum layer and the hashing module all in one.
 | `src/`, `web/`           | [zny-nomp](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp)                     | Pool portal (NOMP) + web UI     |
 | `src/` (stratum modules) | [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool)   | Stratum protocol layer          |
 | `native/`                | [node-multi-hashing](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing) | Hashing algorithms (C++ native) |
-
-## Supported chains
-
-Bitcoin-family coins (sha256d, scrypt, quark, lyra2, yescrypt/yespower,
-vipstar and ~50 more) run on the stratum pipeline in `src/`. The **Ethash
-family** — Ethereum, Ethereum Classic (Etchash), VirBiCoin — runs beside it
-with its own work model, eth-proxy stratum dialect and chain-side payment
-processing; see [docs/ethash.md](docs/ethash.md).
 
 Dependency direction: `portal → stratum-pool → multi-hashing`.
 Each package carries the full commit history of its source repo,
@@ -74,6 +151,27 @@ The backend compiler project is [tsconfig.json](tsconfig.json);
 `erasableSyntaxOnly` keeps the code runnable as-is under Node's native
 type stripping (tsc is typecheck-only). The SPA has its own tsconfig
 under `web/`.
+
+## Docker
+
+```bash
+docker compose up -d          # portal + redis, using your config.json
+```
+
+The image builds the addon and the SPA; mount `config.json`, `coins/` and
+`pool_configs/` to configure it.
+
+## Testing
+
+```bash
+npm test
+```
+
+308 tests run in one `node --test` pass: known-answer vectors for the
+hashing algorithms, the stratum protocols, share validation and block
+serialization, the Ethash job/payment paths, and integration tests that
+drive a real pool against a mock daemon over a socket. Redis-backed tests
+skip when no Redis is reachable (CI provides one on 6379).
 
 ## Community
 
