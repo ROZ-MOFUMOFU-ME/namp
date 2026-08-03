@@ -84,6 +84,53 @@ export default function (this: any, logger: Logger) {
         }
     })();
 
+    /*
+     * Origins the operator's own branding points the browser at: the server
+     * cards measure latency by fetching each pingUrl, and analytics loads a
+     * third-party script and reports to it. Both are configured per
+     * deployment, so the policy is derived from the config rather than
+     * guessed — an operator who configures neither gets no extra origins.
+     */
+    const brandingConfig: any = (websiteConfig && websiteConfig.branding) || {};
+    const originOf = function (url: unknown): string | null {
+        try {
+            return new URL(String(url)).origin;
+        } catch {
+            return null;
+        }
+    };
+    const configuredConnectOrigins = Array.from(
+        new Set(
+            [
+                ...(((brandingConfig.home || {}).servers || {}).list || []).map(
+                    (server: any) => originOf(server && server.pingUrl)
+                ),
+                ...((brandingConfig.analytics || {}).scripts || []).map(
+                    (script: any) => originOf(script && script.src)
+                ),
+                ...((brandingConfig.analytics || {}).googleAnalyticsId
+                    ? [
+                          'https://www.googletagmanager.com',
+                          'https://www.google-analytics.com',
+                          'https://region1.google-analytics.com'
+                      ]
+                    : [])
+            ].filter(Boolean) as string[]
+        )
+    );
+    const configuredScriptOrigins = Array.from(
+        new Set(
+            [
+                ...((brandingConfig.analytics || {}).scripts || []).map(
+                    (script: any) => originOf(script && script.src)
+                ),
+                ...((brandingConfig.analytics || {}).googleAnalyticsId
+                    ? ['https://www.googletagmanager.com']
+                    : [])
+            ].filter(Boolean) as string[]
+        )
+    );
+
     // Security headers. The SPA is self-contained (its own bundle, its own
     // /api), so a strict CSP costs nothing here — the one concession is
     // 'unsafe-inline' for styles, which the bundler emits.
@@ -95,7 +142,17 @@ export default function (this: any, logger: Logger) {
             'Content-Security-Policy',
             [
                 "default-src 'self'",
-                ["script-src 'self'", ...inlineScriptHashes].join(' '),
+                [
+                    "script-src 'self'",
+                    ...inlineScriptHashes,
+                    ...configuredScriptOrigins,
+                    // Analytics snippets bootstrap themselves with an inline
+                    // script the SPA injects at runtime, so its content is
+                    // not known when the shell is hashed.
+                    ...(configuredScriptOrigins.length
+                        ? ["'unsafe-inline'"]
+                        : [])
+                ].join(' '),
                 // The SPA shell loads its fonts and icon sets from public
                 // CDNs (Google Fonts, Font Awesome, flag-icons); a bare
                 // 'self' here blocks them and the UI loses every icon.
@@ -103,7 +160,7 @@ export default function (this: any, logger: Logger) {
                 // Operator branding (logo/favicon) may point at a CDN.
                 "img-src 'self' data: https:",
                 "font-src 'self' data: https:",
-                "connect-src 'self'",
+                ["connect-src 'self'", ...configuredConnectOrigins].join(' '),
                 "frame-ancestors 'none'",
                 "base-uri 'self'",
                 "form-action 'self'"

@@ -66,6 +66,19 @@ disconnects an IP whose invalid-share percentage crosses a threshold:
 adds HSTS when TLS is enabled, hides its server header, and caps request
 bodies at 64 KB.
 
+The CSP is derived from your config rather than fixed, so it stays as tight
+as your deployment allows:
+
+- the SPA's own inline scripts are allowed by hash, not by opening the policy
+- the font and icon CDNs the shell links are named explicitly
+- `connect-src` gains only the origins of the `pingUrl`s in
+  `branding.home.servers`, so the server cards can measure latency
+- analytics origins appear only when `branding.analytics` is configured
+
+Configure none of those and the policy stays at `'self'`. If you add a
+server card or an analytics tag and the browser console reports a CSP
+violation, restart the portal — the policy is built at startup.
+
 **The admin API** compares passwords in constant time (a plain comparison
 leaks the correct prefix through response timing), refuses every request when
 `adminCenter.enabled` is true but the password is blank — the shipped example
