@@ -406,3 +406,61 @@ test('pushes new work to connected miners when the daemon moves on', async () =>
     const pushed = await miner.waitForPush(2);
     assert.equal(pushed[0], nextHeader, 'a new block must reach the miner');
 });
+
+test('accepts a genuine DAG-derived share through the stratum port', async () => {
+    // The negative paths are covered above; this is the positive one, mined
+    // for real: the mix comes from the epoch cache, so it survives the
+    // cache-backed check the pool runs on candidates.
+    const { createRequire } = await import('node:module');
+    const require = createRequire(import.meta.url);
+    const mh = require('../native/index.cjs');
+
+    const height = 1; // epoch 0: the smallest cache to build
+    const state: MockState = {
+        calls: [],
+        submitted: [],
+        work: [HEADER, SEED, LOOSE_BOUNDARY, '0x' + height.toString(16)],
+        submitAccepts: true,
+        sawContentType: []
+    };
+    const stratumPort = 3800 + (process.pid % 100);
+    const pool = await startPool(state, {}, { [stratumPort]: { diff: 1 } });
+
+    const miner = new EthProxyClient(stratumPort);
+    cleanup.push(() => miner.close());
+    await miner.connected();
+    await miner.call('eth_submitLogin', ['0xwallet', 'rig1']);
+    const work = await miner.call('eth_getWork', []);
+
+    // Mine until the share clears the boundary the pool handed out.
+    const headerBuf = Buffer.from(work.result[0].slice(2), 'hex');
+    const boundary = BigInt(work.result[2]);
+    let solved: { nonce: string; mix: string } | null = null;
+    for (let n = 0; n < 500 && !solved; n++) {
+        const nonce = Buffer.alloc(8);
+        nonce.writeUInt32LE(n, 0);
+        const out = mh.ethash_hash(headerBuf, nonce, height);
+        if (BigInt('0x' + out.subarray(0, 32).toString('hex')) <= boundary) {
+            solved = {
+                nonce: '0x' + Buffer.from(nonce).reverse().toString('hex'),
+                mix: '0x' + out.subarray(32).toString('hex')
+            };
+        }
+    }
+    assert.ok(solved, 'a share must be findable at difficulty 1');
+
+    const verdict = await miner.call('eth_submitWork', [
+        solved!.nonce,
+        work.result[0],
+        solved!.mix
+    ]);
+
+    assert.equal(verdict.result, true, 'a real share must be accepted');
+    // The loose boundary makes it a block too, so the pool relayed it.
+    assert.equal(
+        state.submitted.length,
+        1,
+        'the solved block reached the daemon'
+    );
+    assert.deepEqual(state.submitted[0], [solved!.nonce, HEADER, solved!.mix]);
+});

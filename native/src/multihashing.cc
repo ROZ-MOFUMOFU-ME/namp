@@ -633,6 +633,42 @@ DECLARE_FUNC(ethash_verify)
     info.GetReturnValue().Set(Nan::New<v8::Boolean>(ok));
 }
 
+/*
+ * Ethash mining hash: computes the mix and final hash for a nonce using the
+ * epoch's light cache. A pool never needs this — it verifies — but miners and
+ * the pool's own end-to-end tests do.
+ */
+DECLARE_FUNC(ethash_hash)
+{
+    if (info.Length() < 3)
+        RETURN_EXCEPT("You must provide 3 arguments: headerHash, nonce, height.");
+
+    Local<Object> obj_header = Nan::To<Object>(info[0]).ToLocalChecked();
+    Local<Object> obj_nonce = Nan::To<Object>(info[1]).ToLocalChecked();
+
+    if (!Buffer::HasInstance(obj_header) || Buffer::Length(obj_header) != 32)
+        RETURN_EXCEPT("Argument 1 (header hash) should be a 32-byte buffer.");
+    if (!Buffer::HasInstance(obj_nonce) || Buffer::Length(obj_nonce) != 8)
+        RETURN_EXCEPT("Argument 2 (nonce) should be an 8-byte buffer.");
+    if (!info[2]->IsUint32())
+        RETURN_EXCEPT("Argument 3 (height) should be an unsigned integer.");
+
+    ethash::hash256 header = {};
+    std::memcpy(header.bytes, Buffer::Data(obj_header), 32);
+
+    uint64_t nonce = 0;
+    std::memcpy((uint8_t *)&nonce, Buffer::Data(obj_nonce), 8);
+
+    const uint32_t height = Nan::To<uint32_t>(info[2]).ToChecked();
+    auto context = ethash::create_epoch_context(ethash::get_epoch_number(height));
+    const auto result = ethash::e_hash(*context, header, nonce);
+
+    char output[64];
+    std::memcpy(output, result.final_hash.bytes, 32);
+    std::memcpy(&output[32], result.mix_hash.bytes, 32);
+    SET_BUFFER_RETURN(output, 64);
+}
+
 DECLARE_FUNC(vipstar)
 {
     if (info.Length() < 1)
@@ -664,6 +700,7 @@ NAN_MODULE_INIT(init)
     NAN_EXPORT(target, kawpow);
     NAN_EXPORT(target, ethash_verify_final);
     NAN_EXPORT(target, ethash_verify);
+    NAN_EXPORT(target, ethash_hash);
     NAN_EXPORT(target, c11);
     NAN_EXPORT(target, cryptonight);
     NAN_EXPORT(target, cryptonightfast);

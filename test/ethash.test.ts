@@ -103,3 +103,42 @@ test('rejects malformed arguments instead of reading past the buffers', () => {
         multiHashing.ethash_verify(header, mix, nonce, MAX_BOUNDARY)
     );
 });
+
+test('a computed mix verifies against the cache it came from', () => {
+    // ethash_hash is the miner-side counterpart: it derives the mix from the
+    // epoch cache. Feeding that mix back must satisfy the full check — this is
+    // the positive path the two verification tiers exist to separate from an
+    // invented mix.
+    const out = multiHashing.ethash_hash(header, nonce, 1);
+    assert.equal(out.length, 64, 'final hash followed by mix hash');
+
+    const finalHash = out.subarray(0, 32);
+    const computedMix = out.subarray(32);
+
+    assert.equal(
+        multiHashing.ethash_verify(header, computedMix, nonce, MAX_BOUNDARY, 1),
+        true,
+        'the DAG-derived mix must pass the cache-backed check'
+    );
+    // The final hash is exactly the boundary that still accepts it.
+    assert.equal(
+        multiHashing.ethash_verify_final(header, computedMix, nonce, finalHash),
+        true
+    );
+
+    // Same header, different nonce: a different mix, and the old one is no
+    // longer valid for it.
+    const otherNonce = Buffer.alloc(8, 0x34);
+    const otherOut = multiHashing.ethash_hash(header, otherNonce, 1);
+    assert.notDeepEqual(otherOut.subarray(32), computedMix);
+    assert.equal(
+        multiHashing.ethash_verify(
+            header,
+            computedMix,
+            otherNonce,
+            MAX_BOUNDARY,
+            1
+        ),
+        false
+    );
+});
