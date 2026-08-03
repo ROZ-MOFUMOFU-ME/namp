@@ -145,13 +145,11 @@ export default function (this: any, logger: Logger) {
                 [
                     "script-src 'self'",
                     ...inlineScriptHashes,
-                    ...configuredScriptOrigins,
-                    // Analytics snippets bootstrap themselves with an inline
-                    // script the SPA injects at runtime, so its content is
-                    // not known when the shell is hashed.
-                    ...(configuredScriptOrigins.length
-                        ? ["'unsafe-inline'"]
-                        : [])
+                    // Only origins: 'unsafe-inline' would be ignored anyway
+                    // once a hash is present, and nothing needs it — the SPA
+                    // runs its analytics init in the bundle rather than as an
+                    // injected inline script.
+                    ...configuredScriptOrigins
                 ].join(' '),
                 // The SPA shell loads its fonts and icon sets from public
                 // CDNs (Google Fonts, Font Awesome, flag-icons); a bare

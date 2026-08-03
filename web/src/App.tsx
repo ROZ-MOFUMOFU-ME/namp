@@ -39,7 +39,11 @@ export default function App() {
         link.href = favicon;
     }, [favicon]);
 
-    // Google Analytics 4 (gtag.js loader + init).
+    // Google Analytics 4. The loader is a normal <script src>, but the init
+    // runs here in the bundle rather than as an injected inline <script>:
+    // a CSP that carries a hash (ours does, for the shell's no-flash script)
+    // ignores 'unsafe-inline' entirely, so an inline snippet can never be
+    // allowed alongside it. Calling gtag directly needs no exception at all.
     const gaId = branding?.analytics?.googleAnalyticsId;
     useEffect(() => {
         if (!gaId) return;
@@ -48,16 +52,25 @@ export default function App() {
         loader.src =
             'https://www.googletagmanager.com/gtag/js?id=' +
             encodeURIComponent(gaId);
-        const init = document.createElement('script');
-        init.textContent =
-            'window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}' +
-            "gtag('js',new Date());gtag('config'," +
-            JSON.stringify(gaId) +
-            ');';
-        document.head.append(loader, init);
+        document.head.append(loader);
+
+        const w = window as unknown as {
+            dataLayer?: unknown[];
+            gtag?: (...args: unknown[]) => void;
+        };
+        w.dataLayer = w.dataLayer || [];
+        // gtag pushes `arguments` verbatim; an arrow function has none, so
+        // this stays a function expression on purpose.
+        w.gtag =
+            w.gtag ||
+            function (...args: unknown[]) {
+                w.dataLayer!.push(args);
+            };
+        w.gtag('js', new Date());
+        w.gtag('config', gaId);
+
         return () => {
             loader.remove();
-            init.remove();
         };
     }, [gaId]);
 
