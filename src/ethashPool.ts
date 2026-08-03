@@ -1,8 +1,13 @@
 import events from 'events';
 
 import daemonModule from './daemon.ts';
-import EthashJobManager, { boundaryForDifficulty } from './ethashJobManager.ts';
+import EthashJobManager, {
+    boundaryForDifficulty,
+    epochOf,
+    DEFAULT_EPOCH_LENGTH
+} from './ethashJobManager.ts';
 import EthashStratumServer from './ethashStratum.ts';
+import { getReadableHashRateString } from './util.ts';
 
 /*
  * Ethash pool: the daemon side of the Ethash/Etchash family.
@@ -274,6 +279,94 @@ const EthashPool = function EthashPool(
         );
     }
 
+    /**
+     * The startup banner, in the same shape the Bitcoin-family pool prints —
+     * with the figures that matter for an Ethash chain: epoch (the DAG the
+     * miners must build), the etherbase every block reward is paid to, and
+     * the daemon's identity.
+     */
+    function outputPoolInfo(callback: () => void) {
+        const startMessage = `Ethash Pool Server Started for ${
+            options.coin.name
+        } [${String(options.coin.symbol).toUpperCase()}] {${
+            options.coin.algorithm
+        }}`;
+        if (process.env.forkId && process.env.forkId !== '0') {
+            emitLog(startMessage);
+            callback();
+            return;
+        }
+        const rpc = (method: string, params: any[]) =>
+            new Promise<any>(function (resolve) {
+                _this.daemon.cmd(
+                    method,
+                    params,
+                    (r: any) => resolve(r.error ? null : r.response),
+                    true
+                );
+            });
+        Promise.all([
+            rpc('eth_chainId', []),
+            rpc('net_peerCount', []),
+            rpc('eth_getBlockByNumber', ['latest', false]),
+            rpc('web3_clientVersion', []),
+            rpc('eth_coinbase', [])
+        ]).then(function ([chainId, peers, latest, clientVersion, coinbase]) {
+            const work = _this.jobManager.currentWork;
+            const difficulty =
+                latest && latest.difficulty
+                    ? parseInt(latest.difficulty, 16)
+                    : null;
+            const blockTime = options.coin.blockTime || 13;
+            const epochLen = options.coin.epochLength || DEFAULT_EPOCH_LENGTH;
+            const feePercent = Object.keys(
+                options.rewardRecipients || {}
+            ).reduce(function (total, address) {
+                return (
+                    total + (parseFloat(options.rewardRecipients[address]) || 0)
+                );
+            }, 0);
+
+            const infoLines = [
+                startMessage,
+                `Chain ID:\t\t${chainId !== null ? parseInt(chainId, 16) : '—'}`,
+                `Current Block Height:\t${work.height}`,
+                `Current Epoch:\t\t${epochOf(work.height, epochLen)} (length ${epochLen})`,
+                `Current Connect Peers:\t${peers !== null ? parseInt(peers, 16) : '—'}`,
+                `Network Difficulty:\t${difficulty !== null ? difficulty : '—'}`,
+                `Network Hash Rate:\t${
+                    difficulty !== null
+                        ? getReadableHashRateString(difficulty / blockTime)
+                        : '—'
+                }`,
+                `Etherbase:\t\t${coinbase || '—'}`,
+                `Daemon:\t\t${clientVersion || '—'}`,
+                `Stratum Port(s):\t${Object.keys(options.ports || {}).join(', ') || '—'}`,
+                `Pool Fee Percent:\t${feePercent}%`,
+                `Payment Processing:\t${
+                    options.paymentProcessing &&
+                    options.paymentProcessing.enabled
+                        ? `enabled (prop, minConf ${options.paymentProcessing.minConf || 120})`
+                        : 'disabled'
+                }`
+            ];
+            if (
+                typeof options.blockRefreshInterval !== 'number' ||
+                options.blockRefreshInterval > 0
+            ) {
+                infoLines.push(
+                    `Work polling every:\t${
+                        options.blockRefreshInterval === undefined
+                            ? DEFAULT_POLL_MS
+                            : options.blockRefreshInterval
+                    } ms`
+                );
+            }
+            emitSpecialLog(infoLines.join('\n\t\t\t\t\t\t'));
+            callback();
+        });
+    }
+
     this.start = function () {
         // No Bitcoin-style liveness probe here: daemon.init()'s check calls
         // getnetworkinfo, which geth-family nodes do not implement. For an
@@ -321,14 +414,9 @@ const EthashPool = function EthashPool(
                     emitLog('Work polling has been disabled');
                 }
                 startStratum(function () {
-                    emitSpecialLog(
-                        `Ethash pool started for ${options.coin.name} [${
-                            options.coin.symbol
-                        }] {${options.coin.algorithm}} at height ${
-                            _this.jobManager.currentWork.height
-                        }`
-                    );
-                    _this.emit('started');
+                    outputPoolInfo(function () {
+                        _this.emit('started');
+                    });
                 });
             });
         };
