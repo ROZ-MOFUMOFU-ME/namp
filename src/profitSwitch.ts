@@ -1,6 +1,6 @@
 import net from 'net';
 import async from 'async';
-import * as daemonModule from './daemon.ts';
+import daemonModule from './daemon.ts';
 import * as StratumUtil from './util.ts';
 import { createRedisClient } from './redisUtil.ts';
 import { parsePriceHash } from './priceProviders.ts';

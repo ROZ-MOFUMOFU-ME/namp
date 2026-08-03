@@ -284,6 +284,51 @@ export default function (this: any, logger: Logger) {
                     difficulty: data.difficulty
                 });
             });
+            // The network-stats card (height, difficulty, hashrate, peers,
+            // daemon version) is fed from <coin>:stats by the payment
+            // processor on Bitcoin coins; an Ethash pool feeds it here so the
+            // UI works with payments disabled too. One writer is enough.
+            if ((process.env.forkId || '0') === '0') {
+                const rpc = (method: string, params: any[]) =>
+                    new Promise<any>(function (resolve) {
+                        ethashPool.daemon.cmd(
+                            method,
+                            params,
+                            (r: any) => resolve(r.error ? null : r.response),
+                            true
+                        );
+                    });
+                const cacheEthashNetworkStats = async function () {
+                    const [blockNumber, latest, peers, version] =
+                        await Promise.all([
+                            rpc('eth_blockNumber', []),
+                            rpc('eth_getBlockByNumber', ['latest', false]),
+                            rpc('net_peerCount', []),
+                            rpc('web3_clientVersion', [])
+                        ]);
+                    const stats: Record<string, string | number> = {};
+                    if (blockNumber) {
+                        stats.networkBlocks = parseInt(blockNumber, 16);
+                    }
+                    if (latest && latest.difficulty) {
+                        const difficulty = parseInt(latest.difficulty, 16);
+                        stats.networkDiff = difficulty;
+                        // Ethash difficulty already counts hashes per block.
+                        stats.networkHash =
+                            difficulty / (poolOptions.coin.blockTime || 13);
+                    }
+                    if (peers) stats.networkConnections = parseInt(peers, 16);
+                    if (version) stats.networkVersion = version;
+                    if (Object.keys(stats).length) {
+                        await shareProcessor.connection
+                            .hSet(`${poolOptions.coin.name}:stats`, stats)
+                            .catch(() => {});
+                    }
+                };
+                cacheEthashNetworkStats();
+                setInterval(cacheEthashNetworkStats, 58000);
+            }
+
             ethashPool.start();
             pools[poolOptions.coin.name] = ethashPool;
             return;

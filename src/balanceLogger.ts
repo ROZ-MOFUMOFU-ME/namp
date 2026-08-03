@@ -1,5 +1,5 @@
 import { createRedisClient, execCommands } from './redisUtil.ts';
-import * as daemonModule from './daemon.ts';
+import daemonModule from './daemon.ts';
 import type { Logger } from './logUtil.ts';
 
 /*

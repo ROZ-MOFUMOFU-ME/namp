@@ -21,7 +21,7 @@ import setupEthashPayments from './ethashPaymentProcessor.ts';
 import { isEthashAlgorithm } from './algoProperties.ts';
 import { createCoinAmounts, roundTo } from './statsUtil.ts';
 import async from 'async';
-import * as daemonModule from './daemon.ts';
+import daemonModule from './daemon.ts';
 import * as StratumUtil from './util.ts';
 import algos from './algoProperties.ts';
 import type { Logger } from './logUtil.ts';
