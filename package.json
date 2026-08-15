@@ -75,7 +75,7 @@
         "react-is": "^19.2.8",
         "react-router-dom": "^7.18.2",
         "recharts": "^3.10.1",
-        "redis": "^6.2.0"
+        "redis": "^6.2.1"
     },
     "gypfile": true,
     "overrides": {
