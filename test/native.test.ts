@@ -237,3 +237,191 @@ test('blake2b-256 matches its published known answer', () => {
         'bddd813c634239723171ef3fee98579b94964e3bb1cb3e427262c8c068d52319'
     );
 });
+
+/* ---- Published and third-party known answers ---------------------------- */
+
+/** Keccak-p[800, rounds]: 25 lanes of 32 bits; the pool's odo export runs the last 12 of Keccak-f[800]'s 22 rounds. */
+function keccakP800(state: Buffer, rounds = 12): Buffer {
+    const RC = [
+        0x00000001, 0x00008082, 0x0000808a, 0x80008000, 0x0000808b, 0x80000001,
+        0x80008081, 0x00008009, 0x0000008a, 0x00000088, 0x80008009, 0x8000000a,
+        0x8000808b, 0x0000008b, 0x00008089, 0x00008003, 0x00008002, 0x00000080,
+        0x0000800a, 0x8000000a, 0x80008081, 0x00008080, 0x80000001, 0x80008008
+    ];
+    // rotation offsets by lane x + 5y, reduced modulo the 32-bit lane
+    const RHO = [
+        0, 1, 30, 28, 27, 4, 12, 6, 23, 20, 3, 10, 11, 25, 7, 9, 13, 15, 21, 8,
+        18, 2, 29, 24, 14
+    ];
+    const rot = (v: number, n: number) =>
+        n === 0 ? v : ((v << n) | (v >>> (32 - n))) >>> 0;
+    const A = new Uint32Array(25);
+    for (let i = 0; i < 25; i++) A[i] = state.readUInt32LE(4 * i);
+    for (let r = 22 - rounds; r < 22; r++) {
+        const C = new Uint32Array(5);
+        for (let x = 0; x < 5; x++)
+            C[x] = A[x] ^ A[x + 5] ^ A[x + 10] ^ A[x + 15] ^ A[x + 20];
+        for (let x = 0; x < 5; x++) {
+            const d = C[(x + 4) % 5] ^ rot(C[(x + 1) % 5], 1);
+            for (let y = 0; y < 5; y++) A[x + 5 * y] ^= d;
+        }
+        const B = new Uint32Array(25);
+        for (let x = 0; x < 5; x++)
+            for (let y = 0; y < 5; y++)
+                B[y + 5 * ((2 * x + 3 * y) % 5)] = rot(
+                    A[x + 5 * y],
+                    RHO[x + 5 * y]
+                );
+        for (let x = 0; x < 5; x++)
+            for (let y = 0; y < 5; y++)
+                A[x + 5 * y] =
+                    (B[x + 5 * y] ^
+                        (~B[((x + 1) % 5) + 5 * y] &
+                            B[((x + 2) % 5) + 5 * y])) >>>
+                    0;
+        A[0] = (A[0] ^ RC[r]) >>> 0;
+    }
+    const out = Buffer.alloc(100);
+    for (let i = 0; i < 25; i++) out.writeUInt32LE(A[i], 4 * i);
+    return out;
+}
+
+test('cryptonight matches the Monero test vectors (variants 0, 1, 2 and 4)', () => {
+    const { cases } = require('./vectors/cryptonight.json');
+    for (const c of cases) {
+        const input = Buffer.from(c.input, 'hex');
+        const actual = mh
+            .cryptonight(input, c.variant, c.height || 0)
+            .toString('hex');
+        assert.equal(
+            actual,
+            c.hash,
+            `cryptonight v${c.variant} of ${c.input.slice(0, 16)}…`
+        );
+    }
+});
+
+test('kawpow matches the Ravencoin test vectors', () => {
+    const { cases } = require('./vectors/kawpow.json');
+    for (const c of cases) {
+        const nonce = Buffer.alloc(8);
+        nonce.writeBigUInt64LE(BigInt('0x' + c.nonce));
+        const out = mh.kawpow(Buffer.from(c.header, 'hex'), nonce, c.block);
+        assert.equal(
+            out.subarray(0, 32).toString('hex'),
+            c.final,
+            `kawpow final at block ${c.block}`
+        );
+        assert.equal(
+            out.subarray(32).toString('hex'),
+            c.mix,
+            `kawpow mix at block ${c.block}`
+        );
+    }
+});
+
+test('odo matches the DigiByte OdoCrypt test vectors', () => {
+    // DigiByte's HashOdo: OdoCrypt(key).Encrypt over the 80-byte header in a
+    // 100-byte Keccak-p[800] state, a 0x01 pad after it, twelve Keccak-p[800]
+    // rounds, first 32 bytes out. DigiByte publishes the Encrypt output; the
+    // permutation is reproduced here.
+    const { cases } = require('./vectors/odo.json');
+    for (const c of cases) {
+        const state = Buffer.alloc(100);
+        Buffer.from(c.encrypted, 'hex').copy(state);
+        state[80] = 1;
+        const expected = keccakP800(state).subarray(0, 32).toString('hex');
+        assert.equal(
+            mh.odo(Buffer.from(c.input, 'hex'), c.key).toString('hex'),
+            expected,
+            `odo key ${c.key}`
+        );
+    }
+});
+
+test('gost matches the RFC 6986 Streebog-512 example', () => {
+    // RFC 6986 writes M1 and the hash as big-endian integers, i.e. with the
+    // bytes reversed relative to the message as fed to the function.
+    const m1 = Buffer.from(
+        '012345678901234567890123456789012345678901234567890123456789012'
+    );
+    const rfc = Buffer.from(
+        '1b54d01a4af5b9d5cc3d86d68d285462b19abc2475222f35c085122be4ba1ffa00ad30f8767b3a82384c6574f024c311e2a481332b08ef7f41797891c1646f48',
+        'hex'
+    );
+    const expected = Buffer.from(rfc).reverse().subarray(0, 32).toString('hex');
+    assert.equal(mh.gost(Buffer.from(m1).reverse()).toString('hex'), expected);
+});
+
+test('keccak is Keccak-256 (pre-SHA-3 padding): published known answers', () => {
+    assert.equal(
+        mh.keccak(Buffer.alloc(0)).toString('hex'),
+        'c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+    );
+    assert.equal(
+        mh.keccak(Buffer.from('abc')).toString('hex'),
+        '4e03657aea45a94fc7d47ba826c8d667c0d1e6e33a64a036ec44f58fa12d6c45'
+    );
+});
+
+test('sha1 is the Sha1coin construction, rebuilt here from Node crypto', () => {
+    const sha1 = (b: Buffer) => crypto.createHash('sha1').update(b).digest();
+    for (const input of [
+        HEADER,
+        Buffer.alloc(80, 0x07),
+        crypto.randomBytes(80)
+    ]) {
+        // SHA-1, base64 without padding (26 chars + the leftover bits), then
+        // the first 11 chars appended again; 26 overlapping 12-char windows
+        // are each SHA-1'd and XORed; the digest sits in the last 20 bytes.
+        const b64 = sha1(input).toString('base64').slice(0, 27);
+        const str = Buffer.from(b64.slice(0, 26) + b64.slice(0, 11), 'latin1');
+        const acc = Buffer.alloc(20);
+        for (let i = 0; i < 26; i++) {
+            const h = sha1(str.subarray(i, i + 12));
+            for (let j = 0; j < 20; j++) acc[j] ^= h[j];
+        }
+        const expected = Buffer.concat([Buffer.alloc(12), acc]).toString('hex');
+        assert.equal(mh.sha1(input).toString('hex'), expected);
+    }
+});
+
+/* ---- Coverage ----------------------------------------------------------- */
+
+test('every export has a known answer somewhere', () => {
+    const covered = new Set<string>();
+    const META = new Set(['info', 'strings', 'hex']);
+    for (const set of ['set1', 'set2', 'set3'])
+        for (const k of Object.keys(require(`./vectors/${set}.json`)))
+            if (!META.has(k)) covered.add(k);
+    for (const k of Object.keys(require('./vectors/reference.json').answers))
+        covered.add(k);
+    for (const k of Object.keys(require('./vectors/regression.json').answers))
+        covered.add(k);
+    // Checked against Node crypto, official or RFC vectors, or a coin's own test suite in this file.
+    for (const k of [
+        'sha256d',
+        'sha512256d',
+        'blake2s',
+        'blake2b',
+        'blake3',
+        'scrypt',
+        'scryptn',
+        'vipstar',
+        'gost',
+        'keccak',
+        'sha1',
+        'cryptonight',
+        'kawpow',
+        'odo'
+    ])
+        covered.add(k);
+    // test/ethash.test.ts (a block sealed by a real geth) and test/equihash.test.ts.
+    for (const k of VERIFIERS) covered.add(k);
+    const exported = Object.keys(mh).filter((k) => typeof mh[k] === 'function');
+    assert.deepEqual(
+        exported.filter((k) => !covered.has(k)),
+        [],
+        'exports without a known answer'
+    );
+});

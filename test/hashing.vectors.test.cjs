@@ -1,286 +1,182 @@
-const { describe, it } = require('node:test');
-const fs = require('fs');
-const assert = require('assert');
+const test = require('node:test');
+const assert = require('node:assert');
 const multiHashing = require('bindings')('multihashing.node');
 
-// get all algorithms.
-var algos = [];
-Object.getOwnPropertyNames(multiHashing).forEach(function (algo) {
-    if (typeof multiHashing[algo] === 'function') algos.push(algo);
+/*
+ * Known-answer vectors for the one-buffer hashers.
+ *
+ * Three sets inherited from node-multi-hashing (set1: short strings, set2:
+ * 80-byte strings, set3: 120-byte strings; CC0, 2020) plus the files this
+ * repository added in the 2026 audit:
+ *
+ *   reference.json  answers from an independent implementation
+ *                   (cpuminer-multi / cpuminer-opt built standalone)
+ *   regression.json the addon's own answers, recorded for the exports that
+ *                   have no external reference
+ *
+ * Exports whose arguments are not a single buffer are called the way the
+ * answers were produced (see `special` below and the notes in each file).
+ * Every stored answer is checked; nothing is skipped. The oracle tests
+ * (Node's crypto, Monero, Ravencoin, DigiByte, RFC and official vectors)
+ * live in test/native.test.ts, and that file also asserts that every export
+ * is covered by one of these sources.
+ */
+
+const META = new Set(['info', 'strings', 'exclude-algos', 'hex']);
+const pad = Buffer.alloc(64);
+pad.fill('deadbeef');
+
+// How the inherited sets called the exports that take parameters.
+const special = {
+    argon2d: (b) => multiHashing.argon2d(b, 1, 250, 4),
+    argon2i: (b) => multiHashing.argon2i(b, 1, 250, 4),
+    argon2id: (b) => multiHashing.argon2id(b, 1, 250, 4),
+    boolberry: (b, i) => multiHashing.boolberry(b, pad, 1233320 + i),
+    neoscrypt: (b) => multiHashing.neoscrypt(b, 0),
+    scrypt: (b) => multiHashing.scrypt(b, 10, 20)
+};
+
+function hex(buffer) {
+    return buffer.toString('hex');
+}
+
+for (const set of ['set1', 'set2', 'set3']) {
+    const vectors = require(`./vectors/${set}.json`);
+    const inputs = vectors.hex.map((h) => Buffer.from(h, 'hex'));
+
+    test(`${set}: ${vectors.info.description}`, () => {
+        for (const algo of Object.keys(vectors)) {
+            if (META.has(algo)) continue;
+            const stored = vectors[algo];
+            if (algo === 'cryptonight') {
+                // Variants 0..4; variant 4 needs the block height.
+                for (const variant of Object.keys(stored)) {
+                    assert.deepStrictEqual(
+                        inputs.map((b, i) =>
+                            hex(
+                                multiHashing.cryptonight(
+                                    b,
+                                    Number(variant),
+                                    1806260 + i
+                                )
+                            )
+                        ),
+                        stored[variant],
+                        `${set} cryptonight variant ${variant}`
+                    );
+                }
+                continue;
+            }
+            if (algo === 'cryptonightfast') {
+                // "0" was recorded with the fast flag, "1" with variant 1.
+                for (const variant of Object.keys(stored)) {
+                    const arg = variant === '0' ? true : Number(variant);
+                    assert.deepStrictEqual(
+                        inputs.map((b) =>
+                            hex(multiHashing.cryptonightfast(b, arg))
+                        ),
+                        stored[variant],
+                        `${set} cryptonightfast ${variant}`
+                    );
+                }
+                continue;
+            }
+            const call = special[algo] || ((b) => multiHashing[algo](b));
+            assert.deepStrictEqual(
+                inputs.map((b, i) => hex(call(b, i))),
+                stored,
+                `${set} ${algo}`
+            );
+        }
+    });
+}
+
+test('reference.json: answers from an independent implementation', () => {
+    const ref = require('./vectors/reference.json');
+    const in80 = ref.inputs80.map((h) => Buffer.from(h, 'hex'));
+    const in112 = ref.inputs112.map((h) => Buffer.from(h, 'hex'));
+    for (const [algo, answers] of Object.entries(ref.answers)) {
+        let actual;
+        if (algo === 'lbry')
+            actual = in112.map((b) => hex(multiHashing.lbry(b)));
+        else if (algo === 'neoscrypt')
+            actual = in80.map((b) =>
+                hex(multiHashing.neoscrypt(b, 0x80000620))
+            );
+        else if (algo === 'zr5')
+            actual = in80.map((b) => {
+                const header = Buffer.from(b);
+                header[1] &= 0x7f;
+                header[2] = 0;
+                header[3] = 0;
+                return hex(multiHashing.zr5(header));
+            });
+        else actual = in80.map((b) => hex(multiHashing[algo](b)));
+        assert.deepStrictEqual(actual, answers, `reference ${algo}`);
+    }
 });
 
-// newly added algos.
-var added = {};
-
-//
-// select sets of test vectors
-// SETS=set1,set2,mytest
-//
-var sets = ['set1', 'set2', 'set3'];
-if (process.env.SETS) {
-    sets = process.env.SETS.split(',');
-}
-
-//
-// Vector coverage: exclude-algos in each set lists the algorithms without a
-// stored known answer. They need extra arguments the runner does not pass
-// (scrypt/scryptn/scryptjane/argon2*/boolberry/kawpow/odo), or their stored
-// answers predate a fix (bcrypt: the old key schedule read past the header,
-// so its answers were never reproducible; cryptonightfast), or nobody has
-// recorded one yet. The new exports (blake3, sha512256d, blake2b, x16s,
-// x16rt, x21s, x22i) and the oracle checks live in test/native.test.ts.
-//
-// skip some algos for quick test
-//
-// SKIPS=scryptjane,bscrypt,cryptonight mocha -gc ...
-// or disable all skips
-// SKIP=x mocha -gc ...
-//
-// ethash_* are share-verification predicates (header, mix, nonce, boundary),
-// not one-buffer hashers, so the vector runner cannot drive them; they have
-// their own test in test/ethash.test.ts.
-var skipalgos = [
-    'bcrypt',
-    'scryptjane',
-    'ethash_verify',
-    'ethash_verify_final',
-    'ethash_hash',
-    'equihash_verify',
-    'ethash_final_hash'
-]; // disable bcrypt for now
-if (process.env.SKIPS) {
-    skipalgos = process.env.SKIPS.split(',');
-}
-
-sets.forEach(function (set) {
-    var vectors;
-    var update = false;
-
-    // check test vectors
-    if (fs.existsSync(__dirname + '/vectors/' + set + '.json')) {
-        vectors = require('./vectors/' + set + '.json');
-    } else {
-        if (fs.existsSync(__dirname + '/vectors/' + set + '-input.json')) {
-            vectors = require('./vectors/' + set + '-input.json');
-        } else {
-            vectors = require('./vectors/input.json');
+test('regression.json: the addon agrees with its recorded self', () => {
+    const ref = require('./vectors/reference.json');
+    const reg = require('./vectors/regression.json');
+    const in80 = ref.inputs80.map((h) => Buffer.from(h, 'hex'));
+    const a = reg.answers;
+    for (const [algo, answers] of Object.entries(a)) {
+        if (Array.isArray(answers)) {
+            assert.deepStrictEqual(
+                in80.map((b) => hex(multiHashing[algo](b))),
+                answers,
+                `regression ${algo}`
+            );
         }
-        update = true;
     }
-
-    // force update.
-    if (process.env.UPDATE) {
-        update = true;
-    }
-
-    var buffers = vectors['strings'].map(function (str) {
-        return Buffer.from(str);
-    });
-
-    if (!vectors['hex']) {
-        vectors['hex'] = buffers.map(function (buf) {
-            return buf.toString('hex');
-        });
-    }
-
-    // hash results
-    var results = {};
-
-    // node:test suites take their timeout as an option, not mocha's this.timeout().
-    describe(
-        'Basic algo tests with ' + set + '-vectors',
-        { timeout: 60000 },
-        function () {
-            algos.push('@');
-            algos.forEach(function (algo) {
-                // excluded alogs
-                if (vectors['exclude-algos']) {
-                    if (vectors['exclude-algos'].indexOf(algo) != -1) {
-                        return;
-                    }
-                }
-
-                if (algo == '@') {
-                    if (process.env.NODE_DEV !== 'dev' && !update) {
-                        return;
-                    }
-                    it(
-                        'check newly added algos for ' + set + '...',
-                        function (t) {
-                            if (Object.keys(added).length > 0) {
-                                var expect = JSON.stringify(vectors, null, 2);
-
-                                var save = {};
-                                if (vectors['info']) {
-                                    save['info'] = vectors['info'];
-                                    if (save['info']['date']) {
-                                        save['info']['updated'] = Date();
-                                    } else {
-                                        save['info']['date'] = Date();
-                                    }
-                                } else {
-                                    save['info'] = {
-                                        description: 'Simple test vectors',
-                                        date: Date(),
-                                        license: 'CCL0'
-                                    };
-                                }
-
-                                save['strings'] = vectors['strings'];
-                                if (vectors['exclude-algos']) {
-                                    save['exclude-algos'] =
-                                        vectors['exclude-algos'];
-                                }
-                                save['hex'] = vectors['hex'];
-                                Object.keys(results).forEach(function (algo) {
-                                    save[algo] = JSON.parse(
-                                        JSON.stringify(results[algo])
-                                    );
-                                });
-
-                                var actual = JSON.stringify(save, null, 2);
-                                // save/update results.
-                                fd = fs.openSync(
-                                    __dirname + '/vectors/' + set + '.json',
-                                    'w'
-                                );
-                                fs.writeSync(fd, actual + '\n');
-                                fs.closeSync(fd);
-
-                                assert.deepEqual(actual, expect);
-                            } else {
-                                t.skip();
-                            }
-                        }
-                    );
-                    return;
-                }
-
-                it(algo + ' algo.', function (t) {
-                    // do not test some alogs.
-                    if (skipalgos.indexOf(algo) != -1) {
-                        t.skip();
-                        return;
-                    }
-
-                    if (
-                        algo == 'argon2d' ||
-                        algo == 'argon2i' ||
-                        algo == 'argon2id'
-                    ) {
-                        //var tValue = 2, mValue = 500, pValue = 8; // argon2d_dyn_hash
-                        var tValue = 1,
-                            mValue = 250,
-                            pValue = 4; // argon2d_crds_gate
-                        results[algo] = buffers.map(function (buf, i) {
-                            var ret = multiHashing[algo](
-                                buf,
-                                tValue,
-                                mValue,
-                                pValue
-                            );
-                            return ret.toString('hex');
-                        });
-                    } else if (algo == 'cryptonight') {
-                        console.log('      * ' + algo);
-                        results[algo] = {};
-                        for (var variant = 0; variant <= 4; ++variant) {
-                            var height = 1806260;
-                            results[algo][variant] = buffers.map(
-                                function (buf, i) {
-                                    var ret = multiHashing['cryptonight'](
-                                        buf,
-                                        variant,
-                                        height + i
-                                    );
-                                    return ret.toString('hex');
-                                }
-                            );
-                            console.log('      - variant = ' + variant);
-                        }
-                    } else if (algo == 'cryptonightfast') {
-                        console.log('      * ' + algo);
-                        results[algo] = {};
-                        for (var variant = 0; variant <= 1; ++variant) {
-                            results[algo][variant] = buffers.map(
-                                function (buf, i) {
-                                    var ret = multiHashing['cryptonightfast'](
-                                        buf,
-                                        variant == 0 ? true : variant
-                                    );
-                                    return ret.toString('hex');
-                                }
-                            );
-                            console.log(
-                                '      - variant = ' +
-                                    (variant == 0 ? 'fast' : variant)
-                            );
-                        }
-                    } else if (algo == 'scryptn') {
-                        var Nfactor = 100;
-                        results[algo] = buffers.map(function (buf, i) {
-                            var ret = multiHashing[algo](buf, Nfactor + i);
-                            return ret.toString('hex');
-                        });
-                    } else if (algo == 'scrypt') {
-                        var nVal = 10,
-                            rVal = 20;
-                        results[algo] = buffers.map(function (buf, i) {
-                            var ret = multiHashing[algo](buf, nVal, rVal);
-                            return ret.toString('hex');
-                        });
-                    } else if (algo == 'boolberry') {
-                        var height = 1233320;
-                        var scratch_pad = Buffer.alloc(64);
-                        scratch_pad.fill('deadbeef');
-                        results[algo] = buffers.map(function (buf, i) {
-                            var ret = multiHashing[algo](
-                                buf,
-                                scratch_pad,
-                                height + i
-                            );
-                            return ret.toString('hex');
-                        });
-                    } else if (algo == 'scryptjane') {
-                        //scryptjane needs block.nTime and nChainStartTime (found in coin source)
-                        var yaCoinChainStartTime = 1367991200;
-                        var nTime = Math.round(Date.now() / 1000);
-                        results[algo] = buffers.map(function (buf) {
-                            var ret = multiHashing[algo](
-                                buf,
-                                nTime,
-                                yaCoinChainStartTime,
-                                4,
-                                30
-                            );
-                            return ret.toString('hex');
-                        });
-                    } else if (algo == 'neoscrypt') {
-                        results[algo] = buffers.map(function (buf, i) {
-                            var ret = multiHashing[algo](buf, null);
-                            return ret.toString('hex');
-                        });
-                    } else {
-                        results[algo] = buffers.map(function (buf) {
-                            var ret = multiHashing[algo](buf);
-                            return ret.toString('hex');
-                        });
-                    }
-
-                    // vectors result
-                    if (vectors[algo] && results[algo]) {
-                        assert.deepEqual(results[algo], vectors[algo]);
-                    } else {
-                        // No stored vector yet: record this run as the
-                        // known-answer for the algorithm (written by the '@'
-                        // test below) and skip — there is nothing to compare
-                        // against on the first pass.
-                        added[algo] = results[algo];
-                        update = true;
-                        t.skip();
-                    }
-                });
-            });
-        }
+    const scratchpad = Buffer.from(a.boolberry.scratchpad, 'hex');
+    assert.deepStrictEqual(
+        in80.map((b, i) =>
+            hex(multiHashing.boolberry(b, scratchpad, a.boolberry.height + i))
+        ),
+        a.boolberry.hashes,
+        'regression boolberry'
+    );
+    const j = a.scryptjane;
+    assert.deepStrictEqual(
+        in80.map((b) =>
+            hex(
+                multiHashing.scryptjane(
+                    b,
+                    j.timestamp,
+                    j.nChainStartTime,
+                    j.nMin,
+                    j.nMax
+                )
+            )
+        ),
+        j.hashes,
+        'regression scryptjane'
+    );
+    assert.deepStrictEqual(
+        in80.map((b) => hex(multiHashing.cryptonightfast(b, true))),
+        a.cryptonightfast.fast,
+        'regression cryptonightfast fast'
+    );
+    assert.deepStrictEqual(
+        in80.map((b) => hex(multiHashing.cryptonightfast(b, 0))),
+        a.cryptonightfast.variant0,
+        'regression cryptonightfast 0'
+    );
+    assert.deepStrictEqual(
+        in80.map((b) => hex(multiHashing.cryptonightfast(b, 1))),
+        a.cryptonightfast.variant1,
+        'regression cryptonightfast 1'
+    );
+    assert.deepStrictEqual(
+        in80.map((b) => hex(multiHashing.cryptonight(b, 3))),
+        a.cryptonight.variant3,
+        'regression cryptonight 3'
+    );
+    assert.deepStrictEqual(
+        in80.map((b) => hex(multiHashing.scryptn(b, a.scryptn.nFactor))),
+        a.scryptn.hashes,
+        'regression scryptn'
     );
 });

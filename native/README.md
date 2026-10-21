@@ -102,14 +102,25 @@ from upstream sphlib, Argon2 and yespower sources and are left as they are.
 
 ## Tests
 
-- `test/native.test.ts` — every export runs, returns the documented shape and
-  is deterministic; `sha256d`, `blake2s`, `sha512256d`, `scrypt`, `scryptn` and
-  `vipstar` are checked against Node's own `crypto`; `blake3` against the
-  official test vectors; `blake2b` against its published known answer.
-- `test/hashing.vectors.test.cjs` — stored known answers (`test/vectors/`) for
-  the one-buffer hashers.
-- `test/ethash.test.ts`, `test/equihash.test.ts` — the verifiers, including a
-  block sealed by a real geth.
+Every export has a known answer it is checked against, and nothing is
+skipped. `node --test test/native.test.ts test/hashing.vectors.test.cjs`
+runs it all; `test/native.test.ts` ends with a coverage test that fails if an
+export has no known answer anywhere.
+
+| Where                                                | What it checks                                                                                                                                                                                                                                                 |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `test/native.test.ts`                                | Every export runs, returns the documented shape and is deterministic; `sha256d`, `sha512256d`, `blake2s`, `scrypt`, `scryptn`, `vipstar` and `sha1` against Node's `crypto`; `blake3` against its official vectors; `blake2b` and `keccak` against published known answers; `gost` against RFC 6986; `cryptonight` against Monero's test files; `kawpow` against Ravencoin's; `odo` against DigiByte's |
+| `test/hashing.vectors.test.cjs` + `test/vectors/`    | Stored answers: `set1..3` (inherited from node-multi-hashing), `reference.json` (an independent implementation: cpuminer-multi and cpuminer-opt built standalone, 26 algorithms), `regression.json` (the addon's own recorded answers for the exports no reference covers), `blake3.json`, `cryptonight.json`, `kawpow.json`, `odo.json` |
+| `test/ethash.test.ts`, `test/equihash.test.ts`       | The verifiers, including a block sealed by a real geth                                                                                                                                                                                                         |
+
+`regression.json` is the honest residue: bcrypt, boolberry, hsr, skunk,
+skydoge, whirlpoolx, minotaur, scryptjane, x16rt, x21s, x22i, x25x, the
+yespower coin profiles and cryptonightfast have no second implementation or
+published vector to compare with, so their current output is pinned to catch
+unintended change. The yespower profiles for IOTS, MGPC and LITB carry
+parameters inherited from node-multi-hashing that could not be confirmed
+against the coins (a personalization length of 8 for longer strings; a
+73-byte string ending in "mini").
 
 ### Adding an algorithm
 

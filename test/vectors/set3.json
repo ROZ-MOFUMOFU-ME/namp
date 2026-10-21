@@ -3,7 +3,8 @@
     "description": "120-bytes strings",
     "date": "Wed Aug 12 09:24:38 UTC 2020",
     "license": "CCL0",
-    "updated": "Fri Aug 28 2020 04:45:00 GMT+0900 (KST)"
+    "updated": "Fri Aug 28 2020 04:45:00 GMT+0900 (KST)",
+    "pruned": "bcrypt (answers predate the bounded key schedule), scryptjane (recorded with the clock as timestamp), yescrypt (export renamed; none of the yespower profiles reproduces it), scryptn (recorded with nFactor >= 100, undefined in C) and the exclude list the old runner used; every remaining answer is checked, 2026-10-22"
   },
   "strings": [
     "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over",
@@ -16,51 +17,6 @@
     "n voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in c",
     "ulpa qui officia deserunt mollit anim idest laborum. Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do ei",
     "usmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco lab"
-  ],
-  "exclude-algos": [
-    "allium",
-    "bcrypt",
-    "cryptonight",
-    "cryptonightfast",
-    "blake2s",
-    "kawpow",
-    "gost",
-    "hsr",
-    "lyra2z16m330",
-    "lyra2z330",
-    "m7",
-    "m7m",
-    "minotaur",
-    "odo",
-    "phi1612",
-    "scrypt",
-    "scryptjane",
-    "scryptn",
-    "skunk",
-    "skydoge",
-    "tribus",
-    "vipstar",
-    "whirlpoolx",
-    "x17",
-    "x25x",
-    "xevan",
-    "zr5",
-    "yespower",
-    "yespower_0_5_R8",
-    "yespower_0_5_R8G",
-    "yespower_0_5_R16",
-    "yespower_0_5_R24",
-    "yespower_0_5_R32",
-    "yespower_arwn",
-    "yespower_ic",
-    "yespower_iots",
-    "yespower_litb",
-    "yespower_ltncg",
-    "yespower_mgpc",
-    "yespower_r16",
-    "yespower_sugar",
-    "yespower_tide",
-    "yespower_urx"
   ],
   "hex": [
     "54686520717569636b2062726f776e20666f78206a756d7073206f76657220746865206c617a7920646f672e2054686520717569636b2062726f776e20666f78206a756d7073206f76657220746865206c617a7920646f672e2054686520717569636b2062726f776e20666f78206a756d7073206f766572",
@@ -109,18 +65,6 @@
     "b881e9020cce4e617e9e7eadeb9630e3cf2c856b1bd894f4f1ea83e0935360b7",
     "d7588565300504c52a85c0f2dc2e30ec402e6e4e8730435ca6a79de6ef742fe7",
     "decc119c170ffa015f94e95f54ecc7e306cafdb614706696329fd22c4f7a7ae2"
-  ],
-  "bcrypt": [
-    "3a49ee8f3818f0caa3344dcf9cd63f40f55e05b63a325fb06413155cc679dce7",
-    "e4d1997ced1eeeb2261c5a9c485d9e25861a76694ed5fd5b9acf67add6d7390a",
-    "197eefa0d8160717cb5664479b51b427afa35bc72eaf05d7c1554a33b9fc06b0",
-    "acbcdac79952887d5e47676257a087404e7ff6a7e9309626d38b2b6cb9d04b09",
-    "705beafeddc86598f9bbd4d33649fb08f14ea6d815350868ab3c614d1c030c82",
-    "fd0c6abca022a390a4266ca52112b4d50e30ba36ed4a164e38c68dab724c8852",
-    "cd4a029281b42100c3431d0cb4ec19ebfdce2191b551a0b62c05b409df3ab78f",
-    "373374b7ed158e051e66d77a017fd7225e2a0bfba016a2bbb6b25b07d768972b",
-    "1599df53c43838a8108cbbfeefa3b8d84e198bed986de21774279569cc5f2532",
-    "29a057c72c3c692f858799f370a28975a24dde8021eaac2cb8567a7d77f84db7"
   ],
   "blake": [
     "5732cbae3326312ada2e8dd60437d8fe4875d9678ea769653a8dc15c830c39b8",
@@ -426,30 +370,6 @@
     "8710f12a31bddd287cf6ecb26acaf668a2b6c06a3edfaa2374cabb3e1addf6f7",
     "886223d307cba635cdc46485aa548f2776f376584417718ad195612376e6fa66"
   ],
-  "scryptjane": [
-    "c0a8b12ed7dadd3724ce53c37ff765b86071d19d21b21a35702182ed6e46c3a4",
-    "ce99be4c6ed56216a45a419e9ab93e13991ca61908fc8485097a8ae97415c9f7",
-    "7e99f09916731a985f6e3a744fe4c477806f9578b425fad1e500bdd853cfeef5",
-    "8ce4d03196f67012ae5db7b28a2478da54bf9c6673454fc461c999f15a78a2ae",
-    "9969453462df41af84ebad3adf12fe9b16239dca2f0dc828657cf9f57a23c84d",
-    "7d3642c369c6f3df7522dfad649c59db7c59c00fe0bbf562081c9b1501da097f",
-    "180374a6421da73d37ecb7b290b3f82f9f885eb4937b1d00fb3a91701ddcd82f",
-    "a297425bde514c2bae2a7e9d823e4b951831885e6e2b7f4f2520f0df4934d0d3",
-    "f147625c6e7863e90287eb1cfde242dcd7b7a90757483c39a65b42b4f88cc2f9",
-    "db17842527178c5f37c3949a73ae60e0ecfcba7b56ad8cfec230caf243dc245b"
-  ],
-  "scryptn": [
-    "21cecd46e69eb654ee4b19f33b54a910f287c02e6d9ee12286609b577326ceda",
-    "d7d2e1783e383e5b070f7f9ac3366f61b3029a0dfb33e727b968daa52027becd",
-    "45586a00e1b09089e5d6ad8c7fdc3efea566f2631faba87a7c1881150f0bf2d4",
-    "ad01be951a403f7d3da70dd75dc9f2cc96b633c41b476c3692cfdb3ac7711c7c",
-    "5299b635281dfd5c9d6bef5f09d61b13dbb4075b9fc077bbddac6f9dc0b78fa7",
-    "498729310e465e82ab0dcda91a2403a00d7b45d4b59980e44ea3ce754871ed4a",
-    "40019112ab9688d3f38fff03e6ac5f083bac7bebe17f0c2aa78c43896090856c",
-    "93ec0e051dc469c7e6247feb92d63a5293a878de8c15487124b0fb7355a9817e",
-    "7e0358d443615a0e49c3f0e5d6a42d1f89d598311c22ad9da340e37f4120f348",
-    "a3284804d7ee79562bb2415e8ba5f6e93a41e9b2914f53560c1f3b57ab7675aa"
-  ],
   "sha1": [
     "0000000000000000000000003aa5463321b8905874da2ddd32ab51383a937e2f",
     "000000000000000000000000302b81023b1ac923dab410425a79dde321588d6d",
@@ -569,18 +489,6 @@
     "bb659535797bc799f4ccb386ecd08ab1ff0a21cd5fb8ca619a4860f251cfa745",
     "9118bfabf10c3003b9faa1271524a86f276c2cc19bc86967dbd412b18c6f1d57",
     "cce7a1cebc7dcfb5820759adc6acbb05d21430337c26db16cb6281d39f3e227b"
-  ],
-  "yescrypt": [
-    "9aa7576efef53bb72fc61380140c1549823a48177afd857f485ea69c93b50a6b",
-    "51b005ae7a9907b8b63bb818d0b031da8e04908f30fc5b2885ba95512c2933a2",
-    "de093e78156647acd7435f81dc3726693581c8a4d12756f0a06e4c95fa7e0a74",
-    "8c05ed21ce1c93d46ec23cee887b909e54a702d58118804e7cf63e25efc2df91",
-    "90def9923f4b73c724dde1a33c6e5a6976c01c821add09284b73758b5585dcab",
-    "03caf4f4825b540e8f9c539883b7b107ec625effdf300d5b153097ca6265b376",
-    "b994c1ae14080e78c9f0456d74709f353014cb35a6c0727179df7403f6305abf",
-    "13ddc75e821335a5ebc48d61826ae5bac70c3ddfe9f5016af5f88c89416f1bdc",
-    "a3a6d21e75cfe0b525afc7c5fe3d7fc3ef600aca631e98eee7a26179278ac975",
-    "38f47e6bf26c0ab9777bcd3eb75118354679db489b53dd5be68ea8a8b2d88887"
   ],
   "lyra2re2": [
     "20d64a837f2d0d3c030a1d7a514f5b8dd8c0dffaadadca94a7b08e4eea4d265a",
