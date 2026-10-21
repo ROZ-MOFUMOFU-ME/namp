@@ -146,9 +146,11 @@
             # assumptions at -O2/-O3 lyra2rev3 returned a different hash on
             # every call. Miners build with the same flag for the same reason.
             # sphlib ships lookup tables its variants do not all use.
-            "cflags": ["-fno-strict-aliasing", "-Wno-unused-const-variable"],
+            # -fstack-protector-strong is Ubuntu's default and caught an
+            # overflow Debian's compiler let through; every build gets it.
+            "cflags": ["-fno-strict-aliasing", "-fstack-protector-strong", "-Wno-unused-const-variable"],
             # The V8 headers of Node 24 need C++20; the Equihash port throws.
-            "cflags_cc": ["-std=c++20", "-fexceptions", "-fno-strict-aliasing", "-Wno-unused-const-variable"],
+            "cflags_cc": ["-std=c++20", "-fexceptions", "-fno-strict-aliasing", "-fstack-protector-strong", "-Wno-unused-const-variable"],
             # BLAKE3: the portable kernel only. Its SIMD kernels need per-file
             # -m flags node-gyp cannot express, and a pool verifies one hash
             # per share.
