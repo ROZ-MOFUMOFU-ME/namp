@@ -11,6 +11,8 @@
                 "native/src/bcrypt.c",
                 "native/src/blake.c",
                 "native/src/blake2s.c",
+                "native/src/blake2b.c",
+                "native/src/blake3.c",
                 "native/src/boolberry.cc",
                 "native/src/c11.c",
                 "native/src/cryptonight.c",
@@ -39,6 +41,7 @@
                 "native/src/scryptn.c",
                 "native/src/sha1.c",
                 "native/src/sha256d.c",
+                "native/src/sha512256d.c",
                 "native/src/shavite3.c",
                 "native/src/skein.c",
                 "native/src/skunk.c",
@@ -52,7 +55,11 @@
                 "native/src/x15.c",
                 "native/src/x16r.c",
                 "native/src/x16rv2.c",
+                "native/src/x16rt.c",
+                "native/src/x16s.c",
                 "native/src/x17.c",
+                "native/src/x21s.c",
+                "native/src/x22i.c",
                 "native/src/x25x.c",
                 "native/src/xevan.c",
                 "native/src/zr5.c",
@@ -117,6 +124,11 @@
                 "native/src/equihash/endian.c",
                 "native/src/equihash/equihash.cpp",
 
+                # BLAKE3 (official C implementation, portable kernel).
+                "native/src/blake3/blake3.c",
+                "native/src/blake3/blake3_dispatch.c",
+                "native/src/blake3/blake3_portable.c",
+
                 # Ethash (chfast/ethash: light-cache verification) and the KawPow ProgPoW kernel.
                 "native/src/ethash/ethash.cpp",
                 "native/src/ethash/keccak.c",
@@ -137,6 +149,10 @@
             "cflags": ["-fno-strict-aliasing", "-Wno-unused-const-variable"],
             # The V8 headers of Node 24 need C++20; the Equihash port throws.
             "cflags_cc": ["-std=c++20", "-fexceptions", "-fno-strict-aliasing", "-Wno-unused-const-variable"],
+            # BLAKE3: the portable kernel only. Its SIMD kernels need per-file
+            # -m flags node-gyp cannot express, and a pool verifies one hash
+            # per share.
+            "defines": ["BLAKE3_NO_SSE2", "BLAKE3_NO_SSE41", "BLAKE3_NO_AVX2", "BLAKE3_NO_AVX512", "BLAKE3_USE_NEON=0"],
             "xcode_settings": {
                 "OTHER_CFLAGS": ["-fno-strict-aliasing"],
                 "CLANG_CXX_LANGUAGE_STANDARD": "c++20",

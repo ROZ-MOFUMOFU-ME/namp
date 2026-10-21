@@ -19,9 +19,10 @@ Mining Portal) lineage.
 
 ## Features
 
-- **Two mining families in one portal.** 49 Bitcoin-family algorithms
-  (sha256d, scrypt, quark, x11/x16r, lyra2, yescrypt/yespower, vipstar and
-  more) on the classic stratum pipeline, plus the **Ethash family** —
+- **Two mining families in one portal.** 56 Bitcoin-family algorithms
+  (sha256d, scrypt, quark, the X11…X25X chains, lyra2, yescrypt/yespower,
+  BLAKE3, Radiant's sha512/256d, vipstar and more) on the classic stratum
+  pipeline, plus the **Ethash family** —
   Ethereum, Ethereum Classic (Etchash) and VirBiCoin — with its own work
   model, eth-proxy stratum dialect and chain-side payment processing.
 - **10 payment schemes.** prop, pplnt, pplns, solo, pps, dpps, fpps, ppsplus,
@@ -243,6 +244,7 @@ Donations for development are greatly appreciated!
 - [JH](<http://en.wikipedia.org/wiki/JH_(hash_function)>) - Hongjun Wu
 - [Fugue](<http://en.wikipedia.org/wiki/Fugue_(hash_function)>) - Shai Halevi, William E. Hall, and Charanjit S. Jutla
 - [scrypt](http://en.wikipedia.org/wiki/Scrypt) - Colin Percival
+- [BLAKE3](https://github.com/BLAKE3-team/BLAKE3) - Jack O'Connor, Jean-Philippe Aumasson, Samuel Neves, and Zooko Wilcox-O'Hearn
 - [bcrypt](http://en.wikipedia.org/wiki/Bcrypt) - Niels Provos and David Mazières
 - [X11](http://www.darkcoin.io/), [Hefty1](http://heavycoin.github.io/about.html), [Quark](http://www.qrk.cc/) creators
 - Those that contributed to [node-stratum-pool](//github.com/zone117x/node-stratum-pool#credits)

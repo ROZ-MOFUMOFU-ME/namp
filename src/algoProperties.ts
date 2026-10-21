@@ -130,6 +130,10 @@ const algos: any = ((global as any).algos = {
         }
     },
     sha1: passthrough('sha1', { blockHasher: 'sha256d' }),
+    // Radiant: double SHA-512/256 for both the proof of work and the block id.
+    sha512256d: passthrough('sha512256d'),
+    blake2b: passthrough('blake2b'),
+    blake3: passthrough('blake3'),
     x11: passthrough('x11', { blockHasher: 'sha256d' }),
     x13: passthrough('x13'),
     x15: passthrough('x15'),
@@ -141,7 +145,23 @@ const algos: any = ((global as any).algos = {
         multiplier: Math.pow(2, 8),
         blockHasher: 'sha256d'
     }),
+    x16s: passthrough('x16s', {
+        multiplier: Math.pow(2, 8),
+        blockHasher: 'sha256d'
+    }),
+    x16rt: passthrough('x16rt', {
+        multiplier: Math.pow(2, 8),
+        blockHasher: 'sha256d'
+    }),
     x17: passthrough('x17', { blockHasher: 'sha256d' }),
+    x21s: passthrough('x21s', {
+        multiplier: Math.pow(2, 8),
+        blockHasher: 'sha256d'
+    }),
+    x22i: passthrough('x22i', {
+        multiplier: Math.pow(2, 8),
+        blockHasher: 'sha256d'
+    }),
     skydoge: passthrough('skydoge'),
     x25x: passthrough('x25x'),
     nist5: passthrough('nist5'),

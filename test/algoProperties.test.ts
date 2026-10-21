@@ -50,6 +50,10 @@ function oldBlockHasher(coin: any, hashDigest: (...args: any[]) => Buffer) {
         case 'x11':
         case 'x16r':
         case 'x16rv2':
+        case 'x16s':
+        case 'x16rt':
+        case 'x21s':
+        case 'x22i':
         case 'x17':
         case 'odo':
         case 'minotaur':

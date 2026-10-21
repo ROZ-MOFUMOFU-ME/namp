@@ -12,7 +12,9 @@ extern "C"
 #include "allium.h"
 #include "bcrypt.h"
 #include "blake.h"
+#include "blake2b.h"
 #include "blake2s.h"
+#include "blake3.h"
 #include "c11.h"
 #include "cryptonight.h"
 #include "cryptonight_fast.h"
@@ -40,6 +42,7 @@ extern "C"
 #include "sha1.h"
 #include "sha256.h"
 #include "sha256d.h"
+#include "sha512256d.h"
 #include "shavite3.h"
 #include "skein.h"
 #include "skunk.h"
@@ -52,8 +55,12 @@ extern "C"
 #include "x13.h"
 #include "x15.h"
 #include "x16r.h"
+#include "x16rt.h"
 #include "x16rv2.h"
+#include "x16s.h"
 #include "x17.h"
+#include "x21s.h"
+#include "x22i.h"
 #include "x25x.h"
 #include "xevan.h"
 #include "zr5.h"
@@ -113,7 +120,9 @@ using namespace v8;
 DECLARE_CALLBACK(allium, allium_hash, 32);
 DECLARE_CALLBACK(bcrypt, bcrypt_hash, 32);
 DECLARE_CALLBACK(blake, blake_hash, 32);
+DECLARE_CALLBACK(blake2b, blake2b_hash, 32);
 DECLARE_CALLBACK(blake2s, blake2s_hash, 32);
+DECLARE_CALLBACK(blake3, blake3_hash, 32);
 DECLARE_CALLBACK(c11, c11_hash, 32);
 DECLARE_CALLBACK(fresh, fresh_hash, 32);
 DECLARE_CALLBACK(fugue, fugue_hash, 32);
@@ -138,6 +147,7 @@ DECLARE_CALLBACK(quark, quark_hash, 32);
 DECLARE_CALLBACK(qubit, qubit_hash, 32);
 DECLARE_CALLBACK(sha1, sha1_hash, 32);
 DECLARE_CALLBACK(sha256d, sha256d_hash, 32);
+DECLARE_CALLBACK(sha512256d, sha512256d_hash, 32);
 DECLARE_CALLBACK(shavite3, shavite3_hash, 32);
 DECLARE_CALLBACK(skein, skein_hash, 32);
 DECLARE_CALLBACK(skunk, skunk_hash, 32);
@@ -149,8 +159,12 @@ DECLARE_CALLBACK(x11, x11_hash, 32);
 DECLARE_CALLBACK(x13, x13_hash, 32);
 DECLARE_CALLBACK(x15, x15_hash, 32);
 DECLARE_CALLBACK(x16r, x16r_hash, 32);
+DECLARE_CALLBACK(x16rt, x16rt_hash, 32);
 DECLARE_CALLBACK(x16rv2, x16rv2_hash, 32);
+DECLARE_CALLBACK(x16s, x16s_hash, 32);
 DECLARE_CALLBACK(x17, x17_hash, 32);
+DECLARE_CALLBACK(x21s, x21s_hash, 32);
+DECLARE_CALLBACK(x22i, x22i_hash, 32);
 DECLARE_CALLBACK(x25x, x25x_hash, 32);
 DECLARE_CALLBACK(xevan, xevan_hash, 32);
 DECLARE_CALLBACK(zr5, zr5_hash, 32);
@@ -825,7 +839,9 @@ NAN_MODULE_INIT(init)
     NAN_EXPORT(target, argon2id);
     NAN_EXPORT(target, bcrypt);
     NAN_EXPORT(target, blake);
+    NAN_EXPORT(target, blake2b);
     NAN_EXPORT(target, blake2s);
+    NAN_EXPORT(target, blake3);
     NAN_EXPORT(target, boolberry);
     NAN_EXPORT(target, kawpow);
     NAN_EXPORT(target, ethash_verify_final);
@@ -864,6 +880,7 @@ NAN_MODULE_INIT(init)
     NAN_EXPORT(target, scryptn);
     NAN_EXPORT(target, sha1);
     NAN_EXPORT(target, sha256d);
+    NAN_EXPORT(target, sha512256d);
     NAN_EXPORT(target, shavite3);
     NAN_EXPORT(target, skein);
     NAN_EXPORT(target, skunk);
@@ -875,8 +892,12 @@ NAN_MODULE_INIT(init)
     NAN_EXPORT(target, x13);
     NAN_EXPORT(target, x15);
     NAN_EXPORT(target, x16r);
+    NAN_EXPORT(target, x16rt);
     NAN_EXPORT(target, x16rv2);
+    NAN_EXPORT(target, x16s);
     NAN_EXPORT(target, x17);
+    NAN_EXPORT(target, x21s);
+    NAN_EXPORT(target, x22i);
     NAN_EXPORT(target, x25x);
     NAN_EXPORT(target, xevan);
     NAN_EXPORT(target, zr5);
