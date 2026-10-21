@@ -288,7 +288,10 @@ result k_hash(const epoch_context& context, int block_number, const hash256& hea
     uint64_t nonce) noexcept
 {
     
-    nonce = be::uint64(nonce);
+    // The nonce arrives as the 8-byte little-endian value the binding read,
+    // the same convention as the Ethash exports; Ravencoin's kernel takes it
+    // as is. (A byte swap here made every Ravencoin test vector but the
+    // zero-nonce one fail.)
 
     uint32_t hash_seed[2];  // KISS99 initiator
 

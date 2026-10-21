@@ -22,6 +22,12 @@ void allium_hash(const char* input, char* state, uint32_t len)
     sph_groestl256_context   ctx_groestl;
     sph_cubehash256_context  ctx_cube;
 
+    // Allium (Garlicoin) is the original Lyra2 at 1 pass over an 8x8 matrix,
+    // the function lyra2re uses (LYRA2_old here); the Lyra2REv2/Lyra2z code
+    // path (LYRA2) gives a different answer for eight rows. Both reference
+    // miners agree on the original. The BLAKE-256 round count is a global in
+    // sphlib: blakecoin leaves it at 8, Allium needs the full 14.
+    sph_blake256_set_rounds(14);
     sph_blake256_init(&ctx_blake);
     sph_blake256(&ctx_blake, input, 80);
     sph_blake256_close(&ctx_blake, hashA);
@@ -30,13 +36,13 @@ void allium_hash(const char* input, char* state, uint32_t len)
     sph_keccak256(&ctx_keccak, hashA, 32);
     sph_keccak256_close(&ctx_keccak, hashB);
 
-    LYRA2(hashA, 32, hashB, 32, hashB, 32, 1, 8, 8);
+    LYRA2_old(hashA, 32, hashB, 32, hashB, 32, 1, 8, 8);
 
     sph_cubehash256_init(&ctx_cube);
     sph_cubehash256(&ctx_cube, hashA, 32);
     sph_cubehash256_close(&ctx_cube, hashB);
 
-    LYRA2(hashA, 32, hashB, 32, hashB, 32, 1, 8, 8);
+    LYRA2_old(hashA, 32, hashB, 32, hashB, 32, 1, 8, 8);
 
     sph_skein256_init(&ctx_skein);
     sph_skein256(&ctx_skein, hashA, 32);
