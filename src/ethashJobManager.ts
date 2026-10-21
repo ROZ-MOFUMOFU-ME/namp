@@ -73,6 +73,44 @@ export function boundaryForDifficulty(difficulty: number): Buffer {
     return Buffer.from(clamped.toString(16).padStart(64, '0'), 'hex');
 }
 
+/** The difficulty a boundary expresses: 2^256 over it, to three decimals. */
+export function difficultyOfBoundary(boundary: Buffer): number {
+    const value = BigInt('0x' + boundary.toString('hex'));
+    return value > 0n ? Number((MAX_TARGET * 1000n) / value) / 1000 : Infinity;
+}
+
+/** The network difficulty behind a piece of work; 0 without work. */
+export function networkDifficultyOf(
+    work: { boundary: string } | null | undefined
+): number {
+    if (!work || !work.boundary) return 0;
+    return difficultyOfBoundary(hash256(work.boundary, 'network boundary'));
+}
+
+/**
+ * The target a miner at `difficulty` hashes against for `work`, and the
+ * difficulty a share that clears it is credited at.
+ *
+ * It is the port boundary, but never tighter than the network's. Miners
+ * submit only what clears the target they were given, so a share target
+ * harder than the block target makes them drop every block solution that
+ * falls between the two — on a small chain that is nearly all of them. The
+ * cap costs nothing: a share that clears the network boundary is a block.
+ */
+export function shareTargetFor(
+    difficulty: number,
+    work?: { boundary: string } | null
+): { boundary: Buffer; difficulty: number } {
+    const port = boundaryForDifficulty(difficulty);
+    if (!work || !work.boundary) return { boundary: port, difficulty };
+    const network = hash256(work.boundary, 'network boundary');
+    // Byte order is numeric order for two 32-byte big-endian values.
+    if (Buffer.compare(network, port) <= 0) {
+        return { boundary: port, difficulty };
+    }
+    return { boundary: network, difficulty: difficultyOfBoundary(network) };
+}
+
 /**
  * Which Ethash exports the loaded native addon is missing. Non-empty means
  * the addon was built from older sources than this code — the operator needs
@@ -154,10 +192,12 @@ const EthashJobManager = function EthashJobManager(
     };
 
     /**
-     * Validate a miner submission.
+     * Validate a miner submission against the target its port was given
+     * (capped at the network boundary, see shareTargetFor).
      *
-     * Returns { error } on rejection, or { valid: true, isBlockCandidate } —
-     * the caller submits candidates with eth_submitWork.
+     * Returns { error } on rejection, or { valid: true, isBlockCandidate,
+     * difficulty } — the caller submits candidates with eth_submitWork and
+     * credits the share at `difficulty`.
      */
     this.processShare = function (share: {
         headerHash: string;
@@ -191,9 +231,14 @@ const EthashJobManager = function EthashJobManager(
             return { error: [22, 'duplicate share'] };
         work.submissions.add(key);
 
-        const shareBoundary = boundaryForDifficulty(share.difficulty);
+        const target = shareTargetFor(share.difficulty, work);
         if (
-            !multiHashing.ethash_verify_final(header, mix, nonce, shareBoundary)
+            !multiHashing.ethash_verify_final(
+                header,
+                mix,
+                nonce,
+                target.boundary
+            )
         ) {
             return { error: [23, 'low difficulty share'] };
         }
@@ -204,16 +249,9 @@ const EthashJobManager = function EthashJobManager(
         // degrade the display, not crash the fork on the first share.
         let shareDiff: number | undefined;
         if (typeof multiHashing.ethash_final_hash === 'function') {
-            const finalHash: Buffer = multiHashing.ethash_final_hash(
-                header,
-                mix,
-                nonce
+            shareDiff = difficultyOfBoundary(
+                multiHashing.ethash_final_hash(header, mix, nonce)
             );
-            const finalValue = BigInt('0x' + finalHash.toString('hex'));
-            shareDiff =
-                finalValue > 0n
-                    ? Number((MAX_TARGET * 1000n) / finalValue) / 1000
-                    : Infinity;
         }
 
         const networkBoundary = hash256(work.boundary, 'network boundary');
@@ -244,13 +282,20 @@ const EthashJobManager = function EthashJobManager(
             headerHash: work.headerHash,
             nonce: share.nonce,
             mixHash: share.mixHash,
-            difficulty: share.difficulty,
+            difficulty: target.difficulty,
             shareDiff,
             isStale,
             isBlockCandidate
         });
 
-        return { valid: true, isBlockCandidate, isStale, shareDiff, work };
+        return {
+            valid: true,
+            isBlockCandidate,
+            isStale,
+            shareDiff,
+            work,
+            difficulty: target.difficulty
+        };
     };
 };
 

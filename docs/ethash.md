@@ -43,8 +43,17 @@ gvbc --http --http.addr 127.0.0.1 --http.api eth,net,web3 \
 ```
 
 `diff` is the share difficulty each miner hashes against. The pool derives the
-share boundary from it and sends that to miners — never the network boundary —
-then decides separately whether a share also solved the block.
+share boundary from it and sends that to miners, then decides separately
+whether a share also solved the block.
+
+The share boundary is never tighter than the network's. Miners submit only
+what clears the target they were given, so a port difficulty above the
+network difficulty would make them discard the block solutions that fall
+between the two — on a small chain, nearly all of them. Such a port is capped
+at the network difficulty (shares are credited at it, and varDiff will not
+raise a miner past it) and the pool says so at startup. Size the ports for
+the chain you actually serve: a 2 MH/s network wants diffs in the millions,
+not the billions.
 
 Ports take the same knobs as the Bitcoin-family stratum
 (pool_configs/examples/virbicoin.json shows the full shape):

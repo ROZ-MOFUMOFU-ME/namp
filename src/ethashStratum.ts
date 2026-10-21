@@ -21,10 +21,10 @@ import VarDiff from './varDiff.ts';
  *   <- {"id":3,"result":true|false}
  *   -> {"id":4,"method":"eth_submitHashrate","params":[rate, id]}
  *
- * Note the boundary sent to miners is the SHARE boundary derived from the
- * port difficulty, not the network one — miners hash against what the pool
- * asks of them, and the pool decides separately whether a share also solved
- * the block.
+ * The boundary sent to miners is the SHARE boundary derived from the port
+ * difficulty, capped at the network boundary (src/ethashJobManager.ts) —
+ * miners hash against what the pool asks of them, and the pool decides
+ * separately whether a share also solved the block.
  */
 
 const CLIENT_TIMEOUT_MS = 600000;
@@ -265,12 +265,19 @@ const EthashStratumServer = function EthashStratumServer(
     /** Per-port varDiff managers (exposed for tests). */
     this.varDiffs = {} as Record<string, any>;
 
-    /** diff -> boundary hex, provided by the pool. */
-    this.boundaryForDifficulty = function (_difficulty: number): string {
-        throw new Error('boundaryForDifficulty must be provided by the pool');
+    /**
+     * (difficulty, work) -> { boundary: hex, difficulty }, provided by the
+     * pool: the port boundary capped at the network's, and the difficulty
+     * that leaves the miner at.
+     */
+    this.shareTargetFor = function (
+        _difficulty: number,
+        _work: any
+    ): { boundary: string; difficulty: number } {
+        throw new Error('shareTargetFor must be provided by the pool');
     };
-    const boundaryFor = (client: any) =>
-        _this.boundaryForDifficulty(client.difficulty);
+    const boundaryFor = (client: any, work: any) =>
+        _this.shareTargetFor(client.difficulty, work).boundary;
 
     this.addBannedIP = function (ip: string) {
         bannedIPs[ip] = Date.now();
@@ -324,14 +331,17 @@ const EthashStratumServer = function EthashStratumServer(
                     if (result.authorized) {
                         _this.emit('client.connected', client);
                         // Miners expect work immediately after logging in.
-                        client.sendWork(currentWork, boundaryFor(client));
+                        client.sendWork(
+                            currentWork,
+                            boundaryFor(client, currentWork)
+                        );
                     }
                 }
             );
         });
 
         client.on('getWork', function (callback: any) {
-            callback(currentWork, boundaryFor(client));
+            callback(currentWork, boundaryFor(client, currentWork));
         });
 
         client.on('submit', function (submission: any, callback: any) {
@@ -394,7 +404,7 @@ const EthashStratumServer = function EthashStratumServer(
         for (const id of Object.keys(clients)) {
             const client = clients[id];
             if (client.authorized) {
-                client.sendWork(work, boundaryFor(client));
+                client.sendWork(work, boundaryFor(client, work));
             }
         }
     };
@@ -414,8 +424,21 @@ const EthashStratumServer = function EthashStratumServer(
                 manager.on(
                     'newDifficulty',
                     function (client: any, newDiff: number) {
-                        client.difficulty = newDiff;
-                        client.sendWork(currentWork, boundaryFor(client));
+                        // Past the network difficulty the target is capped
+                        // anyway, so hold the port difficulty there. varDiff
+                        // only moves on submitted shares: a value far above
+                        // the network would strand the miner once the
+                        // network rose, with no share left to retarget on.
+                        const held = _this.shareTargetFor(
+                            newDiff,
+                            currentWork
+                        ).difficulty;
+                        if (held === client.difficulty) return;
+                        client.difficulty = held;
+                        client.sendWork(
+                            currentWork,
+                            boundaryFor(client, currentWork)
+                        );
                     }
                 );
                 _this.varDiffs[port] = manager;

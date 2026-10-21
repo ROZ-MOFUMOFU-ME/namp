@@ -91,7 +91,10 @@ async function startPool(
             cb({ error: null, authorized: true, disconnect: false })
     );
     cleanup.push(() => pool.stop());
-    pool.on('log', () => {});
+    pool.logs = [] as Array<{ severity: string; text: string }>;
+    pool.on('log', (severity: string, text: string) =>
+        pool.logs.push({ severity, text })
+    );
 
     pool.start();
     await new Promise<void>((resolve, reject) => {
@@ -529,8 +532,62 @@ test('varDiff retargets a miner and the next push carries the new boundary', asy
     assert.notEqual(pushed[2], first.result[2], 'boundary changed');
     assert.equal(
         pushed[2],
-        server.boundaryForDifficulty(250),
+        server.shareTargetFor(250, pool.jobManager.currentWork).boundary,
         'the push carries the retargeted boundary'
+    );
+});
+
+test('a port above the network difficulty hands miners the network boundary', async () => {
+    // The production pool served a 2 MH/s chain from a 2G port: miners hashed
+    // against a target ~80x harder than a block and dropped nearly every
+    // block they solved. The target handed out is capped at the network's,
+    // varDiff cannot raise a miner past it, and the operator is told.
+    const state: MockState = {
+        calls: [],
+        submitted: [],
+        work: [HEADER, SEED, LOOSE_BOUNDARY, '0x1'],
+        submitAccepts: true,
+        sawContentType: []
+    };
+    const stratumPort = 4100 + (process.pid % 100);
+    const pool = await startPool(
+        state,
+        {},
+        {
+            [stratumPort]: {
+                diff: 4e9,
+                varDiff: {
+                    minDiff: 1e8,
+                    maxDiff: 1e12,
+                    targetTime: 4,
+                    retargetTime: 30,
+                    variancePercent: 30
+                }
+            }
+        }
+    );
+
+    const miner = new EthProxyClient(stratumPort);
+    cleanup.push(() => miner.close());
+    await miner.connected();
+    await miner.call('eth_submitLogin', ['0xwallet', 'x'], { worker: 'rig1' });
+    const work = await miner.call('eth_getWork', []);
+    assert.equal(work.result[2], LOOSE_BOUNDARY, 'capped at the network');
+
+    const server = pool.stratumServer;
+    const client = Object.values(server.clients)[0] as any;
+    assert.equal(client.difficulty, 4e9, 'the port difficulty as configured');
+    server.varDiffs[String(stratumPort)].emit('newDifficulty', client, 1e10);
+    assert.equal(client.difficulty, 1, 'held at the network difficulty');
+
+    assert.ok(
+        pool.logs.some(
+            (l: any) =>
+                l.severity === 'warning' &&
+                /above the network/.test(l.text) &&
+                l.text.includes(String(stratumPort))
+        ),
+        'the startup warning names the port'
     );
 });
 

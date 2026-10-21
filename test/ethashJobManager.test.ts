@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 
 import EthashJobManager, {
     boundaryForDifficulty,
+    difficultyOfBoundary,
+    networkDifficultyOf,
+    shareTargetFor,
     epochOf,
     DEFAULT_EPOCH_LENGTH,
     ETCHASH_EPOCH_LENGTH
@@ -344,4 +347,75 @@ test('a stale addon degrades the achieved-difficulty display, not the share', as
     } finally {
         native.ethash_final_hash = original;
     }
+});
+
+test('the share target is never tighter than the network boundary', () => {
+    // WORK's boundary is the network's: ~1.5e10 on this chain.
+    const network = networkDifficultyOf({ boundary: WORK[2] });
+    assert.ok(network > 1e10 && network < 2e10, `network diff ${network}`);
+
+    // Below the network difficulty the port boundary stands.
+    const low = shareTargetFor(1e9, { boundary: WORK[2] });
+    assert.equal(low.difficulty, 1e9);
+    assert.ok(low.boundary.equals(boundaryForDifficulty(1e9)));
+
+    // Above it the miner gets the network boundary itself and is credited
+    // at the network difficulty: every share there is a block.
+    const high = shareTargetFor(1e12, { boundary: WORK[2] });
+    assert.equal('0x' + high.boundary.toString('hex'), WORK[2]);
+    assert.equal(high.difficulty, network);
+
+    // Without work there is nothing to cap against.
+    assert.equal(shareTargetFor(1e12, null).difficulty, 1e12);
+    assert.equal(networkDifficultyOf(null), 0);
+});
+
+test('a port above the network difficulty is capped when shares are checked', () => {
+    // A loose network boundary that every hash clears, and a port diff an
+    // invented mix cannot meet: capped to the network, the share is a
+    // candidate and fails the DAG check — not the cheap one.
+    const { jm } = makeManager();
+    jm.processWork([WORK[0], WORK[1], '0x' + 'ff'.repeat(32), '0x1']);
+    const result = jm.processShare({
+        headerHash: WORK[0],
+        nonce: '0x0102030405060708',
+        mixHash: '0x' + '22'.repeat(32),
+        difficulty: 1e9
+    });
+    assert.deepEqual(result.error, [23, 'mix hash does not match the DAG']);
+});
+
+test('a capped share is accepted and credited at the network difficulty', async () => {
+    // Mined for real at epoch 0 so the DAG check passes. The port asks for
+    // 1e15 while the network boundary is the share's own final hash: without
+    // the cap this block solution would bounce as "low difficulty share".
+    const { createRequire } = await import('node:module');
+    const require = createRequire(import.meta.url);
+    const mh = require('../native/index.cjs');
+    const header = Buffer.alloc(32, 0x11);
+    const nonce = Buffer.alloc(8, 0x33);
+    const out = mh.ethash_hash(header, nonce, 0);
+    const finalHash: Buffer = out.subarray(0, 32);
+    const headerHex = '0x' + header.toString('hex');
+
+    const { jm, events } = makeManager();
+    jm.processWork([
+        headerHex,
+        WORK[1],
+        '0x' + finalHash.toString('hex'),
+        '0x1'
+    ]);
+    const result = jm.processShare({
+        headerHash: headerHex,
+        nonce: '0x' + Buffer.from(nonce).reverse().toString('hex'),
+        mixHash: '0x' + out.subarray(32).toString('hex'),
+        difficulty: 1e15
+    });
+
+    assert.equal(result.error, undefined);
+    assert.equal(result.isBlockCandidate, true);
+    const credited = difficultyOfBoundary(finalHash);
+    assert.equal(result.difficulty, credited, 'credited at the network diff');
+    assert.equal(events.shares.at(-1).difficulty, credited);
+    assert.equal(result.shareDiff, credited, 'the hash sits on the boundary');
 });

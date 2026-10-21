@@ -2,7 +2,8 @@ import events from 'events';
 
 import daemonModule from './daemon.ts';
 import EthashJobManager, {
-    boundaryForDifficulty,
+    shareTargetFor,
+    networkDifficultyOf,
     epochOf,
     DEFAULT_EPOCH_LENGTH
 } from './ethashJobManager.ts';
@@ -149,6 +150,9 @@ const EthashPool = function EthashPool(
         if (!result.isBlockCandidate) {
             _this.emit('share', {
                 ...submission,
+                // Credited at the target the miner was given, which is the
+                // network difficulty when the port sits above it.
+                difficulty: result.difficulty,
                 isBlockCandidate: false,
                 isStale: result.isStale,
                 shareDiff: result.shareDiff
@@ -180,6 +184,7 @@ const EthashPool = function EthashPool(
                     'share',
                     {
                         ...submission,
+                        difficulty: result.difficulty,
                         isBlockCandidate: true,
                         isStale: result.isStale,
                         shareDiff: result.shareDiff,
@@ -209,16 +214,28 @@ const EthashPool = function EthashPool(
             },
             authorizeFn
         );
-        // Miners hash against their SHARE boundary, never the network one.
-        // Cached per difficulty: varDiff moves clients between a small set of
-        // values.
-        const boundaries: Record<number, string> = {};
-        server.boundaryForDifficulty = function (difficulty: number) {
-            if (!boundaries[difficulty]) {
-                boundaries[difficulty] =
-                    '0x' + boundaryForDifficulty(difficulty).toString('hex');
+        // Miners hash against their SHARE boundary: the port difficulty,
+        // capped at the network's so no block solution goes unsubmitted.
+        // Cached per (difficulty, network boundary) — every miner on a port
+        // asks for the same pair on each broadcast — and reset rather than
+        // left to grow with the chain.
+        const targets = new Map<
+            string,
+            { boundary: string; difficulty: number }
+        >();
+        server.shareTargetFor = function (difficulty: number, work: any) {
+            const key = `${difficulty}@${work?.boundary || ''}`;
+            let target = targets.get(key);
+            if (!target) {
+                const t = shareTargetFor(difficulty, work);
+                target = {
+                    boundary: '0x' + t.boundary.toString('hex'),
+                    difficulty: t.difficulty
+                };
+                if (targets.size >= 1024) targets.clear();
+                targets.set(key, target);
             }
-            return boundaries[difficulty];
+            return target;
         };
 
         server.on('log', (severity: string, message: string) =>
@@ -247,6 +264,33 @@ const EthashPool = function EthashPool(
             );
             callback();
         });
+    }
+
+    /**
+     * A port whose difficulty (or varDiff floor) sits above the network's is
+     * capped there at run time, so nothing is lost — but it was sized for a
+     * bigger chain than this one, and the operator should know.
+     */
+    function warnPortsAboveNetwork() {
+        const network = networkDifficultyOf(_this.jobManager.currentWork);
+        if (!(network > 0) || !options.ports) return;
+        const high = Object.keys(options.ports).filter(function (port) {
+            const cfg = options.ports[port] || {};
+            const floor =
+                cfg.varDiff && cfg.varDiff.minDiff > 0
+                    ? Math.min(cfg.diff, cfg.varDiff.minDiff)
+                    : cfg.diff;
+            return floor > network;
+        });
+        if (!high.length) return;
+        _this.emit(
+            'log',
+            'warning',
+            `Port difficulty above the network's (${Math.round(network)}) ` +
+                `on ${high.join(', ')}: shares there are capped at the ` +
+                'network difficulty until it catches up. Lower diff (and ' +
+                'varDiff.minDiff) to match the chain.'
+        );
     }
 
     /**
@@ -453,6 +497,7 @@ const EthashPool = function EthashPool(
                 }
                 startStratum(function () {
                     outputPoolInfo(function () {
+                        warnPortsAboveNetwork();
                         _this.emit('started');
                     });
                 });

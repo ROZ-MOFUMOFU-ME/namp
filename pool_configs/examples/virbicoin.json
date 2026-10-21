@@ -32,7 +32,7 @@
         "_comment_accountPassword": "Keystore password for personal_unlockAccount before each payout run.",
         "accountPassword": ""
     },
-    "_comment_ports": "diff is the share difficulty in hashes (ethash difficulty 1 = 1 hash). Size fixed-diff ports at rig hashrate x target seconds per share: a 60 MH/s GPU at ~4s/share wants ~250000000. varDiff retargets each miner toward targetTime seconds per share within [minDiff, maxDiff].",
+    "_comment_ports": "diff is the share difficulty in hashes (ethash difficulty 1 = 1 hash). Size fixed-diff ports at rig hashrate x target seconds per share: a 60 MH/s GPU at ~4s/share wants ~250000000. varDiff retargets each miner toward targetTime seconds per share within [minDiff, maxDiff]. A diff above the network difficulty is capped at it (the pool warns at startup): size ports for the chain you serve.",
     "ports": {
         "8001": {
             "diff": 100000000,
