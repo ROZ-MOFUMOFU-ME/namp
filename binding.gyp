@@ -117,13 +117,13 @@
                 "native/src/equihash/endian.c",
                 "native/src/equihash/equihash.cpp",
 
-                # Ethash / KawPow: light-cache verification and the ProgPoW kernel.
-                "native/src/kawpow/ethash.cpp",
-                "native/src/kawpow/keccak.c",
-                "native/src/kawpow/keccakf1600.c",
-                "native/src/kawpow/keccakf800.c",
-                "native/src/kawpow/managed.cpp",
-                "native/src/kawpow/primes.c"
+                # Ethash (chfast/ethash: light-cache verification) and the KawPow ProgPoW kernel.
+                "native/src/ethash/ethash.cpp",
+                "native/src/ethash/keccak.c",
+                "native/src/ethash/keccakf1600.c",
+                "native/src/ethash/keccakf800.c",
+                "native/src/ethash/managed.cpp",
+                "native/src/ethash/primes.c"
             ],
             "include_dirs": [
                 "native/src/crypto",

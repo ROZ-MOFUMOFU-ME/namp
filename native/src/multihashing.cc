@@ -62,7 +62,7 @@ extern "C"
 }
 
 #include "kawpow.hpp"
-#include "kawpow/keccak.h"
+#include "ethash/keccak.h"
 
 // zr5.h defines a WIDTH macro, which would rewrite the template parameter of
 // the same name inside the equihash headers; it is only meant for zr5's own

@@ -4,11 +4,11 @@
 
 #include "kawpow.hpp"
 
-#include "kawpow/bit_manipulation.h"
-#include "kawpow/endianness.hpp"
-#include "kawpow/ethash-internal.hpp"
-#include "kawpow/kiss99.hpp"
-#include "kawpow/keccak.hpp"
+#include "ethash/bit_manipulation.h"
+#include "ethash/endianness.hpp"
+#include "ethash/ethash-internal.hpp"
+#include "ethash/kiss99.hpp"
+#include "ethash/keccak.hpp"
 
 #include <array>
 
