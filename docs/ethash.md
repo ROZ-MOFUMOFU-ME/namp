@@ -77,12 +77,17 @@ Coin definitions take an optional `epochLength`:
 ## Miner setup
 
 The stratum ports speak the **eth-proxy** dialect, which ethminer, T-Rex,
-lolMiner, NBMiner and gminer all support:
+lolMiner, NBMiner and gminer all support. Each miner names it differently:
 
 ```bash
-ethminer -P stratum1+tcp://0xYourWallet.rig1@pool-host:3333
-t-rex -a ethash -o stratum1+tcp://pool-host:3333 -u 0xYourWallet -w rig1
+ethminer -P stratum1+tcp://0xYourWallet.rig1@pool-host:3333   # stratum1 = eth-proxy in ethminer
+t-rex -a ethash -o stratum+tcp://pool-host:3333 -u 0xYourWallet -w rig1
+lolMiner -a ETHASH -p pool-host:3333 -u 0xYourWallet.rig1      # --ethstratum ETHPROXY, the default
 ```
+
+The NiceHash dialects (EthereumStratum/1.0.0 and 2.0.0, `mining.subscribe`;
+T-Rex's `stratum2+tcp`, lolMiner's `--ethstratum ETHV1`) are **not** spoken;
+a miner that tries one is answered `method not supported` and logged.
 
 Miners log in with `eth_submitLogin`, receive work unsolicited (id 0) on every
 new block, and submit with `eth_submitWork`. `eth_submitHashrate` is
