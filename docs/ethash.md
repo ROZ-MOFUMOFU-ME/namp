@@ -105,7 +105,9 @@ Share validation is two-tier, which is what keeps a pool both fast and honest:
    DAG, no cache, microseconds.
 2. **Only a block candidate** pays for the cache-backed check that proves the
    mix really came from the DAG. A miner cannot invent a mix that survives it,
-   and the pool never relays garbage to the network.
+   and the pool never relays garbage to the network. The epoch's light cache
+   is built once (about a second) and kept, so the candidates that follow
+   cost a few milliseconds each.
 
 Only after that does the pool call `eth_submitWork`, and anything other than a
 literal `true` counts as a rejection.

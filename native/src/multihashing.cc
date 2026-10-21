@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <nan.h>
 #include <algorithm>
+#include <deque>
+#include <utility>
 
 extern "C"
 {
@@ -504,6 +506,37 @@ DECLARE_FUNC(yespower_0_5_R8G)
     SET_BUFFER_RETURN(output, 32);
 }
 
+/*
+ * Epoch contexts hold the light cache (16 MB + 128 KB per epoch) and take a
+ * second or more to build. A pool verifies a block candidate per share on a
+ * small chain, and building the cache on every call stalled the event loop
+ * for that long each time: work polling and job pushes queued behind it,
+ * and miners kept solving headers the chain had left behind. The cache is a
+ * function of the epoch number alone (not of the dataset-parents setting),
+ * so Ethash and KawPow callers share it; the few most recent epochs cover
+ * every chain a process serves.
+ */
+static const ethash::epoch_context *cached_epoch_context(int epoch_number)
+{
+    static std::deque<ethash::epoch_context_ptr> recent;
+    for (size_t i = 0; i < recent.size(); i++)
+    {
+        if (recent[i]->epoch_number == epoch_number)
+        {
+            if (i > 0)
+                std::swap(recent[0], recent[i]);
+            return recent[0].get();
+        }
+    }
+    ethash::epoch_context_ptr context = ethash::create_epoch_context(epoch_number);
+    if (!context)
+        return nullptr;
+    recent.push_front(std::move(context));
+    while (recent.size() > 3)
+        recent.pop_back();
+    return recent[0].get();
+}
+
 DECLARE_FUNC(kawpow)
 {
     if (info.Length() < 3)
@@ -543,7 +576,9 @@ DECLARE_FUNC(kawpow)
 
     // KawPow semantics: 7500-block epochs, 512 dataset parents.
     ethash_full_dataset_item_parents = 512;
-    auto context = ethash::create_epoch_context(ethash::get_epoch_number(height));
+    const auto *context = cached_epoch_context(ethash::get_epoch_number(height));
+    if (!context)
+        RETURN_EXCEPT("Could not allocate the epoch context.");
     const auto result = progpow::k_hash(*context, height, hash, nonce);
 
     std::memcpy(output, result.final_hash.bytes, 32);
@@ -638,7 +673,9 @@ DECLARE_FUNC(ethash_verify)
     // — geth rejected nothing, our verifier rejected everything, and this
     // constant was the whole story).
     ethash_full_dataset_item_parents = 256;
-    auto context = ethash::create_epoch_context((int)epoch);
+    const auto *context = cached_epoch_context((int)epoch);
+    if (!context)
+        RETURN_EXCEPT("Could not allocate the epoch context.");
     const bool ok = ethash::e_verify(*context, header, mix, nonce, boundary);
 
     info.GetReturnValue().Set(Nan::New<v8::Boolean>(ok));
@@ -672,7 +709,9 @@ DECLARE_FUNC(ethash_hash)
 
     const uint32_t epoch = Nan::To<uint32_t>(info[2]).ToChecked();
     ethash_full_dataset_item_parents = 256;
-    auto context = ethash::create_epoch_context((int)epoch);
+    const auto *context = cached_epoch_context((int)epoch);
+    if (!context)
+        RETURN_EXCEPT("Could not allocate the epoch context.");
     const auto result = ethash::e_hash(*context, header, nonce);
 
     char output[64];
