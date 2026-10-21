@@ -24,7 +24,7 @@
 #include "sha3/sph_blake2s.h"
 #include "sha3/SWIFFTX.h"
 #include "sha3/lane.h"
-#include "sha3/gost_streebog.h"
+#include "sha3/sph_gost.h"
 #include "crypto/lyra2.h"
 
 void x25x_hash(const char* input, char* output)
@@ -119,7 +119,8 @@ void x25x_hash(const char* input, char* output)
 
 	unsigned char temp[SWIFFTX_OUTPUT_BLOCK_SIZE] = {0};
 	InitializeSWIFFTX();
-	ComputeSingleSWIFFTX((unsigned char*)&hash[12], temp, false);
+	/* Rows 12..15 are one 256-byte input: address the array as a whole. */
+	ComputeSingleSWIFFTX((unsigned char*)hash + 12 * 64, temp, false);
 	memcpy((unsigned char*)&hash[16], temp, 64);
 
 	sph_haval256_5_init(&ctx_haval);

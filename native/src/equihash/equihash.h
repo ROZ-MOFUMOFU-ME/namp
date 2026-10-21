@@ -132,7 +132,7 @@ public:
 };
 
 
-inline constexpr const size_t max(const size_t A, const size_t B) { return A > B ? A : B; }
+inline constexpr size_t max(const size_t A, const size_t B) { return A > B ? A : B; }
 
 inline constexpr size_t equihash_solution_size(unsigned int N, unsigned int K) {
     return (1 << K)*(N/(K+1)+1)/8;
@@ -145,7 +145,7 @@ class Equihash
 public:
     enum : size_t { IndicesPerHashOutput=512/N };
     enum : size_t { HashLen=(N+7)/8 };
-    enum : size_t { HashOutput=IndicesPerHashOutput*HashLen };
+    enum : size_t { HashOutput=size_t(IndicesPerHashOutput)*size_t(HashLen) };
     enum : size_t { CollisionBitLength=N/(K+1) };
     enum : size_t { CollisionByteLength=(CollisionBitLength+7)/8 };
     enum : size_t { HashLength=(K+1)*CollisionByteLength };

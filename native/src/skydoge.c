@@ -42,7 +42,6 @@ void skydoge_hash(const char* input, char* output, uint32_t len)
 	sph_whirlpool_context    ctx_whirlpool1;
 	sph_sha512_context       ctx_sha512;
 	sph_haval256_5_context   ctx_haval;
-    sph_sha256_context       ctx_sha;
 
     uint32_t hash[16];
     uint32_t hashA[16];

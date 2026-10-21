@@ -9,10 +9,14 @@
 
 void lbry_hash(const char* input, char* output, uint32_t len)
 {
-	uint32_t hashA[16] = { 0 }, hashB[8], hashC[8];
-	
-	//lbry hash is designed to hash exactly 112 bytes (block header size)
-	//so only calculate a hash if 112 bytes are available
+	uint32_t hashA[16], hashB[8], hashC[8];
+
+	/*
+	 * LBRY hashes its 112-byte block header. A shorter input is a caller
+	 * error; answer with a hash that fails every target rather than the
+	 * all-zero one that would pass them all.
+	 */
+	memset(hashA, 0xff, sizeof(hashA));
 	if(len >= 112) {
 		sph_sha256_context ctx_sha256;
 		sph_sha512_context ctx_sha512;

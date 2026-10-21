@@ -45,8 +45,8 @@ extern "C"
 #include "skunk.h"
 #include "skydoge.h"
 #include "tribus.h"
-#include "sponge.h"
 #include "vipstar.h"
+#include "sponge.h"
 #include "whirlpoolx.h"
 #include "x11.h"
 #include "x13.h"
@@ -143,6 +143,7 @@ DECLARE_CALLBACK(skein, skein_hash, 32);
 DECLARE_CALLBACK(skunk, skunk_hash, 32);
 DECLARE_CALLBACK(skydoge, skydoge_hash, 32);
 DECLARE_CALLBACK(tribus, tribus_hash, 32);
+DECLARE_CALLBACK(vipstar, vipstar_hash, 32);
 DECLARE_CALLBACK(whirlpoolx, whirlpoolx_hash, 32);
 DECLARE_CALLBACK(x11, x11_hash, 32);
 DECLARE_CALLBACK(x13, x13_hash, 32);
@@ -813,24 +814,6 @@ DECLARE_FUNC(ethash_final_hash)
 
     char output[32];
     std::memcpy(output, final_hash.bytes, 32);
-    SET_BUFFER_RETURN(output, 32);
-}
-
-DECLARE_FUNC(vipstar)
-{
-    if (info.Length() < 1)
-        RETURN_EXCEPT("You must provide one argument.");
-
-    Local<Object> target = Nan::To<Object>(info[0]).ToLocalChecked();
-
-    if (!Buffer::HasInstance(target))
-        RETURN_EXCEPT("Argument should be a buffer object.");
-
-    char *input = Buffer::Data(target);
-    char output[32];
-
-    vipstar_hash((uint32_t*)output, (const uint32_t*)input);
-
     SET_BUFFER_RETURN(output, 32);
 }
 

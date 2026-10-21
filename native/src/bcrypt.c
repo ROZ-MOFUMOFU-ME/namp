@@ -426,8 +426,15 @@ static void BF_swap(BF_word *x, int count) {
 		*(ptr - 1) = R; \
 	} while (ptr < &data.ctx.S[3][0xFF]);
 
+/*
+ * bcrypt cycles its key as a C string. The caller hands this BF_N-byte slices
+ * of a block header, which carry no terminator: the original code walked on
+ * past the slice, past the header and into whatever followed it, so the hash
+ * depended on stack garbage. Cycle at the slice boundary as well as at NUL.
+ */
 static void BF_set_key(const char *key, BF_key expanded, BF_key initial) {
 	const char *ptr = key;
+	const char *end = key + BF_N;
 	int i, j;
 	BF_word tmp;
 
@@ -437,7 +444,7 @@ static void BF_set_key(const char *key, BF_key expanded, BF_key initial) {
 			tmp <<= 8;
 			tmp |= (unsigned char)*ptr;
 
-			if (!*ptr) ptr = key; else ptr++;
+			if (!*ptr || ++ptr == end) ptr = key;
 		}
 
 		expanded[i] = tmp;

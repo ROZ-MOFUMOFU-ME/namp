@@ -26,6 +26,7 @@
  *
  */
 
+#include <string.h>
 #include "yespower.h"
 
  // for YesPoWer-0.9/1.0 (Cryply, Bellcoin)
@@ -38,7 +39,8 @@ void yespower_hash(const char* input, char* output, uint32_t len)
             .pers = NULL,
             .perslen = 0
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 
 // for yescryptR8, yespower-0.5_R8 (BitZeny, BitZeny-Plus)
@@ -51,7 +53,8 @@ void yespower_0_5_R8_hash(const char* input, char* output, uint32_t len)
             .pers = (const uint8_t *)"Client Key",
             .perslen = 10
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 
 // for yescryptR8G, yespower-0.5_R8G (Koto)
@@ -78,7 +81,8 @@ void yespower_0_5_R16_hash(const char* input, char* output, uint32_t len)
             .pers = (const uint8_t *)"Client Key",
             .perslen = 10
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 
 // for yescryptR24, yespower-0.5_R24 (Jagaricoin-R)
@@ -91,7 +95,8 @@ void yespower_0_5_R24_hash(const char* input, char* output, uint32_t len)
             .pers = (const uint8_t *)"Jagaricoin",
             .perslen = 10
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 
 // for yescryptR32, yespower-0.5_R32 (Wavi)
@@ -104,7 +109,8 @@ void yespower_0_5_R32_hash(const char* input, char* output, uint32_t len)
             .pers = (const uint8_t *)"WaviBanana",
             .perslen = 10
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 void yespower_arwn_hash(const char* input, char* output, uint32_t len)
 {
@@ -115,7 +121,8 @@ void yespower_arwn_hash(const char* input, char* output, uint32_t len)
             .pers = (const uint8_t*)"ARWN",
             .perslen = 4
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 void yespower_ic_hash(const char* input, char* output, uint32_t len)
 {
@@ -126,7 +133,8 @@ void yespower_ic_hash(const char* input, char* output, uint32_t len)
             .pers = (const uint8_t*)"IsotopeC",
             .perslen = 8
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 void yespower_iots_hash(const char* input, char* output, uint32_t len)
 {
@@ -137,7 +145,8 @@ void yespower_iots_hash(const char* input, char* output, uint32_t len)
             .pers = (const uint8_t*)"Iots is committed to the development of IOT",
             .perslen = 8
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 void yespower_litb_hash(const char* input, char* output, uint32_t len)
 {
@@ -148,7 +157,8 @@ void yespower_litb_hash(const char* input, char* output, uint32_t len)
             .pers = (const uint8_t*)"LITBpower: The number of LITB working or available for proof-of-work mini",
             .perslen = 73
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 void yespower_ltncg_hash(const char* input, char* output, uint32_t len)
 {
@@ -159,7 +169,8 @@ void yespower_ltncg_hash(const char* input, char* output, uint32_t len)
             .pers = (const uint8_t*)"LTNCGYES",
             .perslen = 8
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 void yespower_mgpc_hash(const char* input, char* output, uint32_t len)
 {
@@ -170,7 +181,8 @@ void yespower_mgpc_hash(const char* input, char* output, uint32_t len)
             .pers = (const uint8_t*)"Magpies are birds of the Corvidae family.",
             .perslen = 8
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 void yespower_sugar_hash(const char* input, char* output, uint32_t len)
 {
@@ -181,7 +193,8 @@ void yespower_sugar_hash(const char* input, char* output, uint32_t len)
             .pers = (const uint8_t *)"Satoshi Nakamoto 31/Oct/2008 Proof-of-work is essentially one-CPU-one-vote",
             .perslen = 74
     };
-    yespower_tls((const uint8_t*)input, len, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, len, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 void yespower_r16_hash(const char* input, char* output, uint32_t len)
 {
@@ -192,7 +205,8 @@ void yespower_r16_hash(const char* input, char* output, uint32_t len)
             .pers = NULL,
             .perslen = 0
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 void yespower_tide_hash(const char* input, char* output, uint32_t len)
 {
@@ -201,9 +215,10 @@ void yespower_tide_hash(const char* input, char* output, uint32_t len)
             .N = 2048,
             .r = 8,
             .pers = NULL,
-            .perslen = 8
+            .perslen = 0
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }
 void yespower_urx_hash(const char* input, char* output, uint32_t len)
 {
@@ -214,5 +229,6 @@ void yespower_urx_hash(const char* input, char* output, uint32_t len)
             .pers = (const uint8_t*)"UraniumX",
             .perslen = 8
     };
-    yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output);
+    if (yespower_tls((const uint8_t*)input, 80, &params, (yespower_binary_t*)output) != 0)
+        memset(output, 0xff, 32); /* never a valid share */
 }

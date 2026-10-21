@@ -100,7 +100,7 @@ void sm3_close(void *cc, void *dst)
 	memset(cc, 0, sizeof(sm3_ctx_t));
 }
 
-void sm3_final(sm3_ctx_t *ctx, unsigned char *digest)
+void sm3_final(sm3_ctx_t *ctx, unsigned char digest[SM3_DIGEST_LENGTH])
 {
 	int i;
 	uint32_t *pdigest = (uint32_t *)digest;
@@ -120,7 +120,7 @@ void sm3_final(sm3_ctx_t *ctx, unsigned char *digest)
 	count[1] = cpu_to_be32((ctx->nblocks << 9) + (ctx->num << 3));
 
 	sm3_compress(ctx->digest, ctx->block);
-	for (i = 0; i < sizeof(ctx->digest)/sizeof(ctx->digest[0]); i++) {
+	for (i = 0; i < (int)(sizeof(ctx->digest)/sizeof(ctx->digest[0])); i++) {
 		pdigest[i] = cpu_to_be32(ctx->digest[i]);
 	}
 }

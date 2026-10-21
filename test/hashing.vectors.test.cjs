@@ -23,16 +23,12 @@ if (process.env.SETS) {
 
 //
 // Vector coverage: exclude-algos in each set lists the algorithms without a
-// stored known-answer. Measured 2026-08-03, they fall into three groups:
-//   1. need extra arguments the runner does not pass (scrypt/scryptn/
-//      scryptjane/argon2*/yescrypt/boolberry/kawpow/odo)
-//   2. abort the process on call — the addon exports them but the build
-//      leaves their sph_* helpers unlinked (x17, x25x, gost, hsr, m7, m7m,
-//      phi1612, skunk, skydoge, xevan, blake2s)
-//   3. run, but disagree with the stored file (lyra2rev3, cryptonightfast)
-// Group 2 is a build-graph problem: adding the missing sources also changes
-// bcrypt's output, so it needs deliberate per-algorithm verification rather
-// than a blanket fix. None of the pool's supported coins use these.
+// stored known answer. They need extra arguments the runner does not pass
+// (scrypt/scryptn/scryptjane/argon2*/boolberry/kawpow/odo), or their stored
+// answers predate a fix (bcrypt: the old key schedule read past the header,
+// so its answers were never reproducible; cryptonightfast), or nobody has
+// recorded one yet. The new exports (blake3, sha512256d, blake2b, x16s,
+// x16rt, x21s, x22i) and the oracle checks live in test/native.test.ts.
 //
 // skip some algos for quick test
 //

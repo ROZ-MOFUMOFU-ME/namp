@@ -17,6 +17,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/* sphlib's blake2s header defines its own ALIGN; this one is the authority
+   for the types declared below. */
+#undef ALIGN
 #if defined(_MSC_VER)
 #define ALIGN(x) __declspec(align(x))
 #else

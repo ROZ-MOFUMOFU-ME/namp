@@ -1052,9 +1052,9 @@ void SWIFFTSum(const swift_int32_t *input, int m, unsigned char *output, const s
 
 	for (j = 0; j < N; ++j)
 	{
-		register swift_int32_t sum = 0;
-		const register swift_int32_t *f = input + j;
-		const register swift_int16_t *k = a + j;
+		swift_int32_t sum = 0;
+		const swift_int32_t *f = input + j;
+		const swift_int16_t *k = a + j;
 
 		for (i = 0; i < m; i++, f += N,k += N)
 		{
@@ -1071,7 +1071,7 @@ void SWIFFTSum(const swift_int32_t *input, int m, unsigned char *output, const s
 
 	for (j = 0; j < 8; ++j)
 	{
-		int register carryBit = TranslateToBase256(result + (j << 3), output + (j << 3));
+		int carryBit = TranslateToBase256(result + (j << 3), output + (j << 3));
 		carry |= carryBit << j;
 	}
 
