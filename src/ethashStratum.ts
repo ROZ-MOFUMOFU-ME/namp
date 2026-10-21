@@ -1,6 +1,7 @@
 import events from 'events';
 import net from 'net';
 
+import { listenDualStack, normalizeIp } from './netUtil.ts';
 import VarDiff from './varDiff.ts';
 
 /*
@@ -53,7 +54,7 @@ const StratumClient = function StratumClient(this: any, params: any) {
 
     this.id = `${++clientCounter}`;
     this.socket = socket; // varDiff reads socket.localPort
-    this.remoteAddress = socket.remoteAddress;
+    this.remoteAddress = normalizeIp(socket.remoteAddress);
     this.port = params.port;
     this.difficulty = params.difficulty;
     this.authorized = false;
@@ -422,7 +423,7 @@ const EthashStratumServer = function EthashStratumServer(
             const server = net.createServer(
                 { allowHalfOpen: false },
                 function (socket: any) {
-                    if (_this.isBanned(socket.remoteAddress)) {
+                    if (_this.isBanned(normalizeIp(socket.remoteAddress))) {
                         socket.destroy();
                         return;
                     }
@@ -435,22 +436,27 @@ const EthashStratumServer = function EthashStratumServer(
                     _this.varDiffs[port]?.manageClient(client);
                 }
             );
+            listeners.push(server);
+            // Dual-stack, so miners reaching the pool's AAAA record get in.
             // An unhandled EADDRINUSE would kill the worker and put the master
             // into a respawn loop; report it and keep serving the other ports.
-            server.on('error', function (err: any) {
-                _this.emit(
-                    'log',
-                    'error',
-                    err.code === 'EADDRINUSE'
-                        ? `Stratum port ${port} is already in use — another pool instance is probably running (check pm2 list / ss -ltnp). Continuing without it.`
-                        : `Stratum port ${port} failed to open: ${err.message || err}`
-                );
-                if (--pending === 0) callback?.();
-            });
-            listeners.push(server);
-            server.listen(parseInt(port), '0.0.0.0', function () {
-                if (--pending === 0) callback?.();
-            });
+            listenDualStack(
+                server,
+                parseInt(port),
+                function () {
+                    if (--pending === 0) callback?.();
+                },
+                function (err: any) {
+                    _this.emit(
+                        'log',
+                        'error',
+                        err.code === 'EADDRINUSE'
+                            ? `Stratum port ${port} is already in use — another pool instance is probably running (check pm2 list / ss -ltnp). Continuing without it.`
+                            : `Stratum port ${port} failed to open: ${err.message || err}`
+                    );
+                    if (--pending === 0) callback?.();
+                }
+            );
         }
 
         if (banning.enabled) {

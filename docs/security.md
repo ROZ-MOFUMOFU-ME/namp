@@ -43,6 +43,10 @@ ufw allow 80,443/tcp      # website behind a reverse proxy
 ufw deny 6379/tcp         # redis
 ```
 
+The stratum and getwork ports listen on IPv6 as well as IPv4, so keep the
+IPv6 rules in step (ufw writes both families while `IPV6=yes` in
+`/etc/default/ufw`, its default).
+
 ## What the pool does for you
 
 **Stratum ports** refuse `eth_getWork` and `eth_submitWork` before a

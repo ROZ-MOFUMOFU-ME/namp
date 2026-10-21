@@ -2,6 +2,7 @@ import http from 'http';
 import https from 'https';
 import * as util from './util.ts';
 import { buildTlsServerOptions } from './tlsUtil.ts';
+import { listenDualStack, normalizeIp } from './netUtil.ts';
 
 /*
  * VIPSTARCOIN / qtum getwork bridge.
@@ -232,10 +233,7 @@ const GetworkServer = function (
             let body = '';
             req.on('data', (c: any) => (body += c));
             req.on('end', function () {
-                const ip = (req.socket.remoteAddress || '').replace(
-                    '::ffff:',
-                    ''
-                );
+                const ip = normalizeIp(req.socket.remoteAddress);
                 let worker = '';
                 const auth = req.headers['authorization'];
                 if (auth && auth.indexOf('Basic ') === 0) {
@@ -304,7 +302,16 @@ const GetworkServer = function (
             }
             // No per-port log here — the pool startup summary lists the getwork ports
             // alongside the stratum ports (see pool.ts infoLines).
-            server.listen(portNum, '0.0.0.0');
+            listenDualStack(
+                server,
+                portNum,
+                function () {},
+                function (err: any) {
+                    emitErrorLog(
+                        `Getwork port ${portStr} failed to open: ${err.message || err}`
+                    );
+                }
+            );
         });
     };
 };

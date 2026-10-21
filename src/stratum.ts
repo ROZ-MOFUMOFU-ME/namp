@@ -4,6 +4,7 @@ import tls from 'tls';
 import events from 'events';
 
 import { buildTlsServerOptions } from './tlsUtil.ts';
+import { listenDualStack, normalizeIp } from './netUtil.ts';
 
 import * as util from './util.ts';
 
@@ -544,7 +545,7 @@ const StratumClient = function (this: any, options: any) {
     //private members
     this.socket = options.socket;
 
-    this.remoteAddress = options.socket.remoteAddress;
+    this.remoteAddress = normalizeIp(options.socket.remoteAddress);
 
     const banning = options.banning;
 
@@ -1212,19 +1213,25 @@ const StratumServer = function StratumServer(
         const onConnect = function (socket: any) {
             _this.handleNewClient(socket);
         };
+        // Dual-stack, so miners that resolve the pool's AAAA record get in.
         // An unhandled listen error (EADDRINUSE, typically a second pool
         // instance) kills the whole worker, and the master respawns it into
         // the same error forever — a crash loop that buries the actual cause.
         // Say what happened, skip the port and keep the fork alive.
-        const guardListenErrors = function (server: any, port: string) {
-            server.on('error', function (err: any) {
-                console.error(
-                    err.code === 'EADDRINUSE'
-                        ? `Stratum port ${port} is already in use — another pool instance is probably running (check pm2 list / ss -ltnp). This fork keeps running without it.`
-                        : `Stratum port ${port} failed to open: ${err.message || err}`
-                );
-                markStarted();
-            });
+        const listenOn = function (server: any, port: string) {
+            listenDualStack(
+                server,
+                parseInt(port),
+                markStarted,
+                function (err: any) {
+                    console.error(
+                        err.code === 'EADDRINUSE'
+                            ? `Stratum port ${port} is already in use — another pool instance is probably running (check pm2 list / ss -ltnp). This fork keeps running without it.`
+                            : `Stratum port ${port} failed to open: ${err.message || err}`
+                    );
+                    markStarted();
+                }
+            );
             return server;
         };
 
@@ -1247,17 +1254,17 @@ const StratumServer = function StratumServer(
                     return;
                 }
                 listeners.push(
-                    guardListenErrors(
+                    listenOn(
                         tls.createServer(tlsServerOptions, onConnect),
                         port
-                    ).listen(parseInt(port), '0.0.0.0', markStarted)
+                    )
                 );
             } else {
                 listeners.push(
-                    guardListenErrors(
+                    listenOn(
                         net.createServer({ allowHalfOpen: false }, onConnect),
                         port
-                    ).listen(parseInt(port), '0.0.0.0', markStarted)
+                    )
                 );
             }
         });

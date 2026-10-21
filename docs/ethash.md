@@ -79,6 +79,10 @@ Miners log in with `eth_submitLogin`, receive work unsolicited (id 0) on every
 new block, and submit with `eth_submitWork`. `eth_submitHashrate` is
 acknowledged but only informational.
 
+The ports listen on IPv6 and IPv4 alike, so a pool hostname with an AAAA
+record works for miners that resolve it over IPv6 (most do, and few fall back
+to IPv4 when refused). Open the ports in both firewall families.
+
 ## How a share is checked
 
 Share validation is two-tier, which is what keeps a pool both fast and honest:
