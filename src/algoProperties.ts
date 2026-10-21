@@ -291,42 +291,21 @@ const algos: any = ((global as any).algos = {
         diff: yescryptDiff
     }),
     yespower: passthrough('yespower', { multiplier: 65536 }),
-    yespowerSUGAR: {
+    // The yespower coin profiles fix N and r in the addon; a coin's nValue /
+    // rValue settings were read here and then ignored.
+    yespowerSUGAR: passthrough('yespower_sugar', {
         multiplier: Math.pow(2, 16),
-        blockHasher: 'sha256d',
-        hash(coinConfig: any) {
-            const nValue = coinConfig.nValue || 2048;
-            const rValue = coinConfig.rValue || 32;
-            return function (data: Buffer) {
-                return multiHashing.yespower_sugar(data, nValue, rValue);
-            };
-        }
-    },
-    yespowerLTNCG: {
+        blockHasher: 'sha256d'
+    }),
+    yespowerLTNCG: passthrough('yespower_ltncg', {
         multiplier: Math.pow(2, 16),
-        blockHasher: 'sha256d',
-        hash(coinConfig: any) {
-            const nValue = coinConfig.nValue || 2048;
-            const rValue = coinConfig.rValue || 32;
-            return function (data: Buffer) {
-                return multiHashing.yespower_ltncg(data, nValue, rValue);
-            };
-        }
-    },
+        blockHasher: 'sha256d'
+    }),
     yespowerR16: passthrough('yespower_r16', {
         multiplier: 65536,
         blockHasher: 'sha256d'
     }),
-    yespowerURX: {
-        multiplier: Math.pow(2, 16),
-        hash(coinConfig: any) {
-            const nValue = coinConfig.nValue || 2048;
-            const rValue = coinConfig.rValue || 32;
-            return function (data: Buffer) {
-                return multiHashing.yespower_urx(data, nValue, rValue);
-            };
-        }
-    },
+    yespowerURX: passthrough('yespower_urx', { multiplier: Math.pow(2, 16) }),
     vipstar: {
         blockHasher: 'sha256d',
         hash() {
