@@ -77,7 +77,8 @@ cp config_example.json config.json
     "logLevel": "debug",            // debug | warning | error
     "logColors": true,              // off when logging to a file
 
-    /* The CLI listener (scripts/cli, admin tools) on localhost. */
+    /* Localhost command socket: profit switching and the admin API send
+       coin-switch and reload commands through it. */
     "cliPort": 17117,
 
     /* One stratum worker per CPU core ("auto") or a fixed count. The
@@ -256,7 +257,7 @@ Operator commands go through the password-gated admin API (also behind the
 ```
 POST /api/admin/reloadpool   { "password": "...", "coin": "bitcoin" }
 POST /api/admin/coinswitch   { "password": "...", "coin": "bitcoin", "algorithm": "sha256" }
-POST /api/admin/announcement { "password": "...", "text": "..." }
+POST /api/admin/announcement { "password": "...", "announcement": "..." }
 ```
 
 ## Run
