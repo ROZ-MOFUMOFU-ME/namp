@@ -22,7 +22,7 @@
         "enabled": true,
         "host": "0.0.0.0",
         "port": 8080,
-        "stratumHost": "cryppit.com",
+        "stratumHost": "pool.example.com",
         "branding": {
             "_comment_branding": "Per-deployment branding. siteName/logo/favicon accept absolute URLs (CDN ok). logo = header logo; home.logo = hero logo (separate).",
             "siteName": "NAMP",

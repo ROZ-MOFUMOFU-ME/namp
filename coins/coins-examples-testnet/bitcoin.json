@@ -1,0 +1,43 @@
+{
+    "name": "Bitcoin_testnet4",
+    "symbol": "tBTC",
+    "algorithm": "sha256",
+
+    "version_mask": "1fffe000",
+
+    "_comment_peerMagicTestnet": "testnet4 (Bitcoin Core 28+, bitcoind -testnet4). For testnet3 use 0b110907, for signet 0a03cf40 (-signet).",
+    "peerMagic": "f9beb4d9",
+    "peerMagicTestnet": "1c163f28",
+    "txfee": 0.0001,
+    "blockTime": 600,
+
+    "getInfo": false,
+    "noNetworkInfo": false,
+    "noGetnetworkhashps": false,
+
+    "explorer": {
+        "txURL": "https://mempool.space/testnet4/tx/",
+        "blockURL": "https://mempool.space/testnet4/block/",
+        "address": "https://mempool.space/testnet4/address/"
+    },
+    "miningTools": [
+        {
+            "name": "cpuminer-opt",
+            "url": "https://github.com/JayDDee/cpuminer-opt/releases"
+        },
+        {
+            "name": "Bitaxe (open-source home ASIC)",
+            "url": "https://bitaxe.org/"
+        }
+    ],
+
+    "_comment_testnet": "testnet3, testnet4 and signet share these address parameters (tb1 bech32).",
+    "testnet": {
+        "bip32": {
+            "public": "043587cf"
+        },
+        "pubKeyHash": "6f",
+        "scriptHash": "c4",
+        "bech32": "tb"
+    }
+}

@@ -1,0 +1,52 @@
+{
+    "name": "Bitcoin",
+    "symbol": "BTC",
+    "algorithm": "sha256",
+
+    "_comment_version_mask": "BIP 320 version rolling (overt AsicBoost). Every current SHA-256 ASIC asks for it in mining.configure; without a mask the pool declines and most firmware drops to a slower mode or refuses to mine.",
+    "version_mask": "1fffe000",
+
+    "_comment_peerMagic": "pchMessageStart from chainparams.cpp: mainnet f9beb4d9, testnet4 1c163f28 (Bitcoin Core 28+; testnet3 was 0b110907, signet 0a03cf40).",
+    "peerMagic": "f9beb4d9",
+    "peerMagicTestnet": "1c163f28",
+    "txfee": 0.0001,
+    "blockTime": 600,
+
+    "getInfo": false,
+    "noNetworkInfo": false,
+    "noGetnetworkhashps": false,
+
+    "explorer": {
+        "txURL": "https://mempool.space/tx/",
+        "blockURL": "https://mempool.space/block/",
+        "address": "https://mempool.space/address/"
+    },
+    "miningTools": [
+        {
+            "name": "Braiins OS (ASIC firmware)",
+            "url": "https://braiins.com/os"
+        },
+        {
+            "name": "Bitaxe (open-source home ASIC)",
+            "url": "https://bitaxe.org/"
+        },
+        {
+            "name": "cgminer",
+            "url": "https://github.com/ckolivas/cgminer"
+        },
+        {
+            "name": "cpuminer-opt (testnet/regtest only)",
+            "url": "https://github.com/JayDDee/cpuminer-opt/releases"
+        }
+    ],
+
+    "_comment_mainnet": "Address parameters as hex. bech32 enables bc1q (P2WPKH) and bc1p (P2TR) pool and miner addresses.",
+    "mainnet": {
+        "bip32": {
+            "public": "0488b21e"
+        },
+        "pubKeyHash": "00",
+        "scriptHash": "05",
+        "bech32": "bc"
+    }
+}
