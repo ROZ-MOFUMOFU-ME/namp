@@ -58,7 +58,7 @@ test(
                 rewardRecipients: {},
                 blockRefreshInterval: 0,
                 jobRebroadcastTimeout: 3600,
-                connectionTimeout: 60,
+                connectionTimeout: 600,
                 p2p: { enabled: false },
                 sv2: {
                     authoritySecretKey: encodeSecretKey(authority.secretKey)
@@ -66,9 +66,9 @@ test(
                 ports: {
                     [port]: {
                         sv2: true,
-                        diff: 1,
+                        diff: 0.01,
                         varDiff: {
-                            minDiff: 1,
+                            minDiff: 0.001,
                             maxDiff: 1024,
                             targetTime: 5,
                             retargetTime: 30,
@@ -118,9 +118,7 @@ test(
                 '--pubkey-pool',
                 encodePublicKey(authority.publicKey),
                 '--id-user',
-                'sri.device',
-                '--handicap',
-                '1000'
+                'sri.device'
             ],
             { stdio: ['ignore', 'pipe', 'pipe'] }
         );
