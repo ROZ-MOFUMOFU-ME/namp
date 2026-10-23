@@ -526,3 +526,122 @@ test('starts against a VIPSTARCOIN-shaped daemon and serves qtum jobs', async ()
     );
     assert.equal(header.length, 181);
 });
+
+test('answers the BIP 310 extensions: version rolling and suggested difficulty', async () => {
+    const state: DaemonState = {
+        calls: [],
+        submittedBlocks: [],
+        confirmedHashes: []
+    };
+    const daemon = await startMockDaemon(state);
+    cleanup.push(() => daemon.close());
+    const daemonPort = (daemon.address() as net.AddressInfo).port;
+
+    const startPool = async (port: number, coinExtra: any) => {
+        const pool: any = createPool(
+            {
+                coin: {
+                    name: 'mockcoin',
+                    symbol: 'MOCK',
+                    algorithm: 'sha256',
+                    peerMagic: 'fabfb5da',
+                    ...coinExtra
+                },
+                address: POOL_ADDRESS,
+                rewardRecipients: {},
+                blockRefreshInterval: 0,
+                jobRebroadcastTimeout: 3600,
+                connectionTimeout: 60,
+                p2p: { enabled: false },
+                ports: {
+                    [port]: {
+                        diff: 0.01,
+                        varDiff: {
+                            minDiff: 0.001,
+                            maxDiff: 1,
+                            targetTime: 15,
+                            retargetTime: 60,
+                            variancePercent: 30
+                        }
+                    }
+                },
+                daemons: [
+                    {
+                        host: HOST,
+                        port: daemonPort,
+                        user: 'mock',
+                        password: 'mock'
+                    }
+                ]
+            },
+            (
+                _ip: any,
+                _port: any,
+                _worker: any,
+                _password: any,
+                callback: any
+            ) => callback({ error: null, authorized: true, disconnect: false })
+        );
+        cleanup.push(() => pool.stop());
+        pool.on('log', () => {});
+        pool.start();
+        await new Promise<void>((resolve, reject) => {
+            pool.once('started', resolve);
+            setTimeout(() => reject(new Error('pool did not start')), 15000);
+        });
+        const client = new StratumClient(port);
+        cleanup.push(() => client.close());
+        await client.connected();
+        return client;
+    };
+    const settle = async (client: StratumClient, want: number) => {
+        const deadline = Date.now() + 3000;
+        while (client.difficulty !== want && Date.now() < deadline)
+            await new Promise((r) => setTimeout(r, 10));
+        assert.equal(client.difficulty, want);
+    };
+
+    const base = 3600 + Math.floor(process.pid % 100);
+    const asic = await startPool(base, { version_mask: '1fffe000' });
+
+    // Every requested extension is answered; the granted mask is the
+    // intersection of the pool's and the miner's.
+    const configure = await asic.call('mining.configure', [
+        ['version-rolling', 'minimum-difficulty'],
+        {
+            'version-rolling.mask': '1fff0000',
+            'version-rolling.min-bit-count': 2,
+            'minimum-difficulty.value': 2048
+        }
+    ]);
+    assert.equal(configure.error, null);
+    assert.equal(configure.result['version-rolling'], true);
+    assert.equal(configure.result['version-rolling.mask'], '1fff0000');
+    assert.equal(configure.result['minimum-difficulty'], false);
+
+    // A suggestion sent before subscribing becomes the starting difficulty.
+    const early = await asic.call('mining.suggest_difficulty', [0.5]);
+    assert.equal(early.result, true);
+    await asic.call('mining.subscribe', ['namp-test/1.0']);
+    await asic.call('mining.authorize', ['miner.rig1', 'x']);
+    await asic.job();
+    assert.equal(asic.difficulty, 0.5);
+
+    // Afterwards it takes effect at once, clamped to the port's varDiff range.
+    await asic.call('mining.suggest_difficulty', [5]);
+    await settle(asic, 1);
+    await asic.call('mining.suggest_difficulty', [0.0001]);
+    await settle(asic, 0.001);
+    const junk = await asic.call('mining.suggest_difficulty', ['nope']);
+    assert.equal(junk.result, true, 'garbage is acknowledged and ignored');
+    assert.equal(asic.difficulty, 0.001);
+
+    // A coin without a mask declines version rolling instead of staying silent.
+    const plain = await startPool(base + 1, {});
+    const declined = await plain.call('mining.configure', [
+        ['version-rolling'],
+        { 'version-rolling.mask': '1fffe000' }
+    ]);
+    assert.equal(declined.error, null);
+    assert.deepEqual(declined.result, { 'version-rolling': false });
+});

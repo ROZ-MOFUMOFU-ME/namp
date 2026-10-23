@@ -933,31 +933,75 @@ class StratumClient extends events.EventEmitter {
                 error: null
             });
         }
+        // The difficulty a miner asks for with mining.suggest_difficulty
+        // (Bitaxe, Braiins OS, NiceHash and most proxies send one), bounded
+        // by the port: varDiff's [minDiff, maxDiff] when the port has one,
+        // never below the port's fixed difficulty otherwise. null when the
+        // request is unusable.
+        function boundSuggestedDifficulty(suggested: any): number | null {
+            const d = Number(suggested);
+            if (!Number.isFinite(d) || d <= 0) return null;
+            const port = options.portConfig || {};
+            const vd = port.varDiff;
+            const lo = vd && vd.minDiff > 0 ? vd.minDiff : port.diff;
+            const hi = vd && vd.maxDiff > 0 ? vd.maxDiff : Infinity;
+            if (!(lo > 0)) return null;
+            return Math.min(Math.max(d, lo), hi);
+        }
+
         function handleSuggestDifficulty(message: any) {
-            _this.difficulty = message.params[0];
             sendJson({
                 id: message.id,
                 result: true,
                 error: null
             });
+            const bounded = boundSuggestedDifficulty(
+                message.params && message.params[0]
+            );
+            if (bounded === null) return;
+            // Before subscription the value becomes the starting difficulty;
+            // afterwards it takes effect right away with mining.set_difficulty.
+            _this.suggestedDifficulty = bounded;
+            if (_this.difficulty > 0 && bounded !== _this.difficulty) {
+                _this.sendDifficulty(bounded);
+                _this.emit('difficultyChanged', _this.difficulty);
+            }
         }
 
+        // BIP 310: the miner lists the extensions it wants plus their
+        // parameters; the reply names every one of them, true only for the
+        // ones in effect. Version rolling (overt AsicBoost) is granted when
+        // the coin carries version_mask, with the mask narrowed to the bits
+        // the miner itself asked to roll. A silent or error reply here makes
+        // ASIC firmware wait or drop the pool, so every request is answered.
         function handleConfigure(message: any) {
+            const params = Array.isArray(message.params) ? message.params : [];
+            const requested: string[] = Array.isArray(params[0])
+                ? params[0].filter((e: any) => typeof e === 'string')
+                : [];
+            const extensionParams =
+                params[1] && typeof params[1] === 'object' ? params[1] : {};
+            const result: Record<string, any> = {};
+            for (const ext of requested) result[ext] = false;
             if (
+                requested.includes('version-rolling') &&
                 options.coin.version_mask &&
                 isValidHexRegex.test(options.coin.version_mask)
             ) {
-                sendJson({
-                    id: message.id,
-                    result: {
-                        'version-rolling': true,
-                        'version-rolling.mask': options.coin.version_mask
-                    },
-                    error: null
-                });
-            } else {
-                _this.emit('unknownStratumMethod', message);
+                let mask = parseInt(options.coin.version_mask, 16) >>> 0;
+                const minerMask = extensionParams['version-rolling.mask'];
+                if (
+                    typeof minerMask === 'string' &&
+                    isValidHexRegex.test(minerMask)
+                ) {
+                    mask = (mask & parseInt(minerMask, 16)) >>> 0;
+                }
+                result['version-rolling'] = true;
+                result['version-rolling.mask'] = mask
+                    .toString(16)
+                    .padStart(8, '0');
             }
+            sendJson({ id: message.id, result, error: null });
         }
 
         function sendJson(...args: any[]) {
@@ -1162,7 +1206,8 @@ class StratumServer extends events.EventEmitter {
                 connectionTimeout: options.connectionTimeout,
                 tcpProxyProtocol: options.tcpProxyProtocol,
                 coin: options.coin,
-                dynamicVarDiff: options.dynamicVarDiff
+                dynamicVarDiff: options.dynamicVarDiff,
+                portConfig: options.ports[socket.localPort ?? -1] || {}
             });
 
             stratumClients[subscriptionId] = client;

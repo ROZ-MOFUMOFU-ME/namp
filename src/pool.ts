@@ -923,7 +923,11 @@ class Pool extends events.EventEmitter {
                                     extraNonce2Size
                                 );
 
-                                if (client.initialDifficulty > 0) {
+                                if (client.suggestedDifficulty > 0) {
+                                    this.sendDifficulty(
+                                        client.suggestedDifficulty
+                                    );
+                                } else if (client.initialDifficulty > 0) {
                                     this.sendDifficulty(
                                         client.initialDifficulty
                                     );
