@@ -1,9 +1,11 @@
 # NAMP portal image. Build from the repo root (all workspaces live here):
 #   docker build -t namp .
 #
-# multi-hashing is a NAN native addon needing a C++20 toolchain; node:24-bookworm
-# ships GCC 12, the version the hashing vectors are verified against.
-FROM node:24-bookworm
+# The hashing addon (native/) is a NAN module needing a C++20 toolchain.
+# Debian 13 (trixie) ships GCC 14; the known-answer vectors are verified on
+# GCC 12, 13 and 14, and the tests pass on Node 22, 24 and 26. Node 24 is the
+# LTS line the production deployments run.
+FROM node:24-trixie
 
 WORKDIR /app
 
@@ -19,7 +21,9 @@ COPY package.json package-lock.json .npmrc binding.gyp ./
 COPY native/ ./native/
 RUN npm ci
 
-# Sources (config.json / pool_configs / coins are mounted at runtime).
+# Sources. .dockerignore keeps host build output (build/, web/dist) and the
+# operator's own config.json / pool_configs / coins out: the image compiles
+# the addon and the SPA itself, and configuration is mounted at runtime.
 COPY . .
 
 # Build the Vite + React SPA that the website worker serves from web/dist.

@@ -8,3 +8,17 @@ dist
 *_finalRedisCommands.txt
 .github
 .circleci
+
+# Build outputs: the image compiles the addon and the SPA itself, so a host
+# build must never leak in (an addon built for another Node ABI fails to load).
+build
+web/dist
+
+# Operator configuration is mounted at runtime (docker-compose.yml); only the
+# committed examples belong in the image.
+config.json
+config.json.bak*
+pool_configs/*.json
+coins/*.json
+coins/regtest
+coins/testnet
