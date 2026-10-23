@@ -47,487 +47,503 @@ let clientCounter = 0;
  * One connected miner. Frames newline-delimited JSON and answers the
  * eth-proxy methods; everything policy-related is delegated upward.
  */
-const StratumClient = function StratumClient(this: any, params: any) {
-    const _this = this;
-    const socket = params.socket;
-    let buffer = '';
+class StratumClient extends events.EventEmitter {
+    [key: string]: any;
 
-    this.id = `${++clientCounter}`;
-    this.socket = socket; // varDiff reads socket.localPort
-    this.remoteAddress = normalizeIp(socket.remoteAddress);
-    this.port = params.port;
-    this.difficulty = params.difficulty;
-    this.authorized = false;
-    this.workerName = null as string | null;
-    this.lastActivity = Date.now();
-    // Rolling accept/reject counts for the ban check.
-    this.shares = { valid: 0, invalid: 0 };
+    constructor(params: any) {
+        super();
+        const _this = this;
+        const socket = params.socket;
+        let buffer = '';
 
-    function send(payload: any) {
-        if (socket.writable) socket.write(`${JSON.stringify(payload)}\n`);
-    }
-    this.send = send;
+        this.id = `${++clientCounter}`;
+        this.socket = socket; // varDiff reads socket.localPort
+        this.remoteAddress = normalizeIp(socket.remoteAddress);
+        this.port = params.port;
+        this.difficulty = params.difficulty;
+        this.authorized = false;
+        this.workerName = null as string | null;
+        this.lastActivity = Date.now();
+        // Rolling accept/reject counts for the ban check.
+        this.shares = { valid: 0, invalid: 0 };
 
-    /** Push work to the miner; id 0 marks an unsolicited job in eth-proxy. */
-    this.sendWork = function (work: any, boundary: string) {
-        if (!work) return;
-        send({
-            id: 0,
-            jsonrpc: '2.0',
-            result: [work.headerHash, work.seedHash, boundary]
-        });
-    };
+        function send(payload: any) {
+            if (socket.writable) socket.write(`${JSON.stringify(payload)}\n`);
+        }
+        this.send = send;
 
-    function handleMessage(message: any) {
-        switch (message.method) {
-            case 'eth_submitLogin': {
-                const login = (message.params && message.params[0]) || '';
-                // eth-proxy puts the rig name in a top-level "worker" member
-                // of the login message; params[1] is the PASSWORD (usually
-                // "x"). Reading params[1] credited every lolMiner rig as
-                // "wallet.x" — found against the real miner, not in tests.
-                const worker =
-                    typeof message.worker === 'string' ? message.worker : '';
-                _this.emit(
-                    'login',
-                    { login, worker },
-                    function (authorized: boolean) {
-                        _this.authorized = authorized;
-                        // Miners send the wallet as the login and an optional
-                        // rig name; the pool credits "wallet.rig".
-                        _this.workerName = worker
-                            ? `${login}.${worker}`
-                            : login;
-                        send({
-                            id: message.id,
-                            jsonrpc: '2.0',
-                            result: authorized
-                        });
-                        if (!authorized) socket.destroy();
-                    }
-                );
-                break;
-            }
-            case 'eth_getWork':
-                if (!_this.authorized) {
-                    send({
-                        id: message.id,
-                        jsonrpc: '2.0',
-                        error: { code: -1, message: 'unauthorized' }
-                    });
-                    return;
+        /** Push work to the miner; id 0 marks an unsolicited job in eth-proxy. */
+        this.sendWork = function (work: any, boundary: string) {
+            if (!work) return;
+            send({
+                id: 0,
+                jsonrpc: '2.0',
+                result: [work.headerHash, work.seedHash, boundary]
+            });
+        };
+
+        function handleMessage(message: any) {
+            switch (message.method) {
+                case 'eth_submitLogin': {
+                    const login = (message.params && message.params[0]) || '';
+                    // eth-proxy puts the rig name in a top-level "worker" member
+                    // of the login message; params[1] is the PASSWORD (usually
+                    // "x"). Reading params[1] credited every lolMiner rig as
+                    // "wallet.x" — found against the real miner, not in tests.
+                    const worker =
+                        typeof message.worker === 'string'
+                            ? message.worker
+                            : '';
+                    _this.emit(
+                        'login',
+                        { login, worker },
+                        function (authorized: boolean) {
+                            _this.authorized = authorized;
+                            // Miners send the wallet as the login and an optional
+                            // rig name; the pool credits "wallet.rig".
+                            _this.workerName = worker
+                                ? `${login}.${worker}`
+                                : login;
+                            send({
+                                id: message.id,
+                                jsonrpc: '2.0',
+                                result: authorized
+                            });
+                            if (!authorized) socket.destroy();
+                        }
+                    );
+                    break;
                 }
-                _this.emit('getWork', function (work: any, boundary: string) {
-                    if (!work) {
+                case 'eth_getWork':
+                    if (!_this.authorized) {
                         send({
                             id: message.id,
                             jsonrpc: '2.0',
-                            error: { code: -1, message: 'no work available' }
+                            error: { code: -1, message: 'unauthorized' }
                         });
                         return;
                     }
-                    send({
-                        id: message.id,
-                        jsonrpc: '2.0',
-                        result: [work.headerHash, work.seedHash, boundary]
-                    });
-                });
-                break;
-            case 'eth_submitWork': {
-                if (!_this.authorized) {
-                    send({
-                        id: message.id,
-                        jsonrpc: '2.0',
-                        result: false,
-                        error: { code: -1, message: 'unauthorized' }
-                    });
-                    return;
-                }
-                const [nonce, headerHash, mixHash] = message.params || [];
-                _this.emit(
-                    'submit',
-                    { nonce, headerHash, mixHash },
-                    function (accepted: boolean, error?: any) {
+                    _this.emit(
+                        'getWork',
+                        function (work: any, boundary: string) {
+                            if (!work) {
+                                send({
+                                    id: message.id,
+                                    jsonrpc: '2.0',
+                                    error: {
+                                        code: -1,
+                                        message: 'no work available'
+                                    }
+                                });
+                                return;
+                            }
+                            send({
+                                id: message.id,
+                                jsonrpc: '2.0',
+                                result: [
+                                    work.headerHash,
+                                    work.seedHash,
+                                    boundary
+                                ]
+                            });
+                        }
+                    );
+                    break;
+                case 'eth_submitWork': {
+                    if (!_this.authorized) {
                         send({
                             id: message.id,
                             jsonrpc: '2.0',
-                            result: accepted,
-                            error: accepted
-                                ? null
-                                : {
-                                      code: error?.[0] ?? -1,
-                                      message: error?.[1]
-                                  }
+                            result: false,
+                            error: { code: -1, message: 'unauthorized' }
                         });
+                        return;
                     }
-                );
-                break;
+                    const [nonce, headerHash, mixHash] = message.params || [];
+                    _this.emit(
+                        'submit',
+                        { nonce, headerHash, mixHash },
+                        function (accepted: boolean, error?: any) {
+                            send({
+                                id: message.id,
+                                jsonrpc: '2.0',
+                                result: accepted,
+                                error: accepted
+                                    ? null
+                                    : {
+                                          code: error?.[0] ?? -1,
+                                          message: error?.[1]
+                                      }
+                            });
+                        }
+                    );
+                    break;
+                }
+                case 'eth_submitHashrate':
+                    // Informational only; miners expect an acknowledgement.
+                    _this.emit(
+                        'hashrate',
+                        (message.params && message.params[0]) || '0x0'
+                    );
+                    send({ id: message.id, jsonrpc: '2.0', result: true });
+                    break;
+                default:
+                    // Surface the method name: miners that negotiate a different
+                    // dialect (NiceHash's EthereumStratum/1.0.0, say) show up here
+                    // rather than silently failing to connect.
+                    _this.emit(
+                        'unsupportedMethod',
+                        message.method,
+                        JSON.stringify(message.params || []).slice(0, 200)
+                    );
+                    send({
+                        id: message.id,
+                        jsonrpc: '2.0',
+                        error: { code: -3, message: 'method not supported' }
+                    });
             }
-            case 'eth_submitHashrate':
-                // Informational only; miners expect an acknowledgement.
-                _this.emit(
-                    'hashrate',
-                    (message.params && message.params[0]) || '0x0'
-                );
-                send({ id: message.id, jsonrpc: '2.0', result: true });
-                break;
-            default:
-                // Surface the method name: miners that negotiate a different
-                // dialect (NiceHash's EthereumStratum/1.0.0, say) show up here
-                // rather than silently failing to connect.
-                _this.emit(
-                    'unsupportedMethod',
-                    message.method,
-                    JSON.stringify(message.params || []).slice(0, 200)
-                );
-                send({
-                    id: message.id,
-                    jsonrpc: '2.0',
-                    error: { code: -3, message: 'method not supported' }
-                });
         }
-    }
 
-    socket.setEncoding('utf8');
-    socket.setKeepAlive(true);
-    // Miners send a handful of messages per second at most; anything wilder
-    // is a scanner or a broken client, and it costs us verification work.
-    let windowStart = Date.now();
-    let windowCount = 0;
-    const RATE_WINDOW_MS = 10000;
-    const RATE_MAX = 600;
+        socket.setEncoding('utf8');
+        socket.setKeepAlive(true);
+        // Miners send a handful of messages per second at most; anything wilder
+        // is a scanner or a broken client, and it costs us verification work.
+        let windowStart = Date.now();
+        let windowCount = 0;
+        const RATE_WINDOW_MS = 10000;
+        const RATE_MAX = 600;
 
-    socket.on('data', function (chunk: string) {
-        _this.lastActivity = Date.now();
-        const now = Date.now();
-        if (now - windowStart > RATE_WINDOW_MS) {
-            windowStart = now;
-            windowCount = 0;
-        }
-        if (++windowCount > RATE_MAX) {
-            _this.emit('floodDetected');
-            socket.destroy();
-            return;
-        }
-        buffer += chunk;
-        if (buffer.length > 10240) {
-            // A miner never sends this much; drop rather than buffer forever.
-            buffer = '';
-            socket.destroy();
-            return;
-        }
-        let index: number;
-        while ((index = buffer.indexOf('\n')) !== -1) {
-            const line = buffer.slice(0, index);
-            buffer = buffer.slice(index + 1);
-            if (!line.trim()) continue;
-            let message: any;
-            try {
-                message = JSON.parse(line);
-            } catch {
-                _this.emit('malformedMessage', line);
+        socket.on('data', function (chunk: string) {
+            _this.lastActivity = Date.now();
+            const now = Date.now();
+            if (now - windowStart > RATE_WINDOW_MS) {
+                windowStart = now;
+                windowCount = 0;
+            }
+            if (++windowCount > RATE_MAX) {
+                _this.emit('floodDetected');
                 socket.destroy();
                 return;
             }
-            handleMessage(message);
-        }
-    });
-    socket.on('close', () => _this.emit('socketDisconnect'));
-    socket.on('error', (err: any) => {
-        if (err.code !== 'ECONNRESET') _this.emit('socketError', err);
-    });
+            buffer += chunk;
+            if (buffer.length > 10240) {
+                // A miner never sends this much; drop rather than buffer forever.
+                buffer = '';
+                socket.destroy();
+                return;
+            }
+            let index: number;
+            while ((index = buffer.indexOf('\n')) !== -1) {
+                const line = buffer.slice(0, index);
+                buffer = buffer.slice(index + 1);
+                if (!line.trim()) continue;
+                let message: any;
+                try {
+                    message = JSON.parse(line);
+                } catch {
+                    _this.emit('malformedMessage', line);
+                    socket.destroy();
+                    return;
+                }
+                handleMessage(message);
+            }
+        });
+        socket.on('close', () => _this.emit('socketDisconnect'));
+        socket.on('error', (err: any) => {
+            if (err.code !== 'ECONNRESET') _this.emit('socketError', err);
+        });
 
-    this.disconnect = function () {
-        socket.destroy();
-    };
-};
-Object.setPrototypeOf(StratumClient.prototype, events.EventEmitter.prototype);
+        this.disconnect = function () {
+            socket.destroy();
+        };
+    }
+}
 
 /**
  * Listens on the configured ports and keeps every connected miner supplied
  * with work. The pool wires authorization and share handling through events.
  */
-const EthashStratumServer = function EthashStratumServer(
-    this: any,
-    options: EthashStratumOptions,
-    authorizeFn: any
-) {
-    const _this = this;
-    const clients: Record<string, any> = {};
-    const listeners: any[] = [];
-    let currentWork: any = null;
-    let timeoutTimer: any = null;
-    let banPurgeTimer: any = null;
-    const bannedIPs: Record<string, number> = {};
-    const banning = options.banning || {};
+class EthashStratumServer extends events.EventEmitter {
+    [key: string]: any;
 
-    this.clients = clients;
-    /** Per-port varDiff managers (exposed for tests). */
-    this.varDiffs = {} as Record<string, any>;
+    constructor(options: EthashStratumOptions, authorizeFn: any) {
+        super();
+        const _this = this;
+        const clients: Record<string, any> = {};
+        const listeners: any[] = [];
+        let currentWork: any = null;
+        let timeoutTimer: any = null;
+        let banPurgeTimer: any = null;
+        const bannedIPs: Record<string, number> = {};
+        const banning = options.banning || {};
 
-    /**
-     * (difficulty, work) -> { boundary: hex, difficulty }, provided by the
-     * pool: the port boundary capped at the network's, and the difficulty
-     * that leaves the miner at.
-     */
-    this.shareTargetFor = function (
-        _difficulty: number,
-        _work: any
-    ): { boundary: string; difficulty: number } {
-        throw new Error('shareTargetFor must be provided by the pool');
-    };
-    const boundaryFor = (client: any, work: any) =>
-        _this.shareTargetFor(client.difficulty, work).boundary;
+        this.clients = clients;
+        /** Per-port varDiff managers (exposed for tests). */
+        this.varDiffs = {} as Record<string, any>;
 
-    this.addBannedIP = function (ip: string) {
-        bannedIPs[ip] = Date.now();
-    };
-    this.isBanned = function (ip: string): boolean {
-        if (!banning.enabled || !bannedIPs[ip]) return false;
-        const banTimeMs = (banning.time || 600) * 1000;
-        if (Date.now() - bannedIPs[ip] > banTimeMs) {
-            delete bannedIPs[ip];
-            return false;
-        }
-        return true;
-    };
+        /**
+         * (difficulty, work) -> { boundary: hex, difficulty }, provided by the
+         * pool: the port boundary capped at the network's, and the difficulty
+         * that leaves the miner at.
+         */
+        this.shareTargetFor = function (
+            _difficulty: number,
+            _work: any
+        ): { boundary: string; difficulty: number } {
+            throw new Error('shareTargetFor must be provided by the pool');
+        };
+        const boundaryFor = (client: any, work: any) =>
+            _this.shareTargetFor(client.difficulty, work).boundary;
 
-    /**
-     * The Bitcoin stratum's ban policy: once a client has checkThreshold
-     * shares, ban the IP when the invalid fraction is too high; otherwise
-     * restart the window.
-     */
-    function checkBan(client: any) {
-        if (!banning.enabled) return;
-        const total = client.shares.valid + client.shares.invalid;
-        if (total < (banning.checkThreshold || 500)) return;
-        const invalidPercent = (client.shares.invalid / total) * 100;
-        if (invalidPercent < (banning.invalidPercent || 50)) {
-            client.shares = { valid: 0, invalid: 0 };
-            return;
-        }
-        _this.addBannedIP(client.remoteAddress);
-        _this.emit(
-            'log',
-            'warning',
-            `Banned ${client.workerName || 'unauthorized'} [${
-                client.remoteAddress
-            }]: ${invalidPercent.toFixed(0)}% of ${total} shares invalid`
-        );
-        client.disconnect();
-    }
-
-    function bindClient(client: any) {
-        clients[client.id] = client;
-
-        client.on('login', function (creds: any, callback: any) {
-            authorizeFn(
-                client.remoteAddress,
-                client.port,
-                creds.login,
-                creds.worker,
-                function (result: any) {
-                    callback(result.authorized === true);
-                    if (result.authorized) {
-                        _this.emit('client.connected', client);
-                        // Miners expect work immediately after logging in.
-                        client.sendWork(
-                            currentWork,
-                            boundaryFor(client, currentWork)
-                        );
-                    }
-                }
-            );
-        });
-
-        client.on('getWork', function (callback: any) {
-            callback(currentWork, boundaryFor(client, currentWork));
-        });
-
-        client.on('submit', function (submission: any, callback: any) {
-            _this.emit(
-                'share',
-                {
-                    ...submission,
-                    difficulty: client.difficulty,
-                    worker: client.workerName,
-                    ip: client.remoteAddress,
-                    port: client.port
-                },
-                function (accepted: boolean, error?: any) {
-                    // Answer first: the miner should see the verdict before a
-                    // ban cuts the socket.
-                    callback(accepted, error);
-                    client.shares[accepted ? 'valid' : 'invalid']++;
-                    checkBan(client);
-                }
-            );
-        });
-
-        client.on('socketDisconnect', function () {
-            delete clients[client.id];
-            _this.emit('client.disconnected', client);
-        });
-        client.on('floodDetected', () =>
-            _this.emit(
-                'log',
-                'warning',
-                `Flooding from ${client.remoteAddress}; connection dropped`
-            )
-        );
-        client.on('unsupportedMethod', (method: string, params: string) =>
-            _this.emit(
-                'log',
-                'warning',
-                `Miner ${client.remoteAddress} asked for unsupported method ${method} ${params}`
-            )
-        );
-        client.on('socketError', (err: any) =>
-            _this.emit(
-                'log',
-                'warning',
-                `Socket error from ${client.remoteAddress}: ${err}`
-            )
-        );
-        client.on('malformedMessage', (line: string) =>
-            _this.emit(
-                'log',
-                'warning',
-                `Malformed message from ${client.remoteAddress}: ${line.slice(0, 80)}`
-            )
-        );
-    }
-
-    /** Broadcast fresh work to every authorized miner. */
-    this.broadcastWork = function (work: any) {
-        currentWork = work;
-        for (const id of Object.keys(clients)) {
-            const client = clients[id];
-            if (client.authorized) {
-                client.sendWork(work, boundaryFor(client, work));
+        this.addBannedIP = function (ip: string) {
+            bannedIPs[ip] = Date.now();
+        };
+        this.isBanned = function (ip: string): boolean {
+            if (!banning.enabled || !bannedIPs[ip]) return false;
+            const banTimeMs = (banning.time || 600) * 1000;
+            if (Date.now() - bannedIPs[ip] > banTimeMs) {
+                delete bannedIPs[ip];
+                return false;
             }
+            return true;
+        };
+
+        /**
+         * The Bitcoin stratum's ban policy: once a client has checkThreshold
+         * shares, ban the IP when the invalid fraction is too high; otherwise
+         * restart the window.
+         */
+        function checkBan(client: any) {
+            if (!banning.enabled) return;
+            const total = client.shares.valid + client.shares.invalid;
+            if (total < (banning.checkThreshold || 500)) return;
+            const invalidPercent = (client.shares.invalid / total) * 100;
+            if (invalidPercent < (banning.invalidPercent || 50)) {
+                client.shares = { valid: 0, invalid: 0 };
+                return;
+            }
+            _this.addBannedIP(client.remoteAddress);
+            _this.emit(
+                'log',
+                'warning',
+                `Banned ${client.workerName || 'unauthorized'} [${
+                    client.remoteAddress
+                }]: ${invalidPercent.toFixed(0)}% of ${total} shares invalid`
+            );
+            client.disconnect();
         }
-    };
 
-    this.start = function (callback?: () => void) {
-        const ports = Object.keys(options.ports);
-        let pending = ports.length;
-        if (!pending) return callback?.();
+        function bindClient(client: any) {
+            clients[client.id] = client;
 
-        for (const port of ports) {
-            // Bitcoin-style variable difficulty: retarget each miner toward
-            // varDiff.targetTime seconds per share; the new boundary reaches
-            // the miner with the next pushed job.
-            const varDiffConfig = options.ports[port].varDiff;
-            if (varDiffConfig && varDiffConfig.minDiff > 0) {
-                const manager: any = new (VarDiff as any)(port, varDiffConfig);
-                manager.on(
-                    'newDifficulty',
-                    function (client: any, newDiff: number) {
-                        // Past the network difficulty the target is capped
-                        // anyway, so hold the port difficulty there. varDiff
-                        // only moves on submitted shares: a value far above
-                        // the network would strand the miner once the
-                        // network rose, with no share left to retarget on.
-                        const held = _this.shareTargetFor(
-                            newDiff,
-                            currentWork
-                        ).difficulty;
-                        if (held === client.difficulty) return;
-                        client.difficulty = held;
-                        client.sendWork(
-                            currentWork,
-                            boundaryFor(client, currentWork)
-                        );
+            client.on('login', function (creds: any, callback: any) {
+                authorizeFn(
+                    client.remoteAddress,
+                    client.port,
+                    creds.login,
+                    creds.worker,
+                    function (result: any) {
+                        callback(result.authorized === true);
+                        if (result.authorized) {
+                            _this.emit('client.connected', client);
+                            // Miners expect work immediately after logging in.
+                            client.sendWork(
+                                currentWork,
+                                boundaryFor(client, currentWork)
+                            );
+                        }
                     }
                 );
-                _this.varDiffs[port] = manager;
-            }
-            const server = net.createServer(
-                { allowHalfOpen: false },
-                function (socket: any) {
-                    if (_this.isBanned(normalizeIp(socket.remoteAddress))) {
-                        socket.destroy();
-                        return;
-                    }
-                    const client = new (StratumClient as any)({
-                        socket,
-                        port,
-                        difficulty: options.ports[port].diff
-                    });
-                    bindClient(client);
-                    _this.varDiffs[port]?.manageClient(client);
-                }
-            );
-            listeners.push(server);
-            // Dual-stack, so miners reaching the pool's AAAA record get in.
-            // An unhandled EADDRINUSE would kill the worker and put the master
-            // into a respawn loop; report it and keep serving the other ports.
-            listenDualStack(
-                server,
-                parseInt(port),
-                function () {
-                    if (--pending === 0) callback?.();
-                },
-                function (err: any) {
-                    _this.emit(
-                        'log',
-                        'error',
-                        err.code === 'EADDRINUSE'
-                            ? `Stratum port ${port} is already in use — another pool instance is probably running (check pm2 list / ss -ltnp). Continuing without it.`
-                            : `Stratum port ${port} failed to open: ${err.message || err}`
-                    );
-                    if (--pending === 0) callback?.();
-                }
-            );
-        }
-
-        if (banning.enabled) {
-            banPurgeTimer = setInterval(
-                function () {
-                    const banTimeMs = (banning.time || 600) * 1000;
-                    const now = Date.now();
-                    for (const ip of Object.keys(bannedIPs)) {
-                        if (now - bannedIPs[ip] > banTimeMs)
-                            delete bannedIPs[ip];
-                    }
-                },
-                (banning.purgeInterval || 300) * 1000
-            );
-            banPurgeTimer.unref?.();
-        }
-
-        // Drop miners that went away without closing the socket.
-        const timeout =
-            (options.connectionTimeout || 600) * 1000 || CLIENT_TIMEOUT_MS;
-        timeoutTimer = setInterval(function () {
-            const now = Date.now();
-            for (const id of Object.keys(clients)) {
-                if (now - clients[id].lastActivity > timeout)
-                    clients[id].disconnect();
-            }
-        }, 30000);
-        timeoutTimer.unref?.();
-    };
-
-    /** Stop listening and drop every client. */
-    this.stop = function (callback?: () => void) {
-        if (timeoutTimer) clearInterval(timeoutTimer);
-        if (banPurgeTimer) clearInterval(banPurgeTimer);
-        for (const id of Object.keys(clients)) clients[id].disconnect();
-        let pending = listeners.length;
-        if (!pending) return callback?.();
-        for (const listener of listeners) {
-            listener.close(() => {
-                if (--pending === 0) callback?.();
             });
+
+            client.on('getWork', function (callback: any) {
+                callback(currentWork, boundaryFor(client, currentWork));
+            });
+
+            client.on('submit', function (submission: any, callback: any) {
+                _this.emit(
+                    'share',
+                    {
+                        ...submission,
+                        difficulty: client.difficulty,
+                        worker: client.workerName,
+                        ip: client.remoteAddress,
+                        port: client.port
+                    },
+                    function (accepted: boolean, error?: any) {
+                        // Answer first: the miner should see the verdict before a
+                        // ban cuts the socket.
+                        callback(accepted, error);
+                        client.shares[accepted ? 'valid' : 'invalid']++;
+                        checkBan(client);
+                    }
+                );
+            });
+
+            client.on('socketDisconnect', function () {
+                delete clients[client.id];
+                _this.emit('client.disconnected', client);
+            });
+            client.on('floodDetected', () =>
+                _this.emit(
+                    'log',
+                    'warning',
+                    `Flooding from ${client.remoteAddress}; connection dropped`
+                )
+            );
+            client.on('unsupportedMethod', (method: string, params: string) =>
+                _this.emit(
+                    'log',
+                    'warning',
+                    `Miner ${client.remoteAddress} asked for unsupported method ${method} ${params}`
+                )
+            );
+            client.on('socketError', (err: any) =>
+                _this.emit(
+                    'log',
+                    'warning',
+                    `Socket error from ${client.remoteAddress}: ${err}`
+                )
+            );
+            client.on('malformedMessage', (line: string) =>
+                _this.emit(
+                    'log',
+                    'warning',
+                    `Malformed message from ${client.remoteAddress}: ${line.slice(0, 80)}`
+                )
+            );
         }
-    };
-};
-Object.setPrototypeOf(
-    EthashStratumServer.prototype,
-    events.EventEmitter.prototype
-);
+
+        /** Broadcast fresh work to every authorized miner. */
+        this.broadcastWork = function (work: any) {
+            currentWork = work;
+            for (const id of Object.keys(clients)) {
+                const client = clients[id];
+                if (client.authorized) {
+                    client.sendWork(work, boundaryFor(client, work));
+                }
+            }
+        };
+
+        this.start = function (callback?: () => void) {
+            const ports = Object.keys(options.ports);
+            let pending = ports.length;
+            if (!pending) return callback?.();
+
+            for (const port of ports) {
+                // Bitcoin-style variable difficulty: retarget each miner toward
+                // varDiff.targetTime seconds per share; the new boundary reaches
+                // the miner with the next pushed job.
+                const varDiffConfig = options.ports[port].varDiff;
+                if (varDiffConfig && varDiffConfig.minDiff > 0) {
+                    const manager: any = new (VarDiff as any)(
+                        port,
+                        varDiffConfig
+                    );
+                    manager.on(
+                        'newDifficulty',
+                        function (client: any, newDiff: number) {
+                            // Past the network difficulty the target is capped
+                            // anyway, so hold the port difficulty there. varDiff
+                            // only moves on submitted shares: a value far above
+                            // the network would strand the miner once the
+                            // network rose, with no share left to retarget on.
+                            const held = _this.shareTargetFor(
+                                newDiff,
+                                currentWork
+                            ).difficulty;
+                            if (held === client.difficulty) return;
+                            client.difficulty = held;
+                            client.sendWork(
+                                currentWork,
+                                boundaryFor(client, currentWork)
+                            );
+                        }
+                    );
+                    _this.varDiffs[port] = manager;
+                }
+                const server = net.createServer(
+                    { allowHalfOpen: false },
+                    function (socket: any) {
+                        if (_this.isBanned(normalizeIp(socket.remoteAddress))) {
+                            socket.destroy();
+                            return;
+                        }
+                        const client = new StratumClient({
+                            socket,
+                            port,
+                            difficulty: options.ports[port].diff
+                        });
+                        bindClient(client);
+                        _this.varDiffs[port]?.manageClient(client);
+                    }
+                );
+                listeners.push(server);
+                // Dual-stack, so miners reaching the pool's AAAA record get in.
+                // An unhandled EADDRINUSE would kill the worker and put the master
+                // into a respawn loop; report it and keep serving the other ports.
+                listenDualStack(
+                    server,
+                    parseInt(port),
+                    function () {
+                        if (--pending === 0) callback?.();
+                    },
+                    function (err: any) {
+                        _this.emit(
+                            'log',
+                            'error',
+                            err.code === 'EADDRINUSE'
+                                ? `Stratum port ${port} is already in use — another pool instance is probably running (check pm2 list / ss -ltnp). Continuing without it.`
+                                : `Stratum port ${port} failed to open: ${err.message || err}`
+                        );
+                        if (--pending === 0) callback?.();
+                    }
+                );
+            }
+
+            if (banning.enabled) {
+                banPurgeTimer = setInterval(
+                    function () {
+                        const banTimeMs = (banning.time || 600) * 1000;
+                        const now = Date.now();
+                        for (const ip of Object.keys(bannedIPs)) {
+                            if (now - bannedIPs[ip] > banTimeMs)
+                                delete bannedIPs[ip];
+                        }
+                    },
+                    (banning.purgeInterval || 300) * 1000
+                );
+                banPurgeTimer.unref?.();
+            }
+
+            // Drop miners that went away without closing the socket.
+            const timeout =
+                (options.connectionTimeout || 600) * 1000 || CLIENT_TIMEOUT_MS;
+            timeoutTimer = setInterval(function () {
+                const now = Date.now();
+                for (const id of Object.keys(clients)) {
+                    if (now - clients[id].lastActivity > timeout)
+                        clients[id].disconnect();
+                }
+            }, 30000);
+            timeoutTimer.unref?.();
+        };
+
+        /** Stop listening and drop every client. */
+        this.stop = function (callback?: () => void) {
+            if (timeoutTimer) clearInterval(timeoutTimer);
+            if (banPurgeTimer) clearInterval(banPurgeTimer);
+            for (const id of Object.keys(clients)) clients[id].disconnect();
+            let pending = listeners.length;
+            if (!pending) return callback?.();
+            for (const listener of listeners) {
+                listener.close(() => {
+                    if (--pending === 0) callback?.();
+                });
+            }
+        };
+    }
+}
 
 export { StratumClient };
 export default EthashStratumServer;

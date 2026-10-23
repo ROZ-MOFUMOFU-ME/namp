@@ -133,175 +133,175 @@ export function epochOf(
  * Tracks the daemon's current work and validates submissions against it.
  * Emits 'newWork' when the daemon moves to a new header.
  */
-const EthashJobManager = function EthashJobManager(
-    this: any,
-    options: any = {}
-) {
-    const _this = this;
-    const epochLength = options.epochLength || DEFAULT_EPOCH_LENGTH;
-    // geth regenerates the sealing work on every pending-block reassembly
-    // (new transactions, recommit ticks), not only on new blocks — several
-    // times per block. A share computed on the previous header is still a
-    // perfectly good solution for it, and geth's remote sealer keeps recent
-    // works and accepts solutions for any of them. Keeping only the newest
-    // work here rejected every submission that crossed a rotation — including
-    // block solutions, which is fatal for a pool. So recent works stay
-    // acceptable, each with its own duplicate ledger.
-    const maxWorkWindow = options.maxWorkWindow || 8;
-    const works = new Map<string, EthashWork & { submissions: Set<string> }>();
+class EthashJobManager extends events.EventEmitter {
+    [key: string]: any;
 
-    this.currentWork = null as EthashWork | null;
+    constructor(options: any = {}) {
+        super();
+        const _this = this;
+        const epochLength = options.epochLength || DEFAULT_EPOCH_LENGTH;
+        // geth regenerates the sealing work on every pending-block reassembly
+        // (new transactions, recommit ticks), not only on new blocks — several
+        // times per block. A share computed on the previous header is still a
+        // perfectly good solution for it, and geth's remote sealer keeps recent
+        // works and accepts solutions for any of them. Keeping only the newest
+        // work here rejected every submission that crossed a rotation — including
+        // block solutions, which is fatal for a pool. So recent works stay
+        // acceptable, each with its own duplicate ledger.
+        const maxWorkWindow = options.maxWorkWindow || 8;
+        const works = new Map<
+            string,
+            EthashWork & { submissions: Set<string> }
+        >();
 
-    /** Feed a raw eth_getWork response; returns true when the work is new. */
-    this.processWork = function (result: any[]): boolean {
-        if (!Array.isArray(result) || result.length < 3) {
-            _this.emit(
-                'log',
-                'error',
-                'eth_getWork returned an unusable response'
-            );
-            return false;
-        }
-        const [headerHash, seedHash, boundary, blockNumber] = result;
-        const height =
-            blockNumber === undefined ? 0 : Number(BigInt(blockNumber));
+        this.currentWork = null as EthashWork | null;
 
-        if (works.has(headerHash)) return false;
+        /** Feed a raw eth_getWork response; returns true when the work is new. */
+        this.processWork = function (result: any[]): boolean {
+            if (!Array.isArray(result) || result.length < 3) {
+                _this.emit(
+                    'log',
+                    'error',
+                    'eth_getWork returned an unusable response'
+                );
+                return false;
+            }
+            const [headerHash, seedHash, boundary, blockNumber] = result;
+            const height =
+                blockNumber === undefined ? 0 : Number(BigInt(blockNumber));
 
-        const work = {
-            headerHash,
-            seedHash,
-            boundary,
-            height,
-            submissions: new Set<string>()
+            if (works.has(headerHash)) return false;
+
+            const work = {
+                headerHash,
+                seedHash,
+                boundary,
+                height,
+                submissions: new Set<string>()
+            };
+            works.set(headerHash, work);
+            while (works.size > maxWorkWindow) {
+                const oldest = works.keys().next().value as string;
+                works.delete(oldest);
+            }
+            _this.currentWork = work;
+            _this.emit('newWork', work);
+            return true;
         };
-        works.set(headerHash, work);
-        while (works.size > maxWorkWindow) {
-            const oldest = works.keys().next().value as string;
-            works.delete(oldest);
-        }
-        _this.currentWork = work;
-        _this.emit('newWork', work);
-        return true;
-    };
 
-    this.epoch = function (): number {
-        return _this.currentWork
-            ? epochOf(_this.currentWork.height, epochLength)
-            : 0;
-    };
+        this.epoch = function (): number {
+            return _this.currentWork
+                ? epochOf(_this.currentWork.height, epochLength)
+                : 0;
+        };
 
-    /**
-     * Validate a miner submission against the target its port was given
-     * (capped at the network boundary, see shareTargetFor).
-     *
-     * Returns { error } on rejection, or { valid: true, isBlockCandidate,
-     * difficulty } — the caller submits candidates with eth_submitWork and
-     * credits the share at `difficulty`.
-     */
-    this.processShare = function (share: {
-        headerHash: string;
-        nonce: string;
-        mixHash: string;
-        difficulty: number;
-        worker?: string;
-    }) {
-        if (!_this.currentWork) return { error: [21, 'no work available'] };
-        // Any work still in the window is valid to solve; the daemon is the
-        // final judge for candidates on the older ones.
-        const work = works.get(share.headerHash);
-        if (!work) {
-            return { error: [21, 'job not found'] };
-        }
-        const isStale = work !== _this.currentWork;
+        /**
+         * Validate a miner submission against the target its port was given
+         * (capped at the network boundary, see shareTargetFor).
+         *
+         * Returns { error } on rejection, or { valid: true, isBlockCandidate,
+         * difficulty } — the caller submits candidates with eth_submitWork and
+         * credits the share at `difficulty`.
+         */
+        this.processShare = function (share: {
+            headerHash: string;
+            nonce: string;
+            mixHash: string;
+            difficulty: number;
+            worker?: string;
+        }) {
+            if (!_this.currentWork) return { error: [21, 'no work available'] };
+            // Any work still in the window is valid to solve; the daemon is the
+            // final judge for candidates on the older ones.
+            const work = works.get(share.headerHash);
+            if (!work) {
+                return { error: [21, 'job not found'] };
+            }
+            const isStale = work !== _this.currentWork;
 
-        let header: Buffer;
-        let mix: Buffer;
-        let nonce: Buffer;
-        try {
-            header = hash256(share.headerHash, 'header hash');
-            mix = hash256(share.mixHash, 'mix hash');
-            nonce = nonceBuffer(share.nonce);
-        } catch (e: any) {
-            return { error: [20, e.message] };
-        }
+            let header: Buffer;
+            let mix: Buffer;
+            let nonce: Buffer;
+            try {
+                header = hash256(share.headerHash, 'header hash');
+                mix = hash256(share.mixHash, 'mix hash');
+                nonce = nonceBuffer(share.nonce);
+            } catch (e: any) {
+                return { error: [20, e.message] };
+            }
 
-        const key = `${share.nonce}:${share.mixHash}`;
-        if (work.submissions.has(key))
-            return { error: [22, 'duplicate share'] };
-        work.submissions.add(key);
+            const key = `${share.nonce}:${share.mixHash}`;
+            if (work.submissions.has(key))
+                return { error: [22, 'duplicate share'] };
+            work.submissions.add(key);
 
-        const target = shareTargetFor(share.difficulty, work);
-        if (
-            !multiHashing.ethash_verify_final(
+            const target = shareTargetFor(share.difficulty, work);
+            if (
+                !multiHashing.ethash_verify_final(
+                    header,
+                    mix,
+                    nonce,
+                    target.boundary
+                )
+            ) {
+                return { error: [23, 'low difficulty share'] };
+            }
+
+            // The difficulty this share actually achieved (2^256 / final hash):
+            // what operators read next to the port difficulty in the share log.
+            // Optional on purpose: an addon built before this export exists must
+            // degrade the display, not crash the fork on the first share.
+            let shareDiff: number | undefined;
+            if (typeof multiHashing.ethash_final_hash === 'function') {
+                shareDiff = difficultyOfBoundary(
+                    multiHashing.ethash_final_hash(header, mix, nonce)
+                );
+            }
+
+            const networkBoundary = hash256(work.boundary, 'network boundary');
+            const isBlockCandidate = multiHashing.ethash_verify_final(
                 header,
                 mix,
                 nonce,
-                target.boundary
-            )
-        ) {
-            return { error: [23, 'low difficulty share'] };
-        }
-
-        // The difficulty this share actually achieved (2^256 / final hash):
-        // what operators read next to the port difficulty in the share log.
-        // Optional on purpose: an addon built before this export exists must
-        // degrade the display, not crash the fork on the first share.
-        let shareDiff: number | undefined;
-        if (typeof multiHashing.ethash_final_hash === 'function') {
-            shareDiff = difficultyOfBoundary(
-                multiHashing.ethash_final_hash(header, mix, nonce)
+                networkBoundary
             );
-        }
 
-        const networkBoundary = hash256(work.boundary, 'network boundary');
-        const isBlockCandidate = multiHashing.ethash_verify_final(
-            header,
-            mix,
-            nonce,
-            networkBoundary
-        );
+            if (isBlockCandidate) {
+                // Only a candidate is worth the epoch cache: this is the check that
+                // proves the mix came from the DAG rather than being invented.
+                const proven = multiHashing.ethash_verify(
+                    header,
+                    mix,
+                    nonce,
+                    networkBoundary,
+                    epochOf(work.height, epochLength)
+                );
+                if (!proven)
+                    return { error: [23, 'mix hash does not match the DAG'] };
+            }
 
-        if (isBlockCandidate) {
-            // Only a candidate is worth the epoch cache: this is the check that
-            // proves the mix came from the DAG rather than being invented.
-            const proven = multiHashing.ethash_verify(
-                header,
-                mix,
-                nonce,
-                networkBoundary,
-                epochOf(work.height, epochLength)
-            );
-            if (!proven)
-                return { error: [23, 'mix hash does not match the DAG'] };
-        }
+            _this.emit('share', {
+                worker: share.worker,
+                height: work.height,
+                headerHash: work.headerHash,
+                nonce: share.nonce,
+                mixHash: share.mixHash,
+                difficulty: target.difficulty,
+                shareDiff,
+                isStale,
+                isBlockCandidate
+            });
 
-        _this.emit('share', {
-            worker: share.worker,
-            height: work.height,
-            headerHash: work.headerHash,
-            nonce: share.nonce,
-            mixHash: share.mixHash,
-            difficulty: target.difficulty,
-            shareDiff,
-            isStale,
-            isBlockCandidate
-        });
-
-        return {
-            valid: true,
-            isBlockCandidate,
-            isStale,
-            shareDiff,
-            work,
-            difficulty: target.difficulty
+            return {
+                valid: true,
+                isBlockCandidate,
+                isStale,
+                shareDiff,
+                work,
+                difficulty: target.difficulty
+            };
         };
-    };
-};
-
-Object.setPrototypeOf(
-    EthashJobManager.prototype,
-    events.EventEmitter.prototype
-);
+    }
+}
 
 export default EthashJobManager;

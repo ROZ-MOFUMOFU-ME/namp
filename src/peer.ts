@@ -42,209 +42,213 @@ const readFlowingBytes = function (
     readData(Buffer.alloc(0));
 };
 
-const Peer = function (this: any, options: any) {
-    const _this = this;
-    let client: any;
-    const magic = Buffer.from(
-        options.testnet
-            ? options.coin.peerMagicTestnet
-            : options.coin.peerMagic,
-        'hex'
-    );
-    const magicInt = magic.readUInt32LE(0);
-    let verack = false;
-    let validConnectionConfig = true;
+class Peer extends events.EventEmitter {
+    [key: string]: any;
 
-    //https://en.bitcoin.it/wiki/Protocol_specification#Inventory_Vectors
-    const invCodes = {
-        error: 0,
-        tx: 1,
-        block: 2
-    };
-
-    const networkServices = Buffer.from('0100000000000000', 'hex'); //NODE_NETWORK services (value 1 packed as uint64)
-    const emptyNetAddress = Buffer.from(
-        '010000000000000000000000000000000000ffff000000000000',
-        'hex'
-    );
-    const userAgent = util.varStringBuffer('/node-stratum/');
-    const blockStartHeight = Buffer.from('00000000', 'hex'); //block start_height, can be empty
-
-    //If protocol version is new enough, add do not relay transactions flag byte, outlined in BIP37
-    //https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki#extensions-to-existing-messages
-    const relayTransactions =
-        options.p2p.disableTransactions === true
-            ? Buffer.from([false] as any)
-            : Buffer.from([]);
-
-    const commands = {
-        version: commandStringBuffer('version'),
-        inv: commandStringBuffer('inv'),
-        verack: commandStringBuffer('verack'),
-        addr: commandStringBuffer('addr'),
-        getblocks: commandStringBuffer('getblocks')
-    };
-
-    (function init() {
-        Connect();
-    })();
-
-    function Connect() {
-        client = net.connect(
-            {
-                host: options.p2p.host,
-                port: options.p2p.port
-            },
-            function () {
-                SendVersion();
-            }
+    constructor(options: any) {
+        super();
+        const _this = this;
+        let client: any;
+        const magic = Buffer.from(
+            options.testnet
+                ? options.coin.peerMagicTestnet
+                : options.coin.peerMagic,
+            'hex'
         );
-        client.on('close', function () {
-            if (verack) {
-                _this.emit('disconnected');
-                verack = false;
-                Connect();
-            } else if (validConnectionConfig) _this.emit('connectionRejected');
-        });
-        client.on('error', function (e: any) {
-            if (e.code === 'ECONNREFUSED') {
-                validConnectionConfig = false;
-                _this.emit('connectionFailed');
-            } else _this.emit('socketError', e);
-        });
+        const magicInt = magic.readUInt32LE(0);
+        let verack = false;
+        let validConnectionConfig = true;
 
-        SetupMessageParser(client);
-    }
-
-    function SetupMessageParser(client: any) {
-        const beginReadingMessage = function (preRead: Buffer | null) {
-            readFlowingBytes(
-                client,
-                24,
-                preRead,
-                function (header: Buffer, lopped: Buffer | null) {
-                    const msgMagic = header.readUInt32LE(0);
-                    if (msgMagic !== magicInt) {
-                        _this.emit('error', 'bad magic number from peer');
-                        while (
-                            header.readUInt32LE(0) !== magicInt &&
-                            header.length >= 4
-                        ) {
-                            header = header.slice(1);
-                        }
-                        if (header.readUInt32LE(0) === magicInt) {
-                            beginReadingMessage(header);
-                        } else {
-                            beginReadingMessage(Buffer.alloc(0));
-                        }
-                        return;
-                    }
-                    const msgCommand = header.slice(4, 16).toString();
-                    const msgLength = header.readUInt32LE(16);
-                    const msgChecksum = header.readUInt32LE(20);
-                    readFlowingBytes(
-                        client,
-                        msgLength,
-                        lopped,
-                        function (payload: Buffer, lopped: Buffer | null) {
-                            if (
-                                util.sha256d(payload).readUInt32LE(0) !==
-                                msgChecksum
-                            ) {
-                                _this.emit(
-                                    'error',
-                                    'bad payload - failed checksum'
-                                );
-                                beginReadingMessage(null);
-                                return;
-                            }
-                            HandleMessage(msgCommand, payload);
-                            beginReadingMessage(lopped);
-                        }
-                    );
-                }
-            );
+        //https://en.bitcoin.it/wiki/Protocol_specification#Inventory_Vectors
+        const invCodes = {
+            error: 0,
+            tx: 1,
+            block: 2
         };
 
-        beginReadingMessage(null);
-    }
+        const networkServices = Buffer.from('0100000000000000', 'hex'); //NODE_NETWORK services (value 1 packed as uint64)
+        const emptyNetAddress = Buffer.from(
+            '010000000000000000000000000000000000ffff000000000000',
+            'hex'
+        );
+        const userAgent = util.varStringBuffer('/node-stratum/');
+        const blockStartHeight = Buffer.from('00000000', 'hex'); //block start_height, can be empty
 
-    //Parsing inv message https://en.bitcoin.it/wiki/Protocol_specification#inv
-    function HandleInv(payload: Buffer) {
-        //sloppy varint decoding
-        let count = payload.readUInt8(0);
-        payload = payload.slice(1);
-        if (count >= 0xfd) {
-            count = payload.readUInt16LE(0);
-            payload = payload.slice(2);
+        //If protocol version is new enough, add do not relay transactions flag byte, outlined in BIP37
+        //https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki#extensions-to-existing-messages
+        const relayTransactions =
+            options.p2p.disableTransactions === true
+                ? Buffer.from([false] as any)
+                : Buffer.from([]);
+
+        const commands = {
+            version: commandStringBuffer('version'),
+            inv: commandStringBuffer('inv'),
+            verack: commandStringBuffer('verack'),
+            addr: commandStringBuffer('addr'),
+            getblocks: commandStringBuffer('getblocks')
+        };
+
+        (function init() {
+            Connect();
+        })();
+
+        function Connect() {
+            client = net.connect(
+                {
+                    host: options.p2p.host,
+                    port: options.p2p.port
+                },
+                function () {
+                    SendVersion();
+                }
+            );
+            client.on('close', function () {
+                if (verack) {
+                    _this.emit('disconnected');
+                    verack = false;
+                    Connect();
+                } else if (validConnectionConfig)
+                    _this.emit('connectionRejected');
+            });
+            client.on('error', function (e: any) {
+                if (e.code === 'ECONNREFUSED') {
+                    validConnectionConfig = false;
+                    _this.emit('connectionFailed');
+                } else _this.emit('socketError', e);
+            });
+
+            SetupMessageParser(client);
         }
-        while (count--) {
-            switch (payload.readUInt32LE(0)) {
-                case invCodes.error:
-                    break;
-                case invCodes.tx: {
-                    // const tx = payload.slice(4, 36).toString('hex'); // Removed as unused
-                    break;
-                }
-                case invCodes.block: {
-                    const block = payload.slice(4, 36).toString('hex');
-                    _this.emit('blockFound', block);
-                    break;
-                }
+
+        function SetupMessageParser(client: any) {
+            const beginReadingMessage = function (preRead: Buffer | null) {
+                readFlowingBytes(
+                    client,
+                    24,
+                    preRead,
+                    function (header: Buffer, lopped: Buffer | null) {
+                        const msgMagic = header.readUInt32LE(0);
+                        if (msgMagic !== magicInt) {
+                            _this.emit('error', 'bad magic number from peer');
+                            while (
+                                header.readUInt32LE(0) !== magicInt &&
+                                header.length >= 4
+                            ) {
+                                header = header.slice(1);
+                            }
+                            if (header.readUInt32LE(0) === magicInt) {
+                                beginReadingMessage(header);
+                            } else {
+                                beginReadingMessage(Buffer.alloc(0));
+                            }
+                            return;
+                        }
+                        const msgCommand = header.slice(4, 16).toString();
+                        const msgLength = header.readUInt32LE(16);
+                        const msgChecksum = header.readUInt32LE(20);
+                        readFlowingBytes(
+                            client,
+                            msgLength,
+                            lopped,
+                            function (payload: Buffer, lopped: Buffer | null) {
+                                if (
+                                    util.sha256d(payload).readUInt32LE(0) !==
+                                    msgChecksum
+                                ) {
+                                    _this.emit(
+                                        'error',
+                                        'bad payload - failed checksum'
+                                    );
+                                    beginReadingMessage(null);
+                                    return;
+                                }
+                                HandleMessage(msgCommand, payload);
+                                beginReadingMessage(lopped);
+                            }
+                        );
+                    }
+                );
+            };
+
+            beginReadingMessage(null);
+        }
+
+        //Parsing inv message https://en.bitcoin.it/wiki/Protocol_specification#inv
+        function HandleInv(payload: Buffer) {
+            //sloppy varint decoding
+            let count = payload.readUInt8(0);
+            payload = payload.slice(1);
+            if (count >= 0xfd) {
+                count = payload.readUInt16LE(0);
+                payload = payload.slice(2);
             }
-            payload = payload.slice(36);
-        }
-    }
-
-    function HandleMessage(command: string, payload: Buffer) {
-        _this.emit('peerMessage', { command, payload });
-        switch (command) {
-            case commands.inv.toString():
-                HandleInv(payload);
-                break;
-            case commands.verack.toString():
-                if (!verack) {
-                    verack = true;
-                    _this.emit('connected');
+            while (count--) {
+                switch (payload.readUInt32LE(0)) {
+                    case invCodes.error:
+                        break;
+                    case invCodes.tx: {
+                        // const tx = payload.slice(4, 36).toString('hex'); // Removed as unused
+                        break;
+                    }
+                    case invCodes.block: {
+                        const block = payload.slice(4, 36).toString('hex');
+                        _this.emit('blockFound', block);
+                        break;
+                    }
                 }
-                break;
-            case commands.version.toString():
-                SendMessage(commands.verack, Buffer.alloc(0));
-                break;
-            default:
-                break;
+                payload = payload.slice(36);
+            }
+        }
+
+        function HandleMessage(command: string, payload: Buffer) {
+            _this.emit('peerMessage', { command, payload });
+            switch (command) {
+                case commands.inv.toString():
+                    HandleInv(payload);
+                    break;
+                case commands.verack.toString():
+                    if (!verack) {
+                        verack = true;
+                        _this.emit('connected');
+                    }
+                    break;
+                case commands.version.toString():
+                    SendMessage(commands.verack, Buffer.alloc(0));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        //Message structure defined at: https://en.bitcoin.it/wiki/Protocol_specification#Message_structure
+        function SendMessage(command: Buffer, payload: Buffer) {
+            const message = Buffer.concat([
+                magic,
+                command,
+                util.packUInt32LE(payload.length),
+                util.sha256d(payload).slice(0, 4),
+                payload
+            ]);
+            client.write(message);
+            _this.emit('sentMessage', message);
+        }
+
+        function SendVersion() {
+            const payload = Buffer.concat([
+                util.packUInt32LE(options.protocolVersion),
+                networkServices,
+                util.packInt64LE((Date.now() / 1000) | 0),
+                emptyNetAddress, //addr_recv, can be empty
+                emptyNetAddress, //addr_from, can be empty
+                crypto.randomBytes(8), //nonce, random unique ID
+                userAgent,
+                blockStartHeight,
+                relayTransactions
+            ]);
+            SendMessage(commands.version, payload);
         }
     }
-
-    //Message structure defined at: https://en.bitcoin.it/wiki/Protocol_specification#Message_structure
-    function SendMessage(command: Buffer, payload: Buffer) {
-        const message = Buffer.concat([
-            magic,
-            command,
-            util.packUInt32LE(payload.length),
-            util.sha256d(payload).slice(0, 4),
-            payload
-        ]);
-        client.write(message);
-        _this.emit('sentMessage', message);
-    }
-
-    function SendVersion() {
-        const payload = Buffer.concat([
-            util.packUInt32LE(options.protocolVersion),
-            networkServices,
-            util.packInt64LE((Date.now() / 1000) | 0),
-            emptyNetAddress, //addr_recv, can be empty
-            emptyNetAddress, //addr_from, can be empty
-            crypto.randomBytes(8), //nonce, random unique ID
-            userAgent,
-            blockStartHeight,
-            relayTransactions
-        ]);
-        SendMessage(commands.version, payload);
-    }
-} as any;
-
-Object.setPrototypeOf(Peer.prototype, events.EventEmitter.prototype);
+}
 
 export default Peer;

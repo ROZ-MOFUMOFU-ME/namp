@@ -25,17 +25,17 @@ const tsLanguage = {
 export default [
     {
         // Backend + tests. tsc --noEmit is the correctness gate; eslint
-        // surfaces style rules as warnings (the faithful NOMP conversion
-        // still carries some var/this).
+        // enforces the modern-syntax baseline (no var, const where
+        // possible, no redeclarations).
         files: ['src/**/*.ts', 'test/**/*.ts'],
         languageOptions: tsLanguage,
         rules: {
             'no-unused-vars': 'off',
             'no-undef': 'off',
             'no-console': 'off',
-            'prefer-const': 'warn',
-            'no-var': 'warn',
-            'no-redeclare': 'warn'
+            'prefer-const': 'error',
+            'no-var': 'error',
+            'no-redeclare': 'error'
         }
     },
     {
@@ -70,7 +70,9 @@ export default [
             ...js.configs.recommended.rules,
             'no-unused-vars': 'off',
             'no-undef': 'off',
-            'no-redeclare': 'warn'
+            'prefer-const': 'error',
+            'no-var': 'error',
+            'no-redeclare': 'error'
         }
     },
     prettier

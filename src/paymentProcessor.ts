@@ -679,11 +679,12 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
         displayBool: any,
         callback: any
     ) {
+        let args: any[];
         if (addr !== null) {
-            var args = [minConf, 99999999, [addr]];
+            args = [minConf, 99999999, [addr]];
         } else {
             addr = 'Payout wallet';
-            var args = [minConf, 99999999];
+            args = [minConf, 99999999];
         }
         daemon.cmd('listunspent', args, function (result: any) {
             if (!result || result.error || result[0].error) {
@@ -1755,6 +1756,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     const opid_interval = 57 * 1000;
     // shielding not required for some equihash coins
     if (requireShielding === true) {
+        let opidTimeout: any;
         const checkOpids = function () {
             clearTimeout(opidTimeout);
             const checkOpIdSuccessAndGetResult = function (ops: any) {
@@ -1901,7 +1903,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                 true
             );
         };
-        var opidTimeout = setTimeout(checkOpids, opid_interval);
+        opidTimeout = setTimeout(checkOpids, opid_interval);
     }
 
     // magnitude is only known once getBalance() has probed the daemon, so the
@@ -1921,7 +1923,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
     /* Deal with numbers in smallest possible units (satoshis) as much as possible. This greatly helps with accuracy
        when rounding and whatnot. When we are storing numbers for only humans to see, store in whole coin units. */
 
-    var processPayments = function () {
+    const processPayments = function () {
         const startPaymentProcess = Date.now();
 
         let timeSpentRPC = 0;
@@ -2673,20 +2675,20 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                         break;
 
                                                     /* calculate immature balances */
-                                                    case 'immature':
-                                                        var feeSatoshi =
+                                                    case 'immature': {
+                                                        const feeSatoshi =
                                                             coinsToSatoshies(
                                                                 fee
                                                             );
-                                                        var immature: any =
+                                                        let immature: any =
                                                             coinsToSatoshies(
                                                                 round.reward
                                                             );
-                                                        var totalShares: any =
+                                                        let totalShares: any =
                                                             parseFloat(
                                                                 0 as any
                                                             );
-                                                        var sharesLost: any =
+                                                        let sharesLost: any =
                                                             parseFloat(
                                                                 0 as any
                                                             );
@@ -2716,8 +2718,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                         }
 
                                                         // find most time spent in this round by single worker
-                                                        var maxTime: any = 0;
-                                                        for (var workerAddress in workerTimes) {
+                                                        let maxTime: any = 0;
+                                                        for (const workerAddress in workerTimes) {
                                                             if (
                                                                 maxTime <
                                                                 parseFloat(
@@ -2734,15 +2736,15 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                                     );
                                                         }
                                                         // total up shares for round
-                                                        for (var workerAddress in workerShares) {
-                                                            var worker =
+                                                        for (const workerAddress in workerShares) {
+                                                            const worker =
                                                                 (workers[
                                                                     workerAddress
                                                                 ] =
                                                                     workers[
                                                                         workerAddress
                                                                     ] || {});
-                                                            var shares: any =
+                                                            let shares: any =
                                                                 parseFloat(
                                                                     workerShares[
                                                                         workerAddress
@@ -2754,13 +2756,13 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                                     true &&
                                                                 maxTime > 0
                                                             ) {
-                                                                var tshares =
+                                                                const tshares =
                                                                     shares;
-                                                                var lost: any =
+                                                                let lost: any =
                                                                     parseFloat(
                                                                         0 as any
                                                                     );
-                                                                var address =
+                                                                const address =
                                                                     workerAddress.split(
                                                                         '.'
                                                                     )[0];
@@ -2774,7 +2776,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                                         ]
                                                                     ) > 0
                                                                 ) {
-                                                                    var timePeriod =
+                                                                    const timePeriod =
                                                                         roundTo(
                                                                             parseFloat(
                                                                                 workerTimes[
@@ -2791,7 +2793,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                                         timePeriod <
                                                                             pplntTimeQualify
                                                                     ) {
-                                                                        var lost: any =
+                                                                        lost =
                                                                             shares -
                                                                             shares *
                                                                                 timePeriod;
@@ -2819,9 +2821,9 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                         //console.log('blockConfirmations: '+round.confirmations);
 
                                                         // calculate rewards for round
-                                                        var totalAmount = 0;
-                                                        for (var workerAddress in workerShares) {
-                                                            var worker =
+                                                        let totalAmount = 0;
+                                                        for (const workerAddress in workerShares) {
+                                                            const worker =
                                                                 (workers[
                                                                     workerAddress
                                                                 ] =
@@ -2835,7 +2837,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                             // float (miners are
                                                             // paid via accrual),
                                                             // so 0 here.
-                                                            var percent =
+                                                            const percent =
                                                                 soloEnabled
                                                                     ? workerAddress ===
                                                                       round.minedby
@@ -2863,22 +2865,23 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
 
                                                         //console.log('----------------------------');
                                                         break;
+                                                    }
 
                                                     /* calculate reward balances */
-                                                    case 'generate':
-                                                        var feeSatoshi =
+                                                    case 'generate': {
+                                                        const feeSatoshi =
                                                             coinsToSatoshies(
                                                                 fee
                                                             );
-                                                        var reward: any =
+                                                        let reward: any =
                                                             coinsToSatoshies(
                                                                 round.reward
                                                             );
-                                                        var totalShares: any =
+                                                        let totalShares: any =
                                                             parseFloat(
                                                                 0 as any
                                                             );
-                                                        var sharesLost: any =
+                                                        let sharesLost: any =
                                                             parseFloat(
                                                                 0 as any
                                                             );
@@ -2986,8 +2989,8 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                         }
 
                                                         // find most time spent in this round by single worker
-                                                        maxTime = 0;
-                                                        for (var workerAddress in workerTimes) {
+                                                        let maxTime: any = 0;
+                                                        for (const workerAddress in workerTimes) {
                                                             if (
                                                                 maxTime <
                                                                 parseFloat(
@@ -3004,15 +3007,15 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                                     );
                                                         }
                                                         // total up shares for round
-                                                        for (var workerAddress in workerShares) {
-                                                            var worker =
+                                                        for (const workerAddress in workerShares) {
+                                                            const worker =
                                                                 (workers[
                                                                     workerAddress
                                                                 ] =
                                                                     workers[
                                                                         workerAddress
                                                                     ] || {});
-                                                            var shares: any =
+                                                            let shares: any =
                                                                 parseFloat(
                                                                     workerShares[
                                                                         workerAddress
@@ -3024,13 +3027,13 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                                     true &&
                                                                 maxTime > 0
                                                             ) {
-                                                                var tshares =
+                                                                const tshares =
                                                                     shares;
-                                                                var lost: any =
+                                                                let lost: any =
                                                                     parseFloat(
                                                                         0 as any
                                                                     );
-                                                                var address =
+                                                                const address =
                                                                     workerAddress.split(
                                                                         '.'
                                                                     )[0];
@@ -3044,7 +3047,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                                         ]
                                                                     ) > 0
                                                                 ) {
-                                                                    var timePeriod =
+                                                                    const timePeriod =
                                                                         roundTo(
                                                                             parseFloat(
                                                                                 workerTimes[
@@ -3061,7 +3064,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                                         timePeriod <
                                                                             pplntTimeQualify
                                                                     ) {
-                                                                        var lost: any =
+                                                                        lost =
                                                                             shares -
                                                                             shares *
                                                                                 timePeriod;
@@ -3134,9 +3137,9 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                         //console.log('blockConfirmations: '+round.confirmations);
 
                                                         // calculate rewards for round
-                                                        var totalAmount = 0;
-                                                        for (var workerAddress in workerShares) {
-                                                            var worker =
+                                                        let totalAmount = 0;
+                                                        for (const workerAddress in workerShares) {
+                                                            const worker =
                                                                 (workers[
                                                                     workerAddress
                                                                 ] =
@@ -3150,7 +3153,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                                                             // float (miners are
                                                             // paid via accrual),
                                                             // so 0 here.
-                                                            var percent =
+                                                            const percent =
                                                                 soloEnabled
                                                                     ? workerAddress ===
                                                                       round.minedby
@@ -3192,6 +3195,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
 
                                                         //console.log('----------------------------');
                                                         break;
+                                                    }
                                                 }
                                             });
 
@@ -3252,17 +3256,17 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                         tries++;
 
                         // total up miner's balances
-                        for (var w in workers) {
-                            var worker = workers[w];
+                        for (const w in workers) {
+                            const worker = workers[w];
                             totalShares += worker.totalShares || 0;
                             worker.balance = worker.balance || 0;
                             worker.reward = worker.reward || 0;
                             // get miner payout totals
-                            var toSendSatoshis = Math.round(
+                            const toSendSatoshis = Math.round(
                                 (worker.balance + worker.reward) *
                                     (1 - withholdPercent)
                             );
-                            var address = (worker.address = (
+                            const address = (worker.address = (
                                 worker.address ||
                                 getProperAddress(w.split('.')[0])
                             ).trim());
@@ -3276,15 +3280,15 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
                             }
                         }
                         // now process each workers balance, and pay the miner
-                        for (var w in workers) {
-                            var worker = workers[w];
+                        for (const w in workers) {
+                            const worker = workers[w];
                             worker.balance = worker.balance || 0;
                             worker.reward = worker.reward || 0;
-                            var toSendSatoshis = Math.round(
+                            const toSendSatoshis = Math.round(
                                 (worker.balance + worker.reward) *
                                     (1 - withholdPercent)
                             );
-                            var address = (worker.address = (
+                            const address = (worker.address = (
                                 worker.address ||
                                 getProperAddress(w.split('.')[0])
                             ).trim());
@@ -3838,39 +3842,7 @@ function SetupForPool(logger: Logger, poolOptions: any, setupFinished: any) {
         } else return address;
     }
 
-    var getProperAddress = function (address: any) {
-        if (address.length === 40) {
-            return util.addressFromEx(poolOptions.address, address);
-        } else return address;
-        if (address != false) {
-            return handleAddress(address);
-        } else {
-            let addressToPay = '';
-
-            daemon.cmd(
-                'getnewaddress',
-                [],
-                function (result: any) {
-                    if (result.error) {
-                        callback(true);
-                        return;
-                    }
-                    try {
-                        addressToPay = result.data;
-                    } catch (e) {
-                        logger.error(
-                            logSystem,
-                            logComponent,
-                            'Error getting a new address. Got: ' + result.data
-                        );
-                        callback(true);
-                    }
-                },
-                true,
-                true
-            );
-
-            return handleAddress(addressToPay);
-        }
-    };
+    function getProperAddress(address: any) {
+        return handleAddress(address);
+    }
 }

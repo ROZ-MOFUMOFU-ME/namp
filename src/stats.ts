@@ -126,7 +126,7 @@ export default function (
                     _this.stats.pools[pool.name].pending.blocks
                 )
                     for (
-                        var i = 0;
+                        let i = 0;
                         i < _this.stats.pools[pool.name].pending.blocks.length;
                         i++
                     )
@@ -143,7 +143,7 @@ export default function (
                     _this.stats.pools[pool.name].confirmed.blocks
                 )
                     for (
-                        var i = 0;
+                        let i = 0;
                         i <
                         _this.stats.pools[pool.name].confirmed.blocks.length;
                         i++
@@ -514,7 +514,7 @@ export default function (
                                             : 0;
                                     }
                                 }
-                                var rewardRecipients =
+                                const rewardRecipients =
                                     poolConfigs[coinName].rewardRecipients ||
                                     {};
                                 // Pool fee (%) = sum of reward-recipient shares,
@@ -611,7 +611,7 @@ export default function (
                                     j > 0;
                                     j--
                                 ) {
-                                    var jsonObj;
+                                    let jsonObj: any;
                                     try {
                                         jsonObj = JSON.parse(
                                             replies[i + 10][j - 1]
@@ -868,8 +868,8 @@ export default function (
 
                     let _shareTotal = parseFloat('0' as any);
                     let _maxTimeShare = parseFloat('0' as any);
-                    for (var worker in coinStats.currentRoundShares) {
-                        var miner = worker.split('.')[0];
+                    for (const worker in coinStats.currentRoundShares) {
+                        const miner = worker.split('.')[0];
                         if (miner in coinStats.miners) {
                             coinStats.miners[miner].currRoundShares +=
                                 parseFloat(
@@ -886,13 +886,13 @@ export default function (
                             coinStats.currentRoundShares[worker]
                         );
                     }
-                    for (var worker in coinStats.currentRoundTimes) {
+                    for (const worker in coinStats.currentRoundTimes) {
                         const time = parseFloat(
                             coinStats.currentRoundTimes[worker]
                         );
                         if (_maxTimeShare < time) _maxTimeShare = time;
 
-                        var miner = worker.split('.')[0];
+                        const miner = worker.split('.')[0];
                         if (miner in coinStats.miners) {
                             coinStats.miners[miner].currRoundTime += parseFloat(
                                 coinStats.currentRoundTimes[worker]
@@ -905,8 +905,8 @@ export default function (
                     coinStats.maxRoundTimeString =
                         readableSeconds(_maxTimeShare);
 
-                    for (var worker in coinStats.workers) {
-                        var _workerRate =
+                    for (const worker in coinStats.workers) {
+                        const _workerRate =
                             (shareMultiplier *
                                 coinStats.workers[worker].shares) /
                             portalConfig.website.stats.hashrateWindow;
@@ -926,8 +926,8 @@ export default function (
                         coinStats.workers[worker].hashrateString =
                             _this.getReadableHashRateString(_workerRate);
                     }
-                    for (var miner in coinStats.miners) {
-                        var _workerRate =
+                    for (const miner in coinStats.miners) {
+                        const _workerRate =
                             (shareMultiplier * coinStats.miners[miner].shares) /
                             portalConfig.website.stats.hashrateWindow;
                         coinStats.miners[miner].luckDays = (
