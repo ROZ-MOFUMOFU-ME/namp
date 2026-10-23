@@ -89,6 +89,15 @@ leaks the correct prefix through response timing), refuses every request when
 leaves it that way — and locks an IP out for 15 minutes after five failures.
 Leave `adminCenter.enabled: false` unless you actually use it.
 
+## Stratum V2
+
+The `sv2.authoritySecretKey` in a pool config is the pool's identity to
+every Stratum V2 miner: whoever holds it can impersonate the pool. Keep it
+in the git-ignored pool config with the RPC credentials, never in the
+examples or the web UI (only the public key is exposed), and rotate it with
+`npm run sv2:keygen` if it leaks — miners then need the new public key. The
+V2 transport is encrypted and authenticated by itself; it takes no TLS.
+
 ## TLS
 
 Terminate TLS at a reverse proxy for the website

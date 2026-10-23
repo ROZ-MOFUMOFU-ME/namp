@@ -50,6 +50,7 @@ Everything is driven from the repo root:
 | `npm run typecheck`       | `tsc --noEmit` for the backend and the web UI                      |
 | `npm run lint` / `format` | ESLint / Prettier                                                  |
 | `npm run rebuild:native`  | Recompile the addon (after `native/` changes or a Node upgrade)    |
+| `npm run sv2:keygen`      | Print a Stratum V2 authority key pair for a pool config            |
 
 ## Configure
 
@@ -200,6 +201,10 @@ cp pool_configs/examples/bitcoin.json pool_configs/
        so keep the main ports plain and add TLS ones (stratum-tls.md). */
     "tlsOptions": { "enabled": false, "serverKey": "", "serverCert": "", "ca": "" },
 
+    /* Stratum V2 identity for ports marked sv2:true (stratum-v2.md):
+       npm run sv2:keygen prints the pair; miners get the public key. */
+    "sv2": { "authoritySecretKey": "", "certificateValiditySeconds": 86400 },
+
     /* One entry per stratum port. diff is the starting share difficulty;
        varDiff retargets each miner toward targetTime seconds per share
        inside [minDiff, maxDiff]. Sizing: adding-a-coin.md. */
@@ -215,7 +220,8 @@ cp pool_configs/examples/bitcoin.json pool_configs/
                 "variancePercent": 30
             }
         },
-        "3334": { "diff": 262144, "tls": false, "varDiff": { "minDiff": 65536, "maxDiff": 268435456, "targetTime": 15, "retargetTime": 60, "variancePercent": 30 } }
+        "3334": { "diff": 262144, "tls": false, "varDiff": { "minDiff": 65536, "maxDiff": 268435456, "targetTime": 15, "retargetTime": 60, "variancePercent": 30 } },
+        "3336": { "sv2": true, "diff": 262144, "varDiff": { "minDiff": 128, "maxDiff": 268435456, "targetTime": 15, "retargetTime": 60, "variancePercent": 30 } }
     },
 
     /* HTTP getwork bridge for miners that cannot speak the qtum-style

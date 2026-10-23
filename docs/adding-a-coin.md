@@ -169,11 +169,12 @@ and fill in:
 | `rewardRecipients`  | `{ "address": percent }` pool fees, paid as extra coinbase outputs. Keep each output above the chain's dust limit (546 sat on Bitcoin).                                                                                                                                                                           |
 | `blockIdentifier`   | Text embedded in the coinbase so explorers can attribute your blocks; empty uses `website.stratumHost`.                                                                                                                                                                                                           |
 | `paymentProcessing` | `paymentMode` (`prop`, `pplnt`, `pplns`, `solo`, `pps`, `dpps`, `fpps`, `ppsplus`, `smpps`, `esmpps` — [payment-schemes.md](payment-schemes.md)), `minConf` (at least the chain's coinbase maturity: 100 on Bitcoin), `paymentInterval`, `minimumPayment`, `maxBlocksPerPayment`, and its **own** `daemon` login. |
-| `ports`             | One entry per stratum port: `diff`, optional `varDiff { minDiff, maxDiff, targetTime, retargetTime, variancePercent }`, `tls`. Sizing below.                                                                                                                                                                      |
+| `ports`             | One entry per stratum port: `diff`, optional `varDiff { minDiff, maxDiff, targetTime, retargetTime, variancePercent }`, `tls`, or `sv2: true` for a Stratum V2 port ([stratum-v2.md](stratum-v2.md)). Sizing below.                                                                                               |
 | `daemons`           | One or more RPC endpoints; every one is polled and any one can submit a block.                                                                                                                                                                                                                                    |
 | `p2p`               | Connect to the daemon's P2P port for instant block notifications (needs `peerMagic`). `disableTransactions: true` keeps the node from relaying its mempool to the pool.                                                                                                                                           |
 | `getwork`           | HTTP getwork bridge for the few miners that cannot speak the qtum-style stratum (VIPSTARCOIN); leave disabled otherwise.                                                                                                                                                                                          |
 | `tlsOptions`        | Certificate for ports marked `tls: true` — [stratum-tls.md](stratum-tls.md).                                                                                                                                                                                                                                      |
+| `sv2`               | `authoritySecretKey` (from `npm run sv2:keygen`) and `certificateValiditySeconds` for the Stratum V2 ports; miners get the public key in their URL.                                                                                                                                                               |
 | `poolId`            | Region label when several stratum instances serve one coin.                                                                                                                                                                                                                                                       |
 | overrides           | Anything in the portal config's `defaultPoolConfigs` (`banning`, `connectionTimeout`, `blockRefreshInterval`, `jobRebroadcastTimeout`, `validateWorkerUsername`, `tcpProxyProtocol`, `redis`) can be set per pool.                                                                                                |
 
@@ -228,11 +229,13 @@ Getting Started page:
 | GPU algorithms (lyra2, x16r family, …) | lolMiner, [SRBMiner-Multi](https://github.com/doktor83/SRBMiner-Multi/releases), ccminer forks (KlausT, tpruvot) for older algorithms                                                                                                                     | `stratum+tcp://host:port`, user `<address>.<rig>`                                |
 | CPU algorithms (yescrypt, yespower, …) | [cpuminer-opt](https://github.com/JayDDee/cpuminer-opt/releases), [cpuminer-opt-rplant](https://github.com/rplant8/cpuminer-opt-rplant/releases), SRBMiner-Multi                                                                                          | `cpuminer -a yespower -o stratum+tcp://host:3333 -u <address>.<rig> -p x`        |
 
-Stratum **V1** is what every one of these speaks, with the BIP 310
-extensions above. Stratum V2 (encrypted transport, miner-side transaction
-selection) is in production at a handful of Bitcoin pools and in Braiins OS;
-NAMP does not implement it. SV2 firmware reaches an SV1 pool through the
-Stratum Reference Implementation's translation proxy.
+Stratum **V1** with the BIP 310 extensions is what every one of these
+speaks. **Stratum V2** — encrypted, authenticated, binary — is what
+Braiins OS and the newest firmware prefer, and what the reference
+implementation's translator puts in front of V1 machines; NAMP serves it on
+any port marked `sv2: true` ([stratum-v2.md](stratum-v2.md)). Miner-side
+transaction selection (Job Declaration) is the one V2 feature the pool
+declines.
 
 ## 4. Start and verify
 
@@ -268,7 +271,7 @@ its example configs are `coins/coins-examples-testnet/bitcoin.json` and
 
 - [ ] Daemon synced, `getblocktemplate` / `validateaddress` / `getaddressinfo` answer, pool IP whitelisted
 - [ ] `coins/<name>.json`: algorithm key, magic bytes, address parameters (hex), `version_mask` on SHA-256 chains, explorer and miner links
-- [ ] `pool_configs/<name>.json`: pool address in the wallet, both daemon logins, `minConf` ≥ coinbase maturity, ports sized for the hardware you expect
+- [ ] `pool_configs/<name>.json`: pool address in the wallet, both daemon logins, `minConf` ≥ coinbase maturity, ports sized for the hardware you expect, an `sv2: true` port with its authority key if V2 miners will come
 - [ ] `npm run check:config` passes; `npm start` prints the started-server line
 - [ ] A miner submits accepted shares; a regtest or testnet block is found, matures and pays out
 - [ ] Firewall / TLS / reverse proxy per [security.md](security.md), [stratum-tls.md](stratum-tls.md), [reverse-proxy.md](reverse-proxy.md)

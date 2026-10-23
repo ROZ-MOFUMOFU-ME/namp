@@ -1,9 +1,10 @@
 # The stratum layer
 
 The protocol modules in [`src/`](../src/) — `pool`, `stratum`, `jobManager`,
-`blockTemplate`, `transactions`, `daemon`, `peer`, `varDiff` — are the
-Bitcoin-family mining engine: one `Pool` per coin that polls the daemons,
-builds jobs, serves stratum ports and validates shares. The portal
+`blockTemplate`, `transactions`, `daemon`, `peer`, `varDiff`, and the
+Stratum V2 server under `sv2/` — are the Bitcoin-family mining engine: one
+`Pool` per coin that polls the daemons, builds jobs, serves stratum ports
+(V1 and V2) and validates shares. The portal
 (`poolWorker.ts`) drives it; this page documents what it does and the
 protocol it speaks. (This text began life as the node-stratum-pool README;
 the Ethash engine is described in [ethash.md](ethash.md).)
@@ -45,8 +46,11 @@ Notifications sent: `mining.set_difficulty`, `mining.notify` (with
 `clean_jobs` on new blocks), and `client.reconnect` / `client.show_message`
 where the portal uses them.
 
-Stratum V2 is not implemented. SV2 firmware reaches the pool through the
-Stratum Reference Implementation's translation proxy.
+**Stratum V2** is served on the ports marked `sv2: true` by its own server
+(`src/sv2/`): Noise-encrypted binary framing, standard and extended
+channels, version rolling, varDiff through `SetTarget`. The miner-facing
+URL is `stratum2+tcp://host:port/<authority public key>`. Setup, behaviour
+and limits (no Job Declaration) are in [stratum-v2.md](stratum-v2.md).
 
 ## Using the engine directly
 

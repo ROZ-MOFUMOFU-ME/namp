@@ -32,11 +32,13 @@ Mining Portal) lineage.
   and uncle handling, per-height block reward schedules, pool fees, and
   payouts with balances tracked per worker. Maturity and payouts run on
   separate clocks, so a slow payout cadence never misreports the blocks.
-- **Built for today's miners.** BIP 310 `mining.configure` with version
-  rolling (overt AsicBoost) for SHA-256 ASICs, `mining.suggest_difficulty`,
-  NiceHash's `extranonce.subscribe`, variable difficulty and banning on
-  every stratum port, per-port TLS, and an HTTP getwork bridge for miners
-  that cannot speak the qtum stratum.
+- **Stratum V2 and V1.** Stratum V2 (Noise-encrypted, authenticated by
+  the pool's authority key; standard and extended channels) on any port
+  marked `sv2: true`, beside Stratum V1 with the BIP 310 extensions:
+  version rolling (overt AsicBoost) for SHA-256 ASICs,
+  `mining.suggest_difficulty`, NiceHash's `extranonce.subscribe`. Variable
+  difficulty and banning on every port, per-port TLS for V1, and an HTTP
+  getwork bridge for miners that cannot speak the qtum stratum.
 - **Web UI** with live stats over server-sent events, per-worker pages,
   found blocks, payments, and operator branding — in 20 languages.
 - **Multi-process by design.** Clustered pool workers share the stratum
@@ -47,22 +49,23 @@ Mining Portal) lineage.
 ## Supported chains
 
 Any Bitcoin-family coin whose daemon speaks `getblocktemplate` works by
-writing a coin definition — 11 are shipped as examples (Bitcoin with a
+writing a coin definition — 12 are shipped as examples (Bitcoin with a
 testnet4 variant, BitZeny, Koto, MonaCoin, VIPSTARCOIN, Sugarchain,
-Bellcoin, Yenten, KumaCoin, Susucoin, VirBiCoin), covering SHA-256 ASIC
-chains, PoW/PoS hybrids, Sapling/Koto-style block construction and the
-qtum-style 181-byte header.
+Bellcoin, Yenten, KumaCoin, Susucoin, VirBiCoin, Ethereum Classic),
+covering SHA-256 ASIC chains, PoW/PoS hybrids, Sapling/Koto-style block
+construction and the qtum-style 181-byte header.
 
 The **Ethash family** runs beside them against any geth-family node
 (`eth_getWork` / `eth_submitWork`): Ethereum, Ethereum Classic via
-Etchash's ECIP-1099 epoch length, and VirBiCoin. See
-[docs/ethash.md](docs/ethash.md).
+Etchash's ECIP-1099 epoch length (example config included), and
+VirBiCoin. See [docs/ethash.md](docs/ethash.md).
 
 Mining in 2026 is split by hardware: SHA-256 and scrypt belong to ASICs
 (from 1 TH/s home Bitaxes to petahash farms, all of them expecting version
 rolling), Ethash/Etchash to ASICs and GPUs, the lyra2 and X16-family chains
 to GPUs, and the yescrypt/yespower chains to CPUs. NAMP serves all of these
-over Stratum V1 with the BIP 310 extensions;
+over Stratum V1 with the BIP 310 extensions and, for the Bitcoin family,
+over Stratum V2 ([docs/stratum-v2.md](docs/stratum-v2.md));
 [docs/adding-a-coin.md](docs/adding-a-coin.md) sizes ports for each class
 and lists the miner software in use.
 
@@ -96,6 +99,7 @@ expose a pool to the internet.
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | [docs/guide.md](docs/guide.md)                     | Install, configure (`config.json`, pool configs), run, Docker, API, branding, upgrade                        |
 | [docs/adding-a-coin.md](docs/adding-a-coin.md)     | Adding a chain: coin definition, version rolling (AsicBoost), port sizing for 2026 hardware, miners, regtest |
+| [docs/stratum-v2.md](docs/stratum-v2.md)           | Stratum V2: keys, ports, what miners see, how channels and jobs work, interoperability test                  |
 | [docs/ethash.md](docs/ethash.md)                   | Ethash / Etchash pools: node setup, miner dialects, maturity and payouts                                     |
 | [docs/payment-schemes.md](docs/payment-schemes.md) | The ten payment schemes and what each one risks                                                              |
 | [docs/security.md](docs/security.md)               | Hardening a deployment                                                                                       |
