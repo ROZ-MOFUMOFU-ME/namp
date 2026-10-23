@@ -16,7 +16,7 @@
     },
     "scripts": {
         "typecheck": "tsc --noEmit && tsc -p web",
-        "test": "node --test test/*.test.cjs test/*.test.ts",
+        "test": "node --test test/*.test.ts",
         "lint": "eslint src test web/src",
         "format": "prettier --write .",
         "format:check": "prettier --check .",

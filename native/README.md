@@ -103,14 +103,14 @@ from upstream sphlib, Argon2 and yespower sources and are left as they are.
 ## Tests
 
 Every export has a known answer it is checked against, and nothing is
-skipped. `node --test test/native.test.ts test/hashing.vectors.test.cjs`
+skipped. `node --test test/native.test.ts test/hashing.vectors.test.ts`
 runs it all; `test/native.test.ts` ends with a coverage test that fails if an
 export has no known answer anywhere.
 
 | Where                                                | What it checks                                                                                                                                                                                                                                                 |
 | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `test/native.test.ts`                                | Every export runs, returns the documented shape and is deterministic; `sha256d`, `sha512256d`, `blake2s`, `scrypt`, `scryptn`, `vipstar` and `sha1` against Node's `crypto`; `blake3` against its official vectors; `blake2b` and `keccak` against published known answers; `gost` against RFC 6986; `cryptonight` against Monero's test files; `kawpow` against Ravencoin's; `odo` against DigiByte's |
-| `test/hashing.vectors.test.cjs` + `test/vectors/`    | Stored answers: `set1..3` (inherited from node-multi-hashing), `reference.json` (an independent implementation: cpuminer-multi and cpuminer-opt built standalone, 26 algorithms), `regression.json` (the addon's own recorded answers for the exports no reference covers), `blake3.json`, `cryptonight.json`, `kawpow.json`, `odo.json` |
+| `test/hashing.vectors.test.ts` + `test/vectors/`    | Stored answers: `set1..3` (inherited from node-multi-hashing), `reference.json` (an independent implementation: cpuminer-multi and cpuminer-opt built standalone, 26 algorithms), `regression.json` (the addon's own recorded answers for the exports no reference covers), `blake3.json`, `cryptonight.json`, `kawpow.json`, `odo.json` |
 | `test/ethash.test.ts`, `test/equihash.test.ts`       | The verifiers, including a block sealed by a real geth                                                                                                                                                                                                         |
 
 `regression.json` is the honest residue: bcrypt, boolberry, hsr, skunk,
