@@ -203,6 +203,24 @@ const BlockTemplate = function BlockTemplate(
         return util.reverseBuffer(header);
     };
 
+    // BIP 141: a block carrying the witness commitment must serialize its
+    // coinbase with the witness — marker, flag and the 32-byte witness
+    // reserved value — or the daemon rejects it (bad-witness-nonce-size).
+    // The txid (and so the merkle root) still comes from the witness-less
+    // bytes that serializeCoinbase returns, so only the block envelope
+    // changes. The coinbase is version || vin || vout || locktime, exactly
+    // the layout CreateGeneration produces for segwit chains.
+    this.coinbaseWithWitness = function (coinbase: Buffer) {
+        return Buffer.concat([
+            coinbase.subarray(0, 4),
+            Buffer.from([0x00, 0x01]),
+            coinbase.subarray(4, coinbase.length - 4),
+            Buffer.from([0x01, 0x20]),
+            Buffer.alloc(32),
+            coinbase.subarray(coinbase.length - 4)
+        ]);
+    };
+
     this.serializeBlock = function (
         this: any,
         header: Buffer,
@@ -211,7 +229,9 @@ const BlockTemplate = function BlockTemplate(
         return Buffer.concat([
             header,
             util.varIntBuffer(this.rpcData.transactions.length + 1),
-            coinbase,
+            this.rpcData.default_witness_commitment !== undefined
+                ? this.coinbaseWithWitness(coinbase)
+                : coinbase,
             this.transactionData,
             getVoteData(),
             Buffer.from(reward === 'POS' ? [0] : [])

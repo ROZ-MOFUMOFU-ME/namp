@@ -226,6 +226,46 @@ test('wraps the block as header, tx count, coinbase, then transactions', () => {
     );
 });
 
+test('serializes the coinbase with its witness when the template commits to segwit', () => {
+    const commitment = '6a24aa21a9ed' + 'ab'.repeat(32);
+    const template = makeTemplate({
+        default_witness_commitment: commitment,
+        transactions: [{ data: 'deadbeef', txid: '55'.repeat(32) }]
+    });
+    const header = Buffer.alloc(80, 0xaa);
+    const coinbase = template.serializeCoinbase(
+        Buffer.from('00000000', 'hex'),
+        Buffer.from('00000000', 'hex')
+    );
+    const block = template.serializeBlock(header, coinbase).toString('hex');
+    const hex = coinbase.toString('hex');
+    const witnessCoinbase =
+        hex.slice(0, 8) + // version
+        '0001' + // segwit marker + flag
+        hex.slice(8, -8) + // vin + vout (the commitment output included)
+        '0120' +
+        '00'.repeat(32) + // one witness item: the 32-byte reserved value
+        hex.slice(-8); // locktime
+    assert.ok(
+        hex.includes(commitment),
+        'the coinbase must carry the witness commitment output'
+    );
+    assert.equal(
+        block,
+        header.toString('hex') + '02' + witnessCoinbase + 'deadbeef',
+        'segwit blocks serialize the coinbase with marker, flag and witness nonce'
+    );
+    // The witness-less coinbase that the txid/merkle root are computed from is
+    // untouched, and non-segwit templates keep the plain serialization.
+    const plain = makeTemplate({
+        transactions: [{ data: 'deadbeef', txid: '55'.repeat(32) }]
+    });
+    assert.equal(
+        plain.serializeBlock(header, coinbase).toString('hex'),
+        header.toString('hex') + '02' + hex + 'deadbeef'
+    );
+});
+
 test('appends the POS marker byte only for POS coins', () => {
     const header = makeTemplate().serializeHeader(
         MERKLE_ROOT,
