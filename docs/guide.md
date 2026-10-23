@@ -4,7 +4,7 @@
 
 This is a Yescrypt, YesPoWer, YesPoWerSUGAR, YescryptR8G, Lyra2REv2, sha256d, Quark, x11, vipstar and more algo mining pool based off of Node Open Mining Portal. Coins known to work include BitZeny, Koto, Monacoin, Bellcoin, Sugarchain, KumaCoin, Yenten (dev-fee aware) and VIPSTARCOIN.
 
-The backend is written in **TypeScript** and runs **buildless** — `.ts` runs directly with no compile step, launched through the **`tsx`** loader (Node's built-in type-stripping refuses the TypeScript `stratum-pool`/`multi-hashing` git dependencies that sit under `node_modules`, so `tsx` transforms them at runtime). The web frontend is a **React + Vite** single-page app (in `web/`) that consumes the portal's JSON API.
+The backend is written in **TypeScript** and runs **buildless** — `.ts` runs directly with no compile step, run by Node's native type stripping (no loader involved). The web frontend is a **React + Vite** single-page app (in `web/`) that consumes the portal's JSON API.
 
 #### Production Usage Notice
 
@@ -21,7 +21,7 @@ Usage of this software requires abilities with sysadmin, database admin, coin da
 - Coin daemon(s) (find the coin's repo and build latest version from source)
 - [Node.js](https://nodejs.org/) **v22.18+** (tested up to v24; `engines` requires `>=22.18`) ([installation instructions](https://nodejs.org/en/download/package-manager)) — required for native TypeScript type-stripping (the backend runs `.ts` directly with no build step) and because the bitcoinjs-lib dependency chain loads an ESM-only module via `require(esm)`
 - [Redis](http://redis.io/) key-value store v6.2+ ([follow these instructions](http://redis.io/topics/quickstart)) — the portal uses the node-redis v6 client, which officially supports Redis 6.2 and newer
-- A C/C++ toolchain with C++20 support (gcc 10+) and Python, used to build the [multi-hashing](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing) native addon pulled in via [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool)
+- A C/C++ toolchain with C++20 support (gcc 10+) and Python, used to build the hashing addon in `native/`
 
 #### Development Tools
 
@@ -38,9 +38,13 @@ npm run format      # Prettier --write .
 npm run test:unit   # node --test unit tests (test/*.test.ts)
 ```
 
-#### Monorepo development
+#### Working on the source
 
-This portal is `packages/portal` of the [namp](https://github.com/ROZ-MOFUMOFU-ME/namp) monorepo and depends on its sibling workspaces `stratum-pool` and `multi-hashing`. A single `npm install` at the repo root links everything — no `npm link` chain is needed. Run the stack-wide checks from the root: `npm run typecheck`, `npm run lint`, `npm test`.
+Everything lives in this one repository: the portal and web UI in `src/` and
+`web/`, the stratum modules in `src/`, the hashing addon in `native/`. A
+single `npm install` at the root installs the dependencies and builds the
+addon; the stack-wide checks are `npm run typecheck`, `npm run lint` and
+`npm test`. The three repositories this code came from are archived.
 
 ##### Seriously
 
@@ -497,15 +501,12 @@ POST /api/admin/coinswitch   { "password": "...", "coin": "bitzeny", "algorithm"
 #### 3) Start the portal
 
 ```bash
-npm start          # = node --import tsx src/init.ts
+npm start          # = node src/init.ts
 ```
 
-`npm start` launches the portal through the **`tsx`** loader. The
-`stratum-pool` / `multi-hashing` dependencies ship TypeScript, and Node's
-built-in type-stripping refuses `.ts` files under `node_modules`
-(`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`); `tsx` transforms them at
-runtime, and since the cluster master forks workers with the same `execArgv`,
-every worker inherits the loader. A plain root `npm install` (or `npm ci` /
+`npm start` runs `node src/init.ts`: the whole backend is buildless
+TypeScript that Node's native type stripping runs as is, and the cluster
+workers inherit the same command line. A plain root `npm install` (or `npm ci` /
 Docker) is all that is needed — the siblings are workspace symlinks.
 
 #### Running with Docker
@@ -582,8 +583,9 @@ operator-supplied. See `config_example.json` for the full shape with
 
 #### Upgrading NAMP
 
-When updating NAMP to the latest code its important to not only `git pull` the latest from this repo, but to also update
-the `node-stratum-pool` and `node-multi-hashing` modules, and any config files that may have been changed.
+When updating NAMP to the latest code, `git pull` this repository, reinstall
+the dependencies (which rebuilds the hashing addon when `native/` changed),
+and compare your config files against the shipped examples.
 
 - Inside your NAMP directory (where the src/init.ts script is) do `git pull` to get the latest NAMP code.
 - Remove the dependenices by deleting the `node_modules` directory with `rm -r node_modules`.

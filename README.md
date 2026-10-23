@@ -77,17 +77,21 @@ npm start                            # run the portal
 [docs/security.md](docs/security.md) covers hardening before you expose a
 pool to the internet.
 
-## Packages
+## Origins
 
-| Lives in                 | Imported from                                                               | Role                            |
+NAMP is the single home of what used to be three repositories. They are
+merged here with their full commit history (git filter-repo path rewrites,
+nothing squashed) and are archived, read-only, on GitHub:
+
+| Lives in                 | Came from                                                                   | Role                            |
 | ------------------------ | --------------------------------------------------------------------------- | ------------------------------- |
 | `src/`, `web/`           | [zny-nomp](https://github.com/ROZ-MOFUMOFU-ME/zny-nomp)                     | Pool portal (NOMP) + web UI     |
 | `src/` (stratum modules) | [node-stratum-pool](https://github.com/ROZ-MOFUMOFU-ME/node-stratum-pool)   | Stratum protocol layer          |
 | `native/`                | [node-multi-hashing](https://github.com/ROZ-MOFUMOFU-ME/node-multi-hashing) | Hashing algorithms (C++ native) |
 
-Dependency direction: `portal → stratum-pool → multi-hashing`.
-Each package carries the full commit history of its source repo,
-imported with git filter-repo path rewrites (nothing squashed).
+There are no workspaces or git dependencies between them any more: one
+`npm install` builds the whole application, and issues and pull requests
+belong here.
 
 ## Repository map
 
