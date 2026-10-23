@@ -734,11 +734,15 @@ class Pool extends events.EventEmitter {
                         return;
                     }
 
+                    // Bitcoin Core names its test networks 'test' (testnet3),
+                    // 'testnet4' and 'signet'; all of them use the coin's testnet
+                    // address parameters. Regtest keeps its historical mainnet
+                    // treatment (operators ship a dedicated coins/regtest/ file).
                     options.testnet = options.coin.getInfo
                         ? rpcResults.getinfo.testnet
-                        : rpcResults.getmininginfo.chain == 'test'
-                          ? true
-                          : false;
+                        : ['test', 'testnet4', 'signet'].includes(
+                              rpcResults.getmininginfo.chain
+                          );
 
                     options.network = options.testnet
                         ? options.coin.testnet
