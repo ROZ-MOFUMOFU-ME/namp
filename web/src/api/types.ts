@@ -161,6 +161,8 @@ export interface AppConfigPort {
     diff?: number | string;
     tls?: boolean;
     varDiff?: AppConfigPortVarDiff;
+    /** Served by the Stratum V2 server (Noise-encrypted binary protocol). */
+    sv2?: boolean;
 }
 
 export interface AppConfigPool {
@@ -174,6 +176,9 @@ export interface AppConfigPool {
         miningTools?: Array<MiningTool | string>;
     };
     ports?: Record<string, AppConfigPort>;
+    // Present when the pool serves Stratum V2 ports: the authority public key
+    // miners put in the URL (stratum2+tcp://host:port/<key>).
+    sv2?: { authorityPublicKey: string };
     // Optional HTTP getwork endpoint for getwork-only miners (e.g. the official ccminer
     // that can't build the qtum stratum job). Same per-port shape as stratum `ports`
     // (diff / tls / varDiff) so the UI renders the same table. Connect with

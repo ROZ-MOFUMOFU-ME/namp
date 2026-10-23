@@ -1255,12 +1255,20 @@ class StratumServer extends events.EventEmitter {
             //SetupBroadcasting();
 
             let serversStarted = 0;
-            const portKeys = Object.keys(options.ports);
+            // Ports marked sv2 are served by the Stratum V2 server instead.
+            const portKeys = Object.keys(options.ports).filter(
+                (port) => !(options.ports[port] && options.ports[port].sv2)
+            );
             let tlsServerOptions: any; // built lazily on the first tls:true port, then shared
             const markStarted = function () {
                 serversStarted++;
                 if (serversStarted == portKeys.length) _this.emit('started');
             };
+            if (portKeys.length === 0) {
+                // Every port is Stratum V2: nothing to open here.
+                process.nextTick(() => _this.emit('started'));
+                return;
+            }
             // Bind IPv4 (0.0.0.0) explicitly. With host omitted, Node may bind IPv6-only
             // (::) on some platforms (e.g. Node 24 on WSL2), silently refusing IPv4 miners —
             // and WSL2's localhost forwarding only reaches IPv4 listeners. 0.0.0.0 keeps

@@ -77,6 +77,9 @@ class JobManager extends events.EventEmitter {
         // coinbaseHasher policies) rather than re-derived from switch statements here.
         const coinbaseHasher = getCoinbaseHasher(options.coin);
         const blockHasher: any = getBlockHasher(options.coin, hashDigest);
+        // Stratum V2 standard channels need the coinbase hash to compute each
+        // channel's merkle root; expose the policy-selected hasher.
+        this.coinbaseHasher = coinbaseHasher;
 
         const getKotoFoundersReward = function (rpcData: any, recipients: any) {
             if (!options.coin.kotoFoundersReward) {
@@ -226,7 +229,10 @@ class JobManager extends events.EventEmitter {
             port: any,
             workerName: any,
             versionMask: any,
-            isSoloMining: any
+            isSoloMining: any,
+            // Stratum V2 extended channels negotiate their own extranonce
+            // size; V1 always uses the pool's.
+            extraNonce2Size: number = _this.extraNonce2Size
         ) {
             /*// --- Debug: print submitted values ---
         console.log('[DEBUG][processShare] jobId:', jobId);
@@ -250,7 +256,7 @@ class JobManager extends events.EventEmitter {
 
             const submitTime = (Date.now() / 1000) | 0;
 
-            if (extraNonce2.length / 2 !== _this.extraNonce2Size)
+            if (extraNonce2.length / 2 !== extraNonce2Size)
                 return shareError([20, 'incorrect size of extranonce2']);
 
             const job = this.validJobs[jobId];

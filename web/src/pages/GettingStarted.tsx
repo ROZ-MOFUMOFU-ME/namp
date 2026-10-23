@@ -183,10 +183,23 @@ export default function GettingStarted() {
                                                     {port}
                                                 </td>
                                                 <td>
-                                                    <code className={code}>
-                                                        stratum+tcp://{host}:
-                                                        {port}
-                                                    </code>
+                                                    {p.sv2 ? (
+                                                        <code
+                                                            className={code}
+                                                            title="Stratum V2 (Noise-encrypted); the path is the pool's authority public key"
+                                                        >
+                                                            stratum2+tcp://
+                                                            {host}:{port}/
+                                                            {selectedPool.sv2
+                                                                ?.authorityPublicKey ??
+                                                                ''}
+                                                        </code>
+                                                    ) : (
+                                                        <code className={code}>
+                                                            stratum+tcp://
+                                                            {host}:{port}
+                                                        </code>
+                                                    )}
                                                 </td>
                                                 <td className="text-right">
                                                     {p.diff != null

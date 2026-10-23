@@ -4,6 +4,28 @@ import { parsePriceHash } from './priceProviders.ts';
 import { renderMetrics } from './metrics.ts';
 import { buildHealth } from './health.ts';
 import type { Logger } from './logUtil.ts';
+
+import { authorityFromSecret, encodePublicKey } from './sv2/keys.ts';
+
+/** The public half of a pool's Stratum V2 authority key, for miner URLs. */
+function sv2PublicConfig(
+    poolConfig: any
+): { authorityPublicKey: string } | undefined {
+    const secret = poolConfig.sv2 && poolConfig.sv2.authoritySecretKey;
+    const hasSv2Port = Object.values(poolConfig.ports || {}).some(
+        (p: any) => p && p.sv2
+    );
+    if (!secret || !hasSv2Port) return undefined;
+    try {
+        return {
+            authorityPublicKey: encodePublicKey(
+                authorityFromSecret(String(secret)).publicKey
+            )
+        };
+    } catch {
+        return undefined;
+    }
+}
 import type { Request, Response, NextFunction } from 'express';
 
 export default function (
@@ -102,6 +124,9 @@ export default function (
                             miningTools: coin.miningTools
                         },
                         ports: pc.ports,
+                        // Stratum V2 ports need the pool's authority PUBLIC
+                        // key in the miner's URL; only that half is exposed.
+                        sv2: sv2PublicConfig(pc),
                         // Optional HTTP getwork endpoint (for getwork-only miners such as the
                         // official ccminer). Exposed like stratum ports: a per-port map of
                         // { diff, tls } so the UI can render the same table. Only present when

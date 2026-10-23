@@ -138,17 +138,39 @@ const BlockTemplate = function BlockTemplate(
         network
     );
 
+    // The coinbase split around an extranonce of a given total length. The
+    // stratum V1 job uses the pool's placeholder length; stratum V2 extended
+    // channels negotiate their own extranonce size, so the split is built
+    // (once per length) for whatever a channel needs.
+    const generationByLength = new Map<number, [Buffer, Buffer]>([
+        [extraNoncePlaceholder.length, this.generationTransaction]
+    ]);
+    this.coinbaseParts = function (extranonceLength: number): [Buffer, Buffer] {
+        let parts = generationByLength.get(extranonceLength);
+        if (!parts) {
+            parts = transactions.CreateGeneration(
+                rpcData,
+                poolAddressScript,
+                Buffer.alloc(extranonceLength),
+                reward,
+                txMessages,
+                recipients,
+                network
+            );
+            generationByLength.set(extranonceLength, parts);
+        }
+        return parts;
+    };
+
     this.serializeCoinbase = function (
         this: any,
         extraNonce1: Buffer,
         extraNonce2: Buffer
     ) {
-        return Buffer.concat([
-            this.generationTransaction[0],
-            extraNonce1,
-            extraNonce2,
-            this.generationTransaction[1]
-        ]);
+        const parts = this.coinbaseParts(
+            extraNonce1.length + extraNonce2.length
+        );
+        return Buffer.concat([parts[0], extraNonce1, extraNonce2, parts[1]]);
     };
 
     // https://en.bitcoin.it/wiki/Protocol_specification#Block_Headers

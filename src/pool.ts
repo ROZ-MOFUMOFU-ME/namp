@@ -9,6 +9,7 @@ import jobManager from './jobManager.ts';
 import * as util from './util.ts';
 import algos from './algoProperties.ts';
 import GetworkServer from './getworkServer.ts';
+import Sv2Server from './sv2/server.ts';
 
 /*process.on('uncaughtException', function(err) {
     console.log(err.stack);
@@ -50,8 +51,12 @@ class Pool extends events.EventEmitter {
 
         /** Stop the stratum server and release the pool's handles. */
         this.stop = function (callback?: () => void) {
-            if (_this.stratumServer) _this.stratumServer.stop(callback);
-            else callback?.();
+            const stopStratum = () => {
+                if (_this.stratumServer) _this.stratumServer.stop(callback);
+                else callback?.();
+            };
+            if (_this.sv2Server) _this.sv2Server.stop(stopStratum);
+            else stopStratum();
         };
 
         this.start = function () {
@@ -178,7 +183,13 @@ class Pool extends events.EventEmitter {
                     : []),
                 `Pool Fee Percent:\t${_this.options.feePercent}%`,
                 `Payment Mode:\t\t${(options.paymentProcessing && options.paymentProcessing.paymentMode) || 'prop'}`,
-                `ASICBoost Enabled:\t${options.coin.version_mask ? 'true' : 'false'}`
+                `ASICBoost Enabled:\t${options.coin.version_mask ? 'true' : 'false'}`,
+                ...(_this.sv2Server && _this.sv2Server.ports.length
+                    ? [
+                          `Stratum V2 Port(s):\t${_this.sv2Server.ports.join(', ')}`,
+                          `SV2 Authority Key:\t${_this.sv2Server.authorityPublicKey || 'NOT CONFIGURED (npm run sv2:keygen)'}`
+                      ]
+                    : [])
             ];
 
             if (
@@ -498,6 +509,8 @@ class Pool extends events.EventEmitter {
                             blockTemplate.getOdoKey()
                         );
                     }
+                    if (_this.sv2Server)
+                        _this.sv2Server.broadcastJob(blockTemplate, true);
                 })
                 .on('updatedBlock', function (blockTemplate: any) {
                     //Check if stratumServer has been initialized yet
@@ -522,6 +535,8 @@ class Pool extends events.EventEmitter {
                             blockTemplate.getOdoKey()
                         );
                     }
+                    if (_this.sv2Server)
+                        _this.sv2Server.broadcastJob(blockTemplate, false);
                 })
                 .on('share', function (shareData: any, blockHex: any) {
                     const isValidShare = !shareData.error;
@@ -871,7 +886,26 @@ class Pool extends events.EventEmitter {
                         );
                         _this.getworkServer.start();
                     }
-                    finishedCallback();
+                    // Stratum V2 on the ports marked sv2: same job manager,
+                    // share validation, varDiff and banning policy.
+                    _this.sv2Server = new Sv2Server(
+                        options,
+                        authorizeFn,
+                        _this.jobManager,
+                        (port: number) => _this.varDiff[port]
+                    );
+                    _this.sv2Server
+                        .on('log', function (severity: string, text: string) {
+                            _this.emit('log', severity, text);
+                        })
+                        .on(
+                            'difficultyChanged',
+                            function (worker: string, diff: number) {
+                                _this.emit('difficultyUpdate', worker, diff);
+                            }
+                        )
+                        .on('started', finishedCallback);
+                    _this.sv2Server.start();
                 })
                 .on('broadcastTimeout', function () {
                     emitLog(

@@ -26,7 +26,8 @@
         "build": "tsc -p web && vite build --config web/vite.config.ts",
         "install": "node-gyp rebuild",
         "rebuild:native": "node-gyp rebuild",
-        "start": "node src/init.ts"
+        "start": "node src/init.ts",
+        "sv2:keygen": "node src/sv2/keygen.ts"
     },
     "devDependencies": {
         "@babel/core": "^8.0.7",
