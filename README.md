@@ -32,8 +32,11 @@ Mining Portal) lineage.
   and uncle handling, per-height block reward schedules, pool fees, and
   payouts with balances tracked per worker. Maturity and payouts run on
   separate clocks, so a slow payout cadence never misreports the blocks.
-- **Variable difficulty and banning** on every stratum port, per-port TLS,
-  and an HTTP getwork bridge for miners that cannot speak the qtum stratum.
+- **Built for today's miners.** BIP 310 `mining.configure` with version
+  rolling (overt AsicBoost) for SHA-256 ASICs, `mining.suggest_difficulty`,
+  NiceHash's `extranonce.subscribe`, variable difficulty and banning on
+  every stratum port, per-port TLS, and an HTTP getwork bridge for miners
+  that cannot speak the qtum stratum.
 - **Web UI** with live stats over server-sent events, per-worker pages,
   found blocks, payments, and operator branding — in 20 languages.
 - **Multi-process by design.** Clustered pool workers share the stratum
@@ -44,15 +47,24 @@ Mining Portal) lineage.
 ## Supported chains
 
 Any Bitcoin-family coin whose daemon speaks `getblocktemplate` works by
-writing a coin definition — 10 are shipped as examples (BitZeny, Koto,
-MonaCoin, VIPSTARCOIN, Sugarchain, Bellcoin, Yenten, KumaCoin, Susucoin,
-VirBiCoin), covering PoW/PoS hybrids, Sapling/Koto-style block
-construction and the qtum-style 181-byte header.
+writing a coin definition — 11 are shipped as examples (Bitcoin with a
+testnet4 variant, BitZeny, Koto, MonaCoin, VIPSTARCOIN, Sugarchain,
+Bellcoin, Yenten, KumaCoin, Susucoin, VirBiCoin), covering SHA-256 ASIC
+chains, PoW/PoS hybrids, Sapling/Koto-style block construction and the
+qtum-style 181-byte header.
 
 The **Ethash family** runs beside them against any geth-family node
 (`eth_getWork` / `eth_submitWork`): Ethereum, Ethereum Classic via
 Etchash's ECIP-1099 epoch length, and VirBiCoin. See
 [docs/ethash.md](docs/ethash.md).
+
+Mining in 2026 is split by hardware: SHA-256 and scrypt belong to ASICs
+(from 1 TH/s home Bitaxes to petahash farms, all of them expecting version
+rolling), Ethash/Etchash to ASICs and GPUs, the lyra2 and X16-family chains
+to GPUs, and the yescrypt/yespower chains to CPUs. NAMP serves all of these
+over Stratum V1 with the BIP 310 extensions;
+[docs/adding-a-coin.md](docs/adding-a-coin.md) sizes ports for each class
+and lists the miner software in use.
 
 ## Quick start
 
@@ -65,17 +77,32 @@ git clone https://github.com/ROZ-MOFUMOFU-ME/namp.git && cd namp
 npm install                          # dependencies + the native hashing addon
 
 cp config_example.json config.json   # portal: redis, website, cli port
-cp coins/coins-examples/bitzeny.json coins/
-cp pool_configs/examples/bitzeny.json pool_configs/
-#   edit pool_configs/bitzeny.json: daemon credentials, your pool address, ports
+cp coins/coins-examples/bitcoin.json coins/
+cp pool_configs/examples/bitcoin.json pool_configs/
+#   edit pool_configs/bitcoin.json: daemon credentials, your pool address, ports
 
 npm run build                        # build the web UI
 npm start                            # run the portal
 ```
 
-[docs/guide.md](docs/guide.md) walks through every configuration key, and
-[docs/security.md](docs/security.md) covers hardening before you expose a
-pool to the internet.
+[docs/guide.md](docs/guide.md) walks through every configuration key,
+[docs/adding-a-coin.md](docs/adding-a-coin.md) through adding your own
+chain, and [docs/security.md](docs/security.md) covers hardening before you
+expose a pool to the internet.
+
+## Documentation
+
+| Document                                           | Covers                                                                                                       |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| [docs/guide.md](docs/guide.md)                     | Install, configure (`config.json`, pool configs), run, Docker, API, branding, upgrade                        |
+| [docs/adding-a-coin.md](docs/adding-a-coin.md)     | Adding a chain: coin definition, version rolling (AsicBoost), port sizing for 2026 hardware, miners, regtest |
+| [docs/ethash.md](docs/ethash.md)                   | Ethash / Etchash pools: node setup, miner dialects, maturity and payouts                                     |
+| [docs/payment-schemes.md](docs/payment-schemes.md) | The ten payment schemes and what each one risks                                                              |
+| [docs/security.md](docs/security.md)               | Hardening a deployment                                                                                       |
+| [docs/stratum-tls.md](docs/stratum-tls.md)         | TLS on stratum and getwork ports                                                                             |
+| [docs/reverse-proxy.md](docs/reverse-proxy.md)     | nginx in front of the web UI                                                                                 |
+| [docs/stratum.md](docs/stratum.md)                 | The stratum engine: protocol extensions, events, programmatic use                                            |
+| [native/README.md](native/README.md)               | The hashing addon: algorithms, build flags, tests, adding an algorithm                                       |
 
 ## Origins
 
@@ -114,13 +141,7 @@ namp/
 Everything runs from the root: `npm install` (builds the addon),
 `npm start` (plain Node — buildless TS via native type stripping),
 `npm test`, `npm run lint / typecheck / format`, `npm run build` (the
-SPA, the stack's only build step). Operator documentation lives in
-[docs/](docs/): [guide.md](docs/guide.md) (full setup),
-[payment-schemes.md](docs/payment-schemes.md),
-[reverse-proxy.md](docs/reverse-proxy.md),
-[stratum-tls.md](docs/stratum-tls.md), [ethash.md](docs/ethash.md),
-[security.md](docs/security.md) (hardening a deployment), and
-[stratum.md](docs/stratum.md) (the stratum layer's feature reference).
+SPA, the stack's only build step).
 
 ## Development
 
@@ -160,8 +181,9 @@ One `node --test` pass covers known-answer vectors for the hashing
 algorithms, the stratum protocols, share validation and block
 serialization, the Ethash job and payment paths, the security guards on the
 public surfaces, and integration tests that drive a real pool against a
-mock daemon over a socket — including mining a block end to end.
-Redis-backed tests skip when no Redis is reachable (CI provides one).
+mock daemon over a socket — including mining a block end to end and the
+BIP 310 stratum extensions. Redis-backed tests skip when no Redis is
+reachable (CI provides one, and runs the suite on Node 22, 24 and 26).
 
 ## Community
 

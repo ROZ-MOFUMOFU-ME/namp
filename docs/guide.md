@@ -1,595 +1,353 @@
-# BitZeny - Node Open Mining Portal
+# NAMP operator guide
 
-[![CI](https://img.shields.io/github/actions/workflow/status/ROZ-MOFUMOFU-ME/namp/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/ci.yml)&nbsp;[![Release](https://img.shields.io/github/v/release/ROZ-MOFUMOFU-ME/namp?style=flat-square&logo=github&label=release&color=blue)](https://github.com/ROZ-MOFUMOFU-ME/namp/releases)&nbsp;[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)&nbsp;[![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)&nbsp;[![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vite.dev/)&nbsp;[![Node.js](https://img.shields.io/badge/node-%E2%89%A522.18-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org/)&nbsp;[![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white)](https://redis.io/)&nbsp;[![License](https://img.shields.io/badge/license-GPLv2-blue?style=flat-square)](https://opensource.org/licenses/GPL-2.0)&nbsp;[![Discord](https://img.shields.io/badge/Discord-join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
+NAMP is a complete mining pool in one repository: the portal (stats,
+payments, web UI), the Bitcoin-family stratum engine, the Ethash engine and
+the native hashing addon, run as one Node application. This guide takes a
+pool from an empty server to a running portal. Adding a chain is covered in
+[adding-a-coin.md](adding-a-coin.md); the other documents are listed in the
+[README](../README.md#documentation).
 
-This is a Yescrypt, YesPoWer, YesPoWerSUGAR, YescryptR8G, Lyra2REv2, sha256d, Quark, x11, vipstar and more algo mining pool based off of Node Open Mining Portal. Coins known to work include BitZeny, Koto, Monacoin, Bellcoin, Sugarchain, KumaCoin, Yenten (dev-fee aware) and VIPSTARCOIN.
+Only tagged releases are considered stable: configuration keys and the Redis
+schema can change between them, so read the release notes before pulling new
+code into a production pool.
 
-The backend is written in **TypeScript** and runs **buildless** — `.ts` runs directly with no compile step, run by Node's native type stripping (no loader involved). The web frontend is a **React + Vite** single-page app (in `web/`) that consumes the portal's JSON API.
+## Requirements
 
-#### Production Usage Notice
+- A synced coin daemon per pool, with RPC enabled and a wallet holding the
+  pool address (see [adding-a-coin.md](adding-a-coin.md#1-run-the-daemon)).
+- [Node.js](https://nodejs.org/) **22.18 or newer** — tested on 22, 24 and 26. The backend is TypeScript run directly by Node's type stripping, so
+  there is no build step for it.
+- [Redis](https://redis.io/) **6.2 or newer** (the portal uses node-redis 6).
+  Bind it to localhost or a private network and set a password; the pool,
+  the website and the payment processor all keep their state there
+  ([security.md](security.md)).
+- A C/C++ toolchain with C++20 and Python 3 for the hashing addon:
+  `build-essential python3` on Debian/Ubuntu. GCC 12 through 14 are verified
+  against the addon's known-answer vectors.
 
-This is beta software. All of the following are things that can change and break an existing NAMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then _DO NOT_ pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data. _Only tagged releases are considered stable._
-
-#### Paid Solution
-
-Usage of this software requires abilities with sysadmin, database admin, coin daemons, and sometimes a bit of programming. Running a production pool can literally be more work than a full-time job.
-
-# Usage
-
-#### Requirements
-
-- Coin daemon(s) (find the coin's repo and build latest version from source)
-- [Node.js](https://nodejs.org/) **v22.18+** (tested up to v24; `engines` requires `>=22.18`) ([installation instructions](https://nodejs.org/en/download/package-manager)) — required for native TypeScript type-stripping (the backend runs `.ts` directly with no build step) and because the bitcoinjs-lib dependency chain loads an ESM-only module via `require(esm)`
-- [Redis](http://redis.io/) key-value store v6.2+ ([follow these instructions](http://redis.io/topics/quickstart)) — the portal uses the node-redis v6 client, which officially supports Redis 6.2 and newer
-- A C/C++ toolchain with C++20 support (gcc 10+) and Python, used to build the hashing addon in `native/`
-
-#### Development Tools
-
-The backend is TypeScript run buildless via Node's native type-stripping (no
-compile step); [TypeScript](https://www.typescriptlang.org/) (`tsc`) is used
-only for type-checking, with [Prettier](https://prettier.io/) and
-[ESLint](https://eslint.org/) (`typescript-eslint`) for style. Use the bundled
-npm scripts:
+## Install
 
 ```bash
-npm run typecheck   # tsc --noEmit (type-check only, no build)
-npm run lint        # ESLint
-npm run format      # Prettier --write .
-npm run test:unit   # node --test unit tests (test/*.test.ts)
-```
-
-#### Working on the source
-
-Everything lives in this one repository: the portal and web UI in `src/` and
-`web/`, the stratum modules in `src/`, the hashing addon in `native/`. A
-single `npm install` at the root installs the dependencies and builds the
-addon; the stack-wide checks are `npm run typecheck`, `npm run lint` and
-`npm test`. The three repositories this code came from are archived.
-
-##### Seriously
-
-Those are legitimate requirements. If you use old versions of Node.js or Redis that may come with your system package manager then you will have problems. Follow the linked instructions to get the last stable versions.
-
-[**Redis security warning**](http://redis.io/topics/security): be sure firewall access to redis - an easy way is to
-include `bind 127.0.0.1` in your `redis.conf` file. Also it's a good idea to learn about and understand software that
-you are using - a good place to start with redis is [data persistence](http://redis.io/topics/persistence).
-
-#### 0) Setting up coin daemon
-
-Follow the build/install instructions for your coin daemon. Your coin.conf file should end up looking something like this:
-
-```
-daemon=1
-rpcuser=username
-rpcpassword=password
-rpcport=9252
-```
-
-For redundancy, its recommended to have at least two daemon instances running in case one drops out-of-sync or offline,
-all instances will be polled for block/transaction updates and be used for submitting blocks. Creating a backup daemon
-involves spawning a daemon using the `-datadir=/backup` command-line argument which creates a new daemon instance with
-it's own config directory and coin.conf file. Learn about the daemon, how to use it and how it works if you want to be
-a good pool operator. For starters be sure to read:
-
-- https://en.bitcoin.it/wiki/Running_bitcoind
-- https://en.bitcoin.it/wiki/Data_directory
-- https://en.bitcoin.it/wiki/Original_Bitcoin_client/API_Calls_list
-- https://en.bitcoin.it/wiki/Difficulty
-
-#### 1) Downloading & Installing
-
-Clone the repository and run `npm install` for all the dependencies to be installed:
-
-```bash
-sudo apt-get install build-essential libsodium-dev libboost-all-dev libgmp3-dev node-gyp libssl-dev -y
-sudo apt install nodejs npm -y
-sudo npm install n -g
-sudo n stable
-sudo apt purge nodejs npm -y
-git clone https://github.com/ROZ-MOFUMOFU-ME/namp
+git clone https://github.com/ROZ-MOFUMOFU-ME/namp.git
 cd namp
-npm install            # installs every workspace and builds the native addon
+npm install     # dependencies + the native hashing addon
+npm run build   # the web UI (Vite + React) into web/dist
 ```
 
-##### Frontend (`web/`)
+`npm install` compiles the addon in `native/`; a failure there is almost
+always a missing compiler or Python. The web UI is the stack's only build
+step; rebuild it after pulling changes under `web/`.
 
-The website is a Vite + React + TypeScript single-page app in `web/` (served by
-the portal from `web/dist`). It is the only build step in the stack — the
-backend runs buildless via Node's native type-stripping. Build it before
-starting the portal:
+Everything is driven from the repo root:
+
+| Command                   | What it does                                                       |
+| ------------------------- | ------------------------------------------------------------------ |
+| `npm start`               | Run the portal (`node src/init.ts`)                                |
+| `npm run build`           | Build the web UI                                                   |
+| `npm run web:dev`         | Vite dev server on :5173, proxying `/api` to a running portal      |
+| `npm run check:config`    | Parse every config file the portal reads (also part of `npm test`) |
+| `npm test`                | The whole test suite (hashing vectors, stratum, portal, payments)  |
+| `npm run typecheck`       | `tsc --noEmit` for the backend and the web UI                      |
+| `npm run lint` / `format` | ESLint / Prettier                                                  |
+| `npm run rebuild:native`  | Recompile the addon (after `native/` changes or a Node upgrade)    |
+
+## Configure
+
+Three kinds of JSON, all read at startup. Comments (`//`, `/* */`) are
+allowed in every one of them, and `_comment_*` keys are ignored.
+
+| File                       | Purpose                                                                                      |
+| -------------------------- | -------------------------------------------------------------------------------------------- |
+| `config.json`              | The portal: logging, Redis, website, clustering, price feed, defaults every pool inherits    |
+| `coins/<name>.json`        | A chain: algorithm, magic bytes, address parameters — [adding-a-coin.md](adding-a-coin.md)   |
+| `pool_configs/<name>.json` | A pool on that chain: ports, payouts, daemons. One file per pool; `enabled: false` parks one |
+
+Only the examples are committed (`config_example.json`,
+`coins/coins-examples/`, `pool_configs/examples/`); your copies are
+git-ignored.
+
+### Portal config
 
 ```bash
-npm run build          # from the repo root; outputs web/dist
-npm run web:dev        # Vite dev server on :5173, proxying /api to the portal
+cp config_example.json config.json
 ```
-
-The SPA is a workspace (`namp-web`), so the root `npm install` covers it.
-The Docker image builds it automatically.
-
-The SPA is **responsive** (fluid layouts down to 320px with a mobile hamburger
-nav) and ships **light/dark themes**: a header toggle persists the choice and
-otherwise follows the OS `prefers-color-scheme`, applied before first paint to
-avoid a flash. It also carries 21-language i18n (react-i18next).
-
-#### 2) Configuration
-
-##### Portal config
-
-Inside the `config_example.json` file, ensure the default configuration will work for your environment, then copy the file to `config.json`.
-
-Explanation for each field:
 
 ```javascript
 {
-    /* Specifies the level of log output verbosity. Anything more severe than the level specified
-       will also be logged. */
-    "logLevel": "debug", //or "warning", "error"
+    "logLevel": "debug",            // debug | warning | error
+    "logColors": true,              // off when logging to a file
 
-    /* By default the server logs to console and gives pretty colors. If you direct that output to a
-       log file then disable this feature to avoid nasty characters in your log file. */
-    "logColors": true,
-
-    /* The server CLI (command-line interface) will listen for commands on this port. For example,
-       blocknotify messages are sent to the server through this. */
+    /* The CLI listener (scripts/cli, admin tools) on localhost. */
     "cliPort": 17117,
 
-    /* By default 'forks' is set to "auto" which will spawn one process/fork/worker for each CPU
-       core in your system. Each of these workers will run a separate instance of your pool(s),
-       and the kernel will load balance miners using these forks. Optionally, the 'forks' field
-       can be a number for how many forks will be spawned. */
-    "clustering": {
-        "enabled": true,
-        "forks": "auto"
-    },
+    /* One stratum worker per CPU core ("auto") or a fixed count. The
+       kernel load-balances miners across the forks; the website, payment
+       processor and CLI run as their own processes. */
+    "clustering": { "enabled": true, "forks": "auto" },
 
-    /* Pool config file will inherit these default values if they are not set. */
+    /* Every pool config inherits these unless it sets its own. */
     "defaultPoolConfigs": {
-
-        /* Poll RPC daemons for new blocks every this many milliseconds. */
-        "blockRefreshInterval": 1000,
-
-        /* If no new blocks are available for this many seconds update and rebroadcast job. */
-        "jobRebroadcastTimeout": 55,
-
-        /* Disconnect workers that haven't submitted shares for this many seconds. */
-        "connectionTimeout": 600,
-
-        /* Store the block hashes for shares that aren't block candidates. */
+        "blockRefreshInterval": 500,    // ms between getblocktemplate polls (p2p notifications are instant anyway)
+        "jobRebroadcastTimeout": 55,    // s without a new block before the job is re-sent (miners drop silent pools)
+        "connectionTimeout": 600,       // s of silence before a worker is disconnected
         "emitInvalidBlockHashes": false,
-
-        /* This option will only authenticate miners using an address or mining key. */
-        "validateWorkerUsername": true,
-
-        /* Enable for client IP addresses to be detected when using a load balancer with TCP
-           proxy protocol enabled, such as HAProxy with 'send-proxy' param:
-           http://haproxy.1wt.eu/download/1.5/doc/configuration.txt */
-        "tcpProxyProtocol": false,
-
-        /* If under low-diff share attack we can ban their IP to reduce system/network load. If
-           running behind HAProxy be sure to enable 'tcpProxyProtocol', otherwise you'll end up
-           banning your own IP address (and therefore all workers). */
+        "validateWorkerUsername": true, // miners must log in with a valid address
+        "tcpProxyProtocol": false,      // true behind HAProxy send-proxy, or you ban your own IP
         "banning": {
             "enabled": true,
-            "time": 600, //How many seconds to ban worker for
-            "invalidPercent": 50, //What percent of invalid shares triggers ban
-            "checkThreshold": 500, //Perform check when this many shares have been submitted
-            "purgeInterval": 300 //Every this many seconds clear out the list of old bans
-        },
-
-        /* Used for storing share and block submission data and payment processing. */
-        "redis": {
-            "host": "127.0.0.1",
-            "port": 6379
+            "time": 600,            // s a banned IP stays banned
+            "invalidPercent": 50,   // invalid-share ratio that triggers a ban
+            "checkThreshold": 500,  // shares before the ratio is checked
+            "purgeInterval": 300    // s between purges of expired bans
         }
     },
 
-    /* Web frontend — the Vite + React + TypeScript SPA in web/, served by the
-       portal from web/dist. */
     "website": {
         "enabled": true,
-        /* If you are using a reverse-proxy like nginx to display the website then set this to
-           127.0.0.1 to not expose the port. See docs/reverse-proxy.md for the nginx setup. */
-        "host": "0.0.0.0",
-        "port": 80,
-        /* Used for displaying stratum connection data on the Getting Started page. */
-        "stratumHost": "cryppit.com",
+        "host": "0.0.0.0",          // 127.0.0.1 behind nginx (reverse-proxy.md)
+        "port": 8080,
+        "stratumHost": "pool.example.com", // shown on the Getting Started page; also the default blockIdentifier
+        "branding": { ... },        // see "Branding" below; config_example.json has every key
         "stats": {
-            /* Gather stats to broadcast to page viewers and store in redis for historical stats
-               every this many seconds. */
-            "updateInterval": 15,
-            /* How many seconds to hold onto historical stats. Currently set to 24 hours. */
-            "historicalRetention": 43200,
-            /* How many seconds worth of shares should be gathered to generate hashrate. */
-            "hashrateWindow": 300
+            "updateInterval": 300,          // s between stats snapshots (and SSE pushes)
+            "historicalRetention": 28800,   // s of history kept for the charts
+            "hashrateWindow": 600           // s of shares used for hashrate figures
         },
-        /* Password-gated admin center at /admin: view the live pool config and
-           edit the home-page announcement banner. */
-        "adminCenter": {
-            "enabled": true,
-            "password": "password"
-        }
+        "adminCenter": { "enabled": false, "password": "password" }, // /admin and the admin API
+        "tlsOptions": { "enabled": false, "cert": "", "key": "" }   // serve the site over HTTPS directly
     },
 
-    /* Redis instance of where to store global portal data such as historical stats, proxy states,
-       ect.. */
-    "redis": {
-        "host": "127.0.0.1",
-        "port": 6379
-    },
+    /* One Redis for everything; pools may override with their own "redis".
+       REDIS_HOST / REDIS_PORT / REDIS_PASSWORD in the environment win. */
+    "redis": { "host": "127.0.0.1", "port": 6379, "password": "" },
 
+    /* Algorithm-switching ports: miners connect per algorithm and the
+       portal points them at the current best coin for it (profitSwitch).
+       Off by default. */
+    "switching": { "switch1": { "enabled": false, "algorithm": "sha256", "ports": { "3333": { "diff": 10, "varDiff": { ... } } } } },
+    "profitSwitch": { "enabled": false, "updateInterval": 600, "threshold": 1.05 },
 
-    /* With this switching configuration, you can setup ports that accept miners for work based on
-       a specific algorithm instead of a specific coin. Miners that connect to these ports are
-       automatically switched a coin determined by the server. The default coin is the first
-       configured pool for each algorithm and coin switching can be triggered using the
-       cli.ts script in the scripts folder.
-
-       Miners connecting to these switching ports must use their public key in the format of
-       RIPEMD160(SHA256(public-key)). An address for each type of coin is derived from the miner's
-       public key, and payments are sent to that address. */
-    "switching": {
-        "switch1": {
-            "enabled": false,
-            "algorithm": "sha256",
-            "ports": {
-                "3333": {
-                    "diff": 10,
-                    "varDiff": {
-                        "minDiff": 16,
-                        "maxDiff": 512,
-                        "targetTime": 15,
-                        "retargetTime": 90,
-                        "variancePercent": 30
-                    }
-                }
-            }
-        },
-        "switch2": {
-            "enabled": false,
-            "algorithm": "scrypt",
-            "ports": {
-                "4444": {
-                    "diff": 10,
-                    "varDiff": {
-                        "minDiff": 16,
-                        "maxDiff": 512,
-                        "targetTime": 15,
-                        "retargetTime": 90,
-                        "variancePercent": 30
-                    }
-                }
-            }
-        },
-        "switch3": {
-            "enabled": false,
-            "algorithm": "x11",
-            "ports": {
-                "5555": {
-                    "diff": 0.001
-                }
-            }
-        }
-    },
-
-    "profitSwitch": {
-        "enabled": false,
-        "updateInterval": 600,
-        "threshold": 1.05 // only switch when the best coin beats the current one by this factor
-    },
-
-    /* Real-time price feed. Populates Redis (priceFeed:prices) and powers
-       /api/prices, the stats-page price ticker, and profit switching.
-       Providers are tried in order with per-symbol fallback. */
+    /* Prices for the ticker, /api/prices and profit switching: CoinGecko
+       and CoinPaprika, tried in order per symbol. */
     "priceFeed": {
         "enabled": false,
         "providers": ["coingecko", "coinpaprika"],
         "vsCurrency": "usd",
         "updateInterval": 300,
-        "coins": {
-            "BTC": { "coingecko": "bitcoin", "coinpaprika": "btc-bitcoin" },
-            "MONA": { "coingecko": "monacoin", "coinpaprika": "mona-monacoin" }
-        }
+        "coins": { "BTC": { "coingecko": "bitcoin", "coinpaprika": "btc-bitcoin" } }
     },
 
-    /* Optional pool wallet-balance logger (src/balanceLogger.ts). When enabled,
-       records each pool's spendable daemon getbalance to Redis every `interval`
-       seconds (keeping a rolling `historyRetention`-second window), surfaced via
-       GET /api (stats.pools[coin].walletBalance) and the Prometheus gauge
-       nomp_pool_wallet_balance. Native replacement for the old
-       scripts/getbalance.py + kotobalance.service. */
-    "balanceLog": {
-        "enabled": false,
-        "interval": 300,
-        "historyRetention": 86400 // seconds of history to keep (0 = latest only)
-    }
+    /* Log each pool wallet's balance to Redis (stats.pools[coin].walletBalance,
+       the nomp_pool_wallet_balance metric). */
+    "balanceLog": { "enabled": false, "interval": 300, "historyRetention": 86400 }
 }
 ```
 
-##### Coin config
+### Coin definition
 
-Inside the `coins` directory, ensure a json file exists for your coin. If it does not you will have to create it.
-Here is an example of the required fields:
+```bash
+cp coins/coins-examples/bitcoin.json coins/
+```
+
+The file names the algorithm, the P2P magic bytes, the address parameters
+and the explorer and miner links for one chain. Every field, the
+[version-rolling (AsicBoost)](adding-a-coin.md#version-rolling-overt-asicboost)
+mask that SHA-256 ASICs need, and the list of algorithm names are in
+[adding-a-coin.md](adding-a-coin.md#2-write-the-coin-definition). Eleven
+examples ship (Bitcoin, BitZeny, Koto, MonaCoin, VIPSTARCOIN, Sugarchain,
+Bellcoin, Yenten, KumaCoin, Susucoin, VirBiCoin), with testnet variants under
+`coins/coins-examples-testnet/`.
+
+### Pool config
+
+```bash
+cp pool_configs/examples/bitcoin.json pool_configs/
+```
 
 ```javascript
 {
-    "name": "BitZeny",
-    "symbol": "ZNY",
-    "algorithm": "yescryptR8",
+    "enabled": true,
+    "coin": "bitcoin.json",         // the coin definition, relative to coins/ ("testnet/bitcoin.json" for a testnet copy)
 
-    // Coinbase value is what is added to a block when it is mined, set this to your pool name so
-    // explorers can see which pool mined a particular block.
-    "coinbase": "Bitzeny",
-    /* Magic value only required for setting up p2p block notifications. It is found in the daemon
-       source code as the pchMessageStart variable.
-       For example, BitZeny mainnet magic: https://github.com/BitzenyCoreDevelopers/bitzeny/blob/z2.0.x/src/chainparams.cpp#L114
-       And for BitZeny testnet magic: https://github.com/BitzenyCoreDevelopers/bitzeny/blob/z2.0.x/src/chainparams.cpp#L206 */
-    "peerMagic": "daa5bef9", //optional
-    "peerMagicTestnet": "59454e59" //optional
-
-    //"txMessages": false, //options - defaults to false
-}
-```
-
-Optional per-coin fields the portal also recognizes (see the complete,
-CI-validated templates in `coins/coins-examples{,-testnet}/`):
-
-- `explorer` (`{ "txURL": ..., "blockURL": ..., "address": ... }`) — block-explorer links shown on the stats/blocks pages; `address` also links a miner's address to the explorer on the worker stats page.
-- `mainnet` / `testnet` — address→script network params (`pubKeyHash`, `scriptHash`, `bech32`, `bip32.public` as **hex strings**); required for bech32/P2SH coins.
-- `getInfo` / `noNetworkInfo` / `noGetnetworkhashps` — daemon-compatibility flags for older wallets that lack `getnetworkinfo`/`getblockchaininfo`/`getnetworkhashps`.
-- `networkHashFromDiff` — for PoS/PoW **hybrid** coins (e.g. VIPSTARCOIN, KumaCoin) whose `getmininginfo.networkhashps` folds in the much harder PoS difficulty and reads orders of magnitude too high (VIPSTARCOIN showed 568 TH/s), breaking the pool's network-hashrate and Luck figures. When set, the PoW-only network hashrate is derived from the raw PoW difficulty (`networkDiff × 2³² ÷ blockTime`) instead of `networkhashps`. Leave it off for pure-PoW coins.
-- `txfee` — per-block transaction-fee reserve for payouts (default `0.0004`). Raise it to match an old wallet's real `paytxfee` so payouts don't stall on "Insufficient funds".
-- `subVersion` — template (e.g. `"/Antenna:{version}/"`) to reconstruct the daemon's P2P user-agent for getinfo-only wallets that don't return `subversion` (shown as the Daemon version on the stats page).
-- `miningTools` — an array of `{ "name": ..., "url": ... }` mining-software links surfaced on the Getting Started page when the coin is selected.
-
-The pool's address-ownership check needs no flag: it probes the daemon once and
-uses `getaddressinfo` on Bitcoin Core 0.17+ (where `validateaddress` no longer
-returns the `ismine`/wallet fields) or `validateaddress` on older daemons. This
-replaces the former `BTCover17` pool-config flag, which has been removed.
-
-For additional documentation how to configure coins and their different algorithms
-see [these instructions](//github.com/AoD-Technologies/cryptocurrency-stratum-pool#module-usage).
-
-##### Pool config
-
-Take a look at the example json file inside the `pool_configs` directory. Rename it to `bitzeny.json` and change the
-example fields to fit your setup.
-
-```
-Please Note that: 1 Difficulty is actually 8192, 0.125 Difficulty is actually 1024.
-
-Whenever a miner submits a share, the pool counts the difficulty and keeps adding them as the shares.
-
-ie: Miner 1 mines at 0.1 difficulty and finds 10 shares, the pool sees it as 1 share. Miner 2 mines at 0.5 difficulty and finds 5 shares, the pool sees it as 2.5 shares.
-```
-
-```bitzeny.json
-{
-    "enabled": true, // Enables the mining pool; set to false to disable it.
-
-    "coin": "bitzeny.json", // Specifies the coin configuration file.
-
-    "blockIdentifier": "", // A unique string to be embedded in blocks mined by this pool. Used for identification purposes.
-    "_comment_blockIdentifier1": "a string embedded in the block to be mined. Used to identify the pool in Insight etc.",
-    "_comment_blockIdentifire2": "If this value equals null string, website.stratumHost in 'config.json' is used.",
-
-    "address": "", // Server wallet address for receiving and sending mining rewards.
-
-    "zAddress": "", // (for KOTO) Server wallet private address used to send tAddress.
-    "_comment_zAddress": "a private address used to send coins to tAddress.",
-
-    "tAddress": "", // (for KOTO) Server wallet transparent address used for payouts to miners.
-    "_comment_tAddress": "transparent address used to send payments, make this a different address, otherwise payments will not send",
-
-    "walletInterval": 2.5, // (for KOTO) The interval in minutes between wallet operations or updates.
-
-    "rewardRecipients": {
-        "": 1.0 // Your wallet addresses and their corresponding reward percentages.
+    "blockIdentifier": "",          // text embedded in the coinbase; "" uses website.stratumHost
+    "address": "bc1q...",           // pool wallet address (must be in the daemon's wallet); block rewards land here
+    "rewardRecipients": {           // pool fees as coinbase outputs: address -> percent of the block
+        "bc1q...fee": 1.0
     },
 
-    "urlInsight": "", // (option) Using another explorer
-    "_comment_urlInsight": "for using non-default insight: e.g. https://koto-insight-testnet.poolof.work for testnet",
+    /* Koto / Zcash-family pools only: */
+    // "zAddress": "",              // shielded address the rewards are moved through
+    // "tAddress": "",              // transparent address payouts are sent from (not the pool address)
+    // "walletInterval": 2.5,       // minutes between shielding operations
+    // "urlInsight": "",            // alternative Insight explorer
 
     "paymentProcessing": {
-        "minConf": 10, // Minimum number of confirmations for a block before processing payment.
-        "enabled": true, // Enables payment processing.
-        "paymentMode": "prop", // prop | pplnt | pplns | solo | pps | dpps | fpps | ppsplus | smpps | esmpps — see docs/payment-schemes.md
-        "_comment_paymentMode": "prop, pplnt, pplns, solo, pps, dpps, fpps, ppsplus, smpps, esmpps",
-        "paymentInterval": 120, // Payment interval in seconds.
-        "minimumPayment": 0.1, // Minimum amount of coins to be paid out.
-        "maxBlocksPerPayment": 3, // Maximum number of blocks to include in a single payment.
-        // Hardening (Redis password, firewalling, admin API, TLS):
-        // see docs/security.md before exposing a pool to the internet.
-        // IMPORTANT: this is a SEPARATE daemon connection from the pool's
-        // top-level `daemons` array — the payment processor opens its own.
-        // Leaving the example credentials here while filling in `daemons`
-        // starts the pool normally but fails payment processing at setup,
-        // which is easy to miss because mining keeps working.
-        "daemon": {
-            "host": "127.0.0.1", // Coin daemon RPC server host.
-            "port": 9252, // Coin daemon RPC server port.
-            "user": "username", // Username for daemon RPC server.
-            "password": "password" // Password for daemon RPC server.
-        }
+        "enabled": true,
+        "paymentMode": "solo",      // prop | pplnt | pplns | solo | pps | dpps | fpps | ppsplus | smpps | esmpps (payment-schemes.md)
+        "pplns": { "n": 2, "maxLogLength": 100000 },    // per-mode settings; the examples carry every mode's block
+        "minConf": 101,             // confirmations before a block pays out: at least the coinbase maturity
+        "paymentInterval": 600,     // s between payout runs
+        "minimumPayment": 0.001,    // coins; smaller balances carry over
+        "maxBlocksPerPayment": 3,
+        /* The payment processor opens its OWN daemon connection; filling
+           in `daemons` below but leaving this one at the example values
+           keeps mining working while every payout fails. */
+        "daemon": { "host": "127.0.0.1", "port": 8332, "user": "rpcuser", "password": "rpcpassword" }
     },
 
-    "_comment_tlsOptions": "Per-port TLS for stratum/getwork. NOTE: most miners only speak plaintext stratum+tcp:// / http getwork, so keep your MAIN ports tls:false and (optionally) offer TLS on EXTRA ports only. serverKey=privkey, serverCert=fullchain (order matters). The pool user must be able to READ the cert — Let's Encrypt's archive is root-only, so use a deploy hook. Full setup: docs/stratum-tls.md.",
-    "tlsOptions": {
-        "enabled": false, // Enables TLS/SSL; set to true to secure connections.
-        "serverKey": "", // Path to the server private key (privkey.pem).
-        "serverCert": "", // Path to the server certificate chain (fullchain.pem).
-        "ca": "" // Path to the certificate authority file.
-    },
+    /* TLS for ports marked tls:true. Most miners only speak plaintext,
+       so keep the main ports plain and add TLS ones (stratum-tls.md). */
+    "tlsOptions": { "enabled": false, "serverKey": "", "serverCert": "", "ca": "" },
 
+    /* One entry per stratum port. diff is the starting share difficulty;
+       varDiff retargets each miner toward targetTime seconds per share
+       inside [minDiff, maxDiff]. Sizing: adding-a-coin.md. */
     "ports": {
-        "3031": {
-            "diff": 0.5, // Initial difficulty for miners connecting on this port.
-            "tls": false, // Specifies whether TLS is enabled for this port.
-            "varDiff": {
-                "minDiff": 0.00, // Minimum difficulty.
-                "maxDiff": 16, // Maximum difficulty.
-                "targetTime": 15, // Target time per share (in seconds).
-                "retargetTime": 60, // Time to retarget difficulty.
-                "variancePercent": 30 // Allowed variance in percent from target time.
-            }
-        },
-         "3032": {  // (Option) Enable multiple difficulty ports
-            "diff": 5,
+        "3333": {
+            "diff": 2048,
             "tls": false,
             "varDiff": {
-                "minDiff": 0.01,
-                "maxDiff": 100,
+                "minDiff": 128,
+                "maxDiff": 1048576,
                 "targetTime": 15,
                 "retargetTime": 60,
                 "variancePercent": 30
             }
-        }
+        },
+        "3334": { "diff": 262144, "tls": false, "varDiff": { "minDiff": 65536, "maxDiff": 268435456, "targetTime": 15, "retargetTime": 60, "variancePercent": 30 } }
     },
 
-    "_comment_getwork": "(Option) HTTP getwork bridge for getwork-only miners (e.g. the official VIPSTARCOIN/HTMLCOIN ccminer that can't build the qtum stratum job). Only qtum-family coins need it; leave enabled:false otherwise. Same per-port shape as stratum 'ports' (diff/tls/varDiff); keep each getwork port matched to a stratum port. Most miners only support plaintext http getwork — see docs/stratum-tls.md before enabling TLS.",
-    "getwork": {
-        "enabled": false, // (Option) Off unless the coin needs getwork (qtum-family, e.g. vipstar).
-        "ports": {
-            "3036": {
-                "diff": 0.5,
-                "tls": false, // Most getwork miners only support plaintext http.
-                "varDiff": {
-                    "minDiff": 0.00,
-                    "maxDiff": 16,
-                    "targetTime": 15,
-                    "retargetTime": 60,
-                    "variancePercent": 30
-                }
-            }
-        }
-    },
+    /* HTTP getwork bridge for miners that cannot speak the qtum-style
+       stratum (VIPSTARCOIN). Same per-port shape; leave disabled otherwise. */
+    "getwork": { "enabled": false, "ports": { "3336": { "diff": 0.5, "tls": false } } },
 
-    "poolId": "main", // Identifier for the mining pool, useful for multi-pool setups.
-    "_comment_poolId": "use it for region identification: eu, us, asia or keep default if you have one stratum instance for one coin",
+    "poolId": "main",               // region label when several stratum instances serve one coin
 
-    "daemons": [
-        {
-            "host": "127.0.0.1", // Host where the coin daemon is running.
-            "port": 9252, // Port on which the coin daemon is listening.
-            "user": "username", // Username for accessing the coin daemon.
-            "password": "password" // Password for accessing the coin daemon.
-        }
+    "daemons": [                    // one or more; all are polled, any can submit a block
+        { "host": "127.0.0.1", "port": 8332, "user": "rpcuser", "password": "rpcpassword" }
     ],
 
-    "p2p": {
-        "enabled": true, // Enables P2P mode.
-        "host": "127.0.0.1", // Host for the P2P server.
-        "port": 9253, // Port for the P2P server.
-        "disableTransactions": true // Disables transaction messages in P2P mode.
-    }
+    /* Peer connection to the daemon for instant block notifications
+       (needs peerMagic in the coin definition). */
+    "p2p": { "enabled": true, "host": "127.0.0.1", "port": 8333, "disableTransactions": true }
 }
 ```
 
-##### Block notifications & admin commands
+Any key of `defaultPoolConfigs` (`banning`, `connectionTimeout`,
+`blockRefreshInterval`, `jobRebroadcastTimeout`, `validateWorkerUsername`,
+`tcpProxyProtocol`, `redis`) can be set here to override the portal default
+for this pool. Ethash pools use a smaller shape described in
+[ethash.md](ethash.md#pool-configuration).
 
-New blocks are detected automatically over **P2P** — enable the `p2p` block in
-each `pool_configs/*.json` and the pool is notified the instant a block appears,
-so no external `blocknotify` script is needed.
+Difficulty units: on `sha256` a share of difficulty 1 is 2³² hashes; scrypt
+and the yescrypt/yespower family count 2¹⁶ hashes per difficulty unit. The
+pool sums difficulty, not share count — a miner submitting ten shares at 0.1
+and one submitting one share at 1.0 have done the same work.
 
-Operator commands are exposed over the password-gated admin API (also reachable
-from the `/admin` page); `password` is `website.adminCenter.password` in `config.json`:
+### Block notifications and admin commands
+
+New blocks arrive over P2P the moment the daemon sees them (`p2p.enabled`),
+so no `blocknotify` script is needed; `blockRefreshInterval` polling is the
+fallback.
+
+Operator commands go through the password-gated admin API (also behind the
+`/admin` page); the password is `website.adminCenter.password`:
 
 ```
-POST /api/admin/reloadpool   { "password": "...", "coin": "bitzeny" }
-POST /api/admin/coinswitch   { "password": "...", "coin": "bitzeny", "algorithm": "yescryptR8" }
+POST /api/admin/reloadpool   { "password": "...", "coin": "bitcoin" }
+POST /api/admin/coinswitch   { "password": "...", "coin": "bitcoin", "algorithm": "sha256" }
+POST /api/admin/announcement { "password": "...", "text": "..." }
 ```
 
-#### 3) Start the portal
+## Run
 
 ```bash
-npm start          # = node src/init.ts
+npm run check:config   # every JSON file parses
+npm start              # = node src/init.ts
 ```
 
-`npm start` runs `node src/init.ts`: the whole backend is buildless
-TypeScript that Node's native type stripping runs as is, and the cluster
-workers inherit the same command line. A plain root `npm install` (or `npm ci` /
-Docker) is all that is needed — the siblings are workspace symlinks.
+The master process reads the configs, forks the stratum workers (one per
+core by default), the website, the payment processor and the CLI listener,
+and logs each pool's startup: detected network and reward type,
+`ASICBoost Enabled`, pool address, block height, and
+`Stratum Pool Server Started for <coin>` once the first job exists.
 
-#### Running with Docker
-
-A `Dockerfile` and `docker-compose.yml` at the **repo root** bring up the
-portal and Redis together:
+For production, run it under a process manager so it restarts and logs:
 
 ```bash
-cd ../..               # the repo root — the build context is the whole workspace
+npm i -g pm2
+pm2 start npm --name namp -- start
+pm2 save && pm2 startup       # restart on boot
+pm2 logs namp                 # the portal's log
+```
+
+A systemd unit works the same way (`ExecStart=/usr/bin/npm start`,
+`WorkingDirectory=/path/to/namp`, `Restart=always`). Put nginx in front of
+the website ([reverse-proxy.md](reverse-proxy.md)) and read
+[security.md](security.md) before opening the ports to the internet.
+
+## Docker
+
+```bash
 docker compose up --build
 ```
 
-The compose stack runs the portal plus a Redis service and mounts your
-`config.json`, `pool_configs/` and `coins/` into the container (without a
-`config.json` it falls back to `config_example.json` baked into the image).
-Redis is reached via the `REDIS_HOST`/`REDIS_PORT` env vars, so no config edit
-is needed. **Coin daemons are not included** — point each pool's `daemons` at a
-reachable node (a host daemon via `host.docker.internal`, another container, or
-an external host). Publish your stratum ports in the compose `ports:` list. The
-portal's container healthcheck probes `/api/health`.
+[`docker-compose.yml`](../docker-compose.yml) runs the portal with a Redis
+service and mounts your `config.json`, `pool_configs/` and `coins/` into the
+container; without a `config.json` the image falls back to
+`config_example.json`. Redis is reached through `REDIS_HOST` / `REDIS_PORT`
+(set by the compose file), so nothing in the config changes between bare
+metal and Docker. Coin daemons are not included: point each pool's
+`daemons` at a node the container can reach (`host.docker.internal`,
+another container, an external host) and publish the stratum ports in the
+compose `ports:` list. The image compiles the addon and the web UI itself
+(host build output is excluded), and its healthcheck probes `/api/health`.
 
-#### JSON API & monitoring endpoints
+## JSON API and monitoring
 
-Besides the stats endpoints (see `/api`), the portal exposes:
+Besides the stats endpoints under `/api` the portal serves:
 
-- `GET /api/config` — public runtime config the SPA consumes (stratum host,
-  enabled coin-switching ports, per-pool coin / ports / explorer /
-  `miningTools`, and operator `branding` — see "Branding & home customization"
-  below).
-- `GET /api/prices` — latest coin prices from the price feed (enable the
-  `priceFeed` block in the config; supports CoinGecko + CoinPaprika with
-  per-symbol fallback).
-- `GET /api/announcement` — the home-page announcement banner text; set it from
-  the admin center (`POST /api/admin/announcement`, password-gated).
-- `GET /api/metrics` — Prometheus exposition-format metrics (pool/algo
-  hashrate, shares, blocks, network stats, prices).
-- `GET /api/health` — readiness probe (`200` ok / `503` degraded).
+- `GET /api/config` — what the web UI needs: stratum host, switching ports,
+  per-pool coin / ports / explorer / `miningTools`, and `branding`.
+- `GET /api/prices` — latest prices from the price feed.
+- `GET /api/announcement` — the home-page banner (set via the admin API).
+- `GET /api/metrics` — Prometheus exposition format: pool and algorithm
+  hashrate, shares, blocks, network stats, prices, wallet balances.
+- `GET /api/health` — readiness probe: `200` ok, `503` degraded (used by
+  the Docker healthcheck).
 
-#### Branding & home customization
+## Branding
 
-The site appearance and home page are driven by `website.branding` in
-`config.json` (served via `GET /api/config`), so a deployment can rebrand
-without touching code. All fields are optional:
+`website.branding` in `config.json` rebrands the site without code changes;
+every field is optional and `config_example.json` documents each one
+inline:
 
-- `siteName`, `logo` (header), `favicon` — plain paths or absolute CDN URLs.
-- `tagline`, and `navLinks[]` — extra header links; a link with `children[]`
-  becomes a dropdown (e.g. a "Pools" menu linking to sibling-coin sites).
-- `showTabStats` — show the "Tab Stats" nav entry and `/tbs` per-pool
-  comparison page. When omitted it auto-hides for a single coin and appears
-  once more than one pool is configured; set `true`/`false` to force it.
-- `home`: a separate hero `logo`; the hero heading (`title` is free-form and
-  wins over the `{{coin}}` template — use it for multi-coin pools, otherwise
-  set `coin`); the payout / interval / fee / method facts; `highlights[]`
-  (badges such as "No KYC" / "Anonymous Mining" — built-in defaults when
-  omitted, `[]` to hide); `sections[]` (operator-authored HTML blocks); and
-  `servers[]` (location cards showing specs + live in-browser ping latency,
-  highlighting the fastest).
-- `analytics`: a GA4 `googleAnalyticsId` and/or arbitrary `scripts[]`
-  (Plausible, Matomo, …) injected into `<head>`.
+- `siteName`, `logo` (header), `favicon` — paths or absolute CDN URLs.
+- `tagline` and `navLinks[]` — extra header links; a link with `children[]`
+  becomes a dropdown.
+- `showTabStats` — the per-pool comparison page; auto-hidden for a single
+  coin unless forced.
+- `home` — hero logo, heading (`title` wins over the `{{coin}}` template),
+  payout facts, `highlights[]` badges, `sections[]` of operator HTML, and
+  `servers[]` location cards with live in-browser ping.
+- `analytics` — a GA4 id and/or arbitrary `scripts[]` for `<head>`.
 
-UI text is i18n-driven; only the values above (and `sections[]` HTML) are
-operator-supplied. See `config_example.json` for the full shape with
-`_comment_*` hints.
+The UI is translated into 20 languages; only the values above are
+operator-supplied. The web UI is responsive down to 320 px and follows the
+OS light/dark preference with a header toggle.
 
-###### Optional enhancements for your awesome new mining pool server setup:
+## Upgrading
 
-- Use something like [forever](https://github.com/nodejitsu/forever) to keep the node script running
-  in case the master process crashes.
-- Use something like [redis-commander](https://github.com/joeferner/redis-commander) to have a nice GUI
-  for exploring your redis database.
-- Use something like [logrotator](http://www.thegeekstuff.com/2010/07/logrotate-examples/) to rotate log
-  output from NAMP.
-- Use [New Relic](http://newrelic.com/) to monitor your NAMP instance and server performance.
+```bash
+git pull
+npm install            # rebuilds the addon when native/ changed
+npm run build          # rebuild the web UI
+npm run check:config
+pm2 restart namp       # or your process manager's equivalent
+```
 
-#### Upgrading NAMP
-
-When updating NAMP to the latest code, `git pull` this repository, reinstall
-the dependencies (which rebuilds the hashing addon when `native/` changed),
-and compare your config files against the shipped examples.
-
-- Inside your NAMP directory (where the src/init.ts script is) do `git pull` to get the latest NAMP code.
-- Remove the dependenices by deleting the `node_modules` directory with `rm -r node_modules`.
-- Run `npm update` to force updating/reinstalling of the dependencies.
-- Compare your `config.json` and `pool_configs/coin.json` configurations to the latest example ones in this repo or the ones in the setup instructions where each config field is explained. <b>You may need to modify or add any new changes.</b>
-
-Community, donations, contributing guidelines and credits live in the [root README](../../README.md).
+Compare `config.json` and your pool configs with the shipped examples after
+each release: new keys are additive with safe defaults, but renamed or
+removed ones are listed in the release notes. Ethash pools created before
+1.1.0 have a one-time ledger migration described in
+[ethash.md](ethash.md#upgrading-from-a-pre-110-ledger).

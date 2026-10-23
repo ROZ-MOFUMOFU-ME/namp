@@ -1,341 +1,143 @@
-# stratum-pool
+# The stratum layer
 
-> Feature reference for NAMP's stratum layer — the protocol modules living flat in [`src/`](../src/) (pool, stratum, jobManager, blockTemplate, daemon, peer, varDiff, …). Historical: this text began as the node-stratum-pool README.
+The protocol modules in [`src/`](../src/) — `pool`, `stratum`, `jobManager`,
+`blockTemplate`, `transactions`, `daemon`, `peer`, `varDiff` — are the
+Bitcoin-family mining engine: one `Pool` per coin that polls the daemons,
+builds jobs, serves stratum ports and validates shares. The portal
+(`poolWorker.ts`) drives it; this page documents what it does and the
+protocol it speaks. (This text began life as the node-stratum-pool README;
+the Ethash engine is described in [ethash.md](ethash.md).)
 
-High performance Stratum poolserver in Node.js. One instance of this software can startup and manage multiple coin
-pools, each with their own daemon and stratum port :)
+## What the engine does
 
-[![CI](https://img.shields.io/github/actions/workflow/status/ROZ-MOFUMOFU-ME/namp/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/ROZ-MOFUMOFU-ME/namp/actions/workflows/ci.yml)&nbsp;[![Release](https://img.shields.io/github/v/release/ROZ-MOFUMOFU-ME/namp?style=flat-square&logo=github&label=release&color=blue)](https://github.com/ROZ-MOFUMOFU-ME/namp/releases)&nbsp;[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)&nbsp;[![Code style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4?style=flat-square&logo=prettier&logoColor=white)](https://prettier.io/)&nbsp;[![Node.js](https://img.shields.io/badge/node-%E2%89%A522-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org/)&nbsp;[![Bitcoin](https://img.shields.io/badge/Bitcoin-F7931A?style=flat-square&logo=bitcoin&logoColor=white)](https://bitcoin.org/)&nbsp;[![License](https://img.shields.io/badge/license-GPLv2-blue?style=flat-square)](https://opensource.org/licenses/GPL-2.0)&nbsp;[![Discord](https://img.shields.io/badge/Discord-join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/zHUdQy2NzU)
+- Daemon RPC with batching, redundancy across several daemons and
+  sync-progress reporting while a daemon is still catching up
+- `getblocktemplate` → job manager → block template, coinbase and merkle
+  construction (segwit witness commitments, PoW/PoS coinbases,
+  transaction messages, Sapling/Koto roots, qtum-style headers)
+- Stratum TCP (and TLS) servers on any number of ports, each with its own
+  difficulty and variable-difficulty policy
+- Share validation against the share target and the network target, block
+  assembly and submission (`submitblock` or `getblocktemplate` submit)
+- P2P peer connection to the daemon for instant block notifications
+- Session management: zombie-worker purge, flood protection, invalid-share
+  banning by IP, TCP proxy protocol for HAProxy-style load balancers
+- Hashing through the native addon — the algorithm table lives in
+  [`src/algoProperties.ts`](../src/algoProperties.ts), the sources in
+  [native/README.md](../native/README.md)
 
-## Features
+## The protocol: Stratum V1 with the BIP 310 extensions
 
-- Daemon RPC interface
-- Stratum TCP socket server
-- Block template / job manager
-- P2P to get block notifications as peer node
-- Optimized generation transaction building
-- Connecting to multiple daemons for redundancy
-- Process share submissions
-- Session managing for purging DDoS/flood initiated zombie workers
-- Auto ban IPs that are flooding with invalid shares
-- **POW** (proof-of-work) & **POS** (proof-of-stake) support
-- Transaction messages support
-- Vardiff (variable difficulty / share limiter)
-- When started with a coin deamon that hasn't finished syncing to the network it shows the blockchain download progress and initializes once synced
+| Method                          | Behaviour                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mining.subscribe`              | Returns the subscription, the per-connection `extranonce1` and `extranonce2_size`. A user agent starting with `NiceHash/` switches the connection to the algorithm's documented NiceHash minimum difficulty.                                                                                                                                   |
+| `mining.authorize`              | Validates `address.worker` (`validateaddress` on the daemon when `validateWorkerUsername` is on). Password options: `d=<diff>` starting difficulty, `md=<diff>` minimum difficulty with a narrow varDiff, `m=solo` solo flag.                                                                                                                  |
+| `mining.configure`              | [BIP 310](https://github.com/bitcoin/bips/blob/master/bip-0310.mediawiki). Every requested extension is answered; `version-rolling` (overt AsicBoost) is granted when the coin definition carries `version_mask`, with the mask intersected with the miner's. Details in [adding-a-coin.md](adding-a-coin.md#version-rolling-overt-asicboost). |
+| `mining.suggest_difficulty`     | Honoured within the port's bounds: varDiff's `[minDiff, maxDiff]`, or never below a fixed port's `diff`. Before subscription it becomes the starting difficulty, afterwards it is applied immediately with `mining.set_difficulty`.                                                                                                            |
+| `mining.suggest_target`         | Converted to a difficulty and applied the same way.                                                                                                                                                                                                                                                                                            |
+| `mining.extranonce.subscribe`   | Accepted (NiceHash and proxies require it). The pool never changes a connection's `extranonce1`, so no `mining.set_extranonce` follows.                                                                                                                                                                                                        |
+| `mining.submit`                 | `[worker, job, extranonce2, ntime, nonce]`, plus the rolled version bits as a sixth parameter when version rolling is on. Duplicate, stale and out-of-range submissions are rejected with the standard error codes.                                                                                                                            |
+| `mining.get_transactions`       | Not supported (answers an error).                                                                                                                                                                                                                                                                                                              |
+| `mining.get_multiplier`, `ping` | Non-standard helpers some miners send; answered.                                                                                                                                                                                                                                                                                               |
+| anything else                   | Logged as an unknown method and ignored (`mining.multi_version` from old Antminer firmware, for instance).                                                                                                                                                                                                                                     |
 
-#### Hashing algorithms supported:
+Notifications sent: `mining.set_difficulty`, `mining.notify` (with
+`clean_jobs` on new blocks), and `client.reconnect` / `client.show_message`
+where the portal uses them.
 
-- ✓ **SHA256** (Bitcoin, Freicoin, Peercoin/PPCoin, Terracoin, Susucoin [SUSU], etc..)
-- ✓ **Scrypt** (Litecoin, Dogecoin, Feathercoin, etc..)
-- ✓ **Scrypt-Jane** (YaCoin, CopperBars, Pennies, Tickets, etc..)
-- ✓ **Scrypt-N** (Vertcoin [VTC])
-- ✓ **Quark** (Quarkcoin [QRK])
-- ✓ **X11** (Darkcoin [DRK], Hirocoin, Limecoin)
-- ✓ **X13** (MaruCoin, BoostCoin)
-- ✓ **NIST5** (Talkcoin)
-- ✓ **Keccak** (Maxcoin [MAX], HelixCoin, CryptoMeth, Galleon, 365coin, Slothcoin, BitcointalkCoin)
-- ✓ **Skein** (Skeincoin [SKC])
-- ✓ **Groestl** (Groestlcoin [GRS])
-- ✓ **Yescrypt-0.5** (BitZeny [ZNY])
-- ✓ **Yescrypt** (Koto [KOTO], Elicoin,[ELI], etc..)
-- ✓ **YesPoWer** (Cryply [CRP], Bellcoin [BELL], etc..)
-- ✓ **YesPoWerSUGAR** (Sugarchain [SUGAR])
-- ✓ **YescryptR8G** (Koto [KOTO])
-- ✓ **LyraREv2** (Monacoin [MONA], Mangacoin [MANGA], etc..)
-- ✓ **vipstar** (VIPSTARCOIN [VIPS] — sha256d over a qtum-style 181-byte header)
+Stratum V2 is not implemented. SV2 firmware reaches the pool through the
+Stratum Reference Implementation's translation proxy.
 
-May be working (needs additional testing):
+## Using the engine directly
 
-- ? _Blake_ (Blakecoin [BLC])
-- ? _Fugue_ (Fuguecoin [FC])
-- ? _Qubit_ (Qubitcoin [Q2C], Myriadcoin [MYR])
-- ? _SHAvite-3_ (INKcoin [INK])
+The portal creates pools from `pool_configs/*.json`; the same object shape
+works programmatically, which is how the integration tests drive it
+([`test/mockDaemon.test.ts`](../test/mockDaemon.test.ts)):
 
-Not working currently:
+```typescript
+import { createPool } from './src/pool.ts';
 
-- _Groestl_ - for Myriadcoin
-- _Keccak_ - for eCoin & Copperlark
-- _Hefty1_ (Heavycoin [HVC])
-
-## Requirements
-
-- Node.js v22+ (tested on Node 22 and 24): the library runs as buildless TypeScript via Node's native type stripping, which is enabled by default on Node 22.18+/24
-- coin daemon (preferably one with a relatively updated API and not some crapcoin :p)
-- a C/C++ toolchain with C++20 support (gcc 10-12), required to build the `native/` hashing addon
-
-## Example Usage
-
-#### In the monorepo
-
-The portal already depends on this package through npm workspaces — a single `npm install` at the repo root wires it up. There is nothing to install separately; the examples below show the module API.
-
-#### Module usage
-
-Create the configuration for your coin:
-
-Possible options for `algorithm`: _sha256, scrypt, scrypt-jane, scrypt-n, quark, x11, keccak, blake,
-skein, groestl, fugue, shavite3, hefty1, or qubit_.
-
-```javascript
-const myCoin = {
-    "name": "Dogecoin",
-    "symbol": "DOGE",
-    "algorithm": "scrypt",
-    "nValue": 1024, //optional - defaults to 1024
-    "rValue": 1, //optional - defaults to 1
-    "txMessages": false, //optional - defaults to false,
-
-    /* Magic value only required for setting up p2p block notifications. It is found in the daemon
-       source code as the pchMessageStart variable.
-       For example, litecoin mainnet magic: http://git.io/Bi8YFw
-       And for litecoin testnet magic: http://git.io/NXBYJA */
-     "peerMagic": "fbc0b6db" //optional
-     "peerMagicTestnet": "fcc1b7dc" //optional
-};
-```
-
-If you are using the `scrypt-jane` algorithm there are additional configurations:
-
-```javascript
-const myCoin = {
-    name: 'Freecoin',
-    symbol: 'FEC',
-    algorithm: 'scrypt-jane',
-    chainStartTime: 1375801200, //defaults to 1367991200 (YACoin) if not used
-    nMin: 6, //defaults to 4 if not used
-    nMax: 32 //defaults to 30 if not used
-};
-```
-
-If you are using the `scrypt-n` algorithm there is an additional configuration:
-
-```javascript
-const myCoin = {
-    name: 'Execoin',
-    symbol: 'EXE',
-    algorithm: 'scrypt-n',
-    /* This defaults to Vertcoin's timetable if not used. It is required for scrypt-n coins that
-       have modified their N-factor timetable to be different than Vertcoin's. */
-    timeTable: {
-        2048: 1390959880,
-        4096: 1438295269,
-        8192: 1485630658,
-        16384: 1532966047,
-        32768: 1580301436,
-        65536: 1627636825,
-        131072: 1674972214,
-        262144: 1722307603
-    }
-};
-```
-
-If you are using the `keccak` algorithm there are additional configurations _(The rare `normalHashing` keccak coins
-such as Copperlark and eCoin don't appear to work yet - only the popular ones like Maxcoin are)_:
-
-```javascript
-const myCoin = {
-    name: 'eCoin',
-    symbol: 'ECN',
-    algorithm: 'keccak',
-
-    /* This is not required and set to false by default. Some coins such as Copperlark and eCoin
-       require it to be set to true. Maxcoin and most others are false. */
-    normalHashing: true
-};
-```
-
-Create and start new pool with configuration options and authentication function
-
-```javascript
-import * as Stratum from 'stratum-pool';
-
-const pool = Stratum.createPool(
+const pool = createPool(
     {
-        coin: myCoin,
-
-        address: 'mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc', //Address to where block rewards are given
-
-        /* Block rewards go to the configured pool wallet address to later be paid out to miners,
-       except for a percentage that can go to, for examples, pool operator(s) as pool fees or
-       or to donations address. Addresses or hashed public keys can be used. Here is an example
-       of rewards going to the main pool op, a pool co-owner, and NOMP donation. */
-        rewardRecipients: {
-            n37vuNFkXfk15uFnGoVyHZ6PYQxppD3QqK: 1.5, //1.5% goes to pool op
-            mirj3LtZxbSTharhtXvotqtJXUY7ki5qfx: 0.5, //0.5% goes to a pool co-owner
-
-            /* 0.1% donation to NOMP. This pubkey can accept any type of coin, please leave this in
-           your config to help support NOMP development. */
-            '22851477d63a085dbc2398c8430af1c09e7343f6': 0.1
+        coin: {
+            name: 'Bitcoin',
+            symbol: 'BTC',
+            algorithm: 'sha256',
+            version_mask: '1fffe000',
+            peerMagic: 'f9beb4d9',
+            // address parameters already decoded (init.ts does this for
+            // coins/*.json): pubKeyHash / scriptHash as numbers, bech32 as
+            // the prefix
+            mainnet: { pubKeyHash: 0x00, scriptHash: 0x05, bech32: 'bc' }
         },
 
-        blockRefreshInterval: 1000, //How often to poll RPC daemons for new blocks, in milliseconds
+        address: 'bc1q…', // block rewards go here
+        rewardRecipients: { 'bc1q…fee': 1.0 }, // percent of each block, as coinbase outputs
 
-        /* Some miner apps will consider the pool dead/offline if it doesn't receive anything new jobs
-       for around a minute, so every time we broadcast jobs, set a timeout to rebroadcast
-       in this many seconds unless we find a new job. Set to zero or remove to disable this. */
-        jobRebroadcastTimeout: 55,
-
-        //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
-
-        /* Some attackers will create thousands of workers that use up all available socket connections,
-       usually the workers are zombies and don't submit shares after connecting. This features
-       detects those and disconnects them. */
-        connectionTimeout: 600, //Remove workers that haven't been in contact for this many seconds
-
-        /* Sometimes you want the block hashes even for shares that aren't block candidates. */
+        blockRefreshInterval: 500, // ms between getblocktemplate polls
+        jobRebroadcastTimeout: 55, // s without a new block before the job is re-sent
+        connectionTimeout: 600, // s of silence before a worker is dropped
         emitInvalidBlockHashes: false,
+        tcpProxyProtocol: false, // true behind HAProxy send-proxy
 
-        /* Enable for client IP addresses to be detected when using a load balancer with TCP proxy
-       protocol enabled, such as HAProxy with 'send-proxy' param:
-       http://haproxy.1wt.eu/download/1.5/doc/configuration.txt */
-        tcpProxyProtocol: false,
-
-        /* If a worker is submitting a high threshold of invalid shares we can temporarily ban their IP
-       to reduce system/network load. Also useful to fight against flooding attacks. If running
-       behind something like HAProxy be sure to enable 'tcpProxyProtocol', otherwise you'll end up
-       banning your own IP address (and therefore all workers). */
         banning: {
             enabled: true,
-            time: 600, //How many seconds to ban worker for
-            invalidPercent: 50, //What percent of invalid shares triggers ban
-            checkThreshold: 500, //Check invalid percent when this many shares have been submitted
-            purgeInterval: 300 //Every this many seconds clear out the list of old bans
+            time: 600, // s
+            invalidPercent: 50,
+            checkThreshold: 500, // shares before the ratio is checked
+            purgeInterval: 300 // s
         },
 
-        /* Each pool can have as many ports for your miners to connect to as you wish. Each port can
-       be configured to use its own pool difficulty and variable difficulty settings. varDiff is
-       optional and will only be used for the ports you configure it for. */
         ports: {
-            3032: {
-                //A port for your miners to connect to
-                diff: 32, //the pool difficulty for this port
-
-                /* Variable difficulty is a feature that will automatically adjust difficulty for
-               individual miners based on their hashrate in order to lower networking overhead */
+            3333: {
+                diff: 2048,
                 varDiff: {
-                    minDiff: 8, //Minimum difficulty
-                    maxDiff: 512, //Network difficulty will be used if it is lower than this
-                    targetTime: 15, //Try to get 1 share per this many seconds
-                    retargetTime: 90, //Check to see if we should retarget every this many seconds
-                    variancePercent: 30 //Allow time to very this % from target without retargeting
+                    minDiff: 128,
+                    maxDiff: 1048576,
+                    targetTime: 15, // s per share to aim for
+                    retargetTime: 60, // s between retargets
+                    variancePercent: 30
                 }
             },
-            3256: {
-                //Another port for your miners to connect to, this port does not use varDiff
-                diff: 256 //The pool difficulty
-            }
+            3334: { diff: 262144 } // fixed difficulty, no varDiff
         },
 
-        /* Recommended to have at least two daemon instances running in case one drops out-of-sync
-       or offline. For redundancy, all instances will be polled for block/transaction updates
-       and be used for submitting blocks. Creating a backup daemon involves spawning a daemon
-       using the "-datadir=/backup" argument which creates a new daemon instance with it's own
-       RPC config. For more info on this see:
-          - https://en.bitcoin.it/wiki/Data_directory
-          - https://en.bitcoin.it/wiki/Running_bitcoind */
         daemons: [
             {
-                //Main daemon instance
                 host: '127.0.0.1',
-                port: 19332,
-                user: 'litecoinrpc',
-                password: 'testnet'
-            },
-            {
-                //Backup daemon instance
-                host: '127.0.0.1',
-                port: 19344,
-                user: 'litecoinrpc',
-                password: 'testnet'
+                port: 8332,
+                user: 'rpcuser',
+                password: 'rpcpassword'
             }
         ],
 
-        /* This allows the pool to connect to the daemon as a node peer to receive block updates.
-       It may be the most efficient way to get block updates (faster than polling, less
-       intensive than blocknotify script). It requires the additional field "peerMagic" in
-       the coin config. */
         p2p: {
-            enabled: false,
-
-            /* Host for daemon */
+            enabled: true,
             host: '127.0.0.1',
-
-            /* Port configured for daemon (this is the actual peer port not RPC port) */
-            port: 19333,
-
-            /* If your coin daemon is new enough (i.e. not a shitcoin) then it will support a p2p
-           feature that prevents the daemon from spamming our peer node with unnecessary
-           transaction data. Assume its supported but if you have problems try disabling it. */
+            port: 8333,
             disableTransactions: true
         }
     },
-    function (ip, port, workerName, password, callback) {
-        //stratum authorization function
-        console.log('Authorize ' + workerName + ':' + password + '@' + ip);
-        callback({
-            error: null,
-            authorized: true,
-            disconnect: false
-        });
+    function authorize(ip, port, workerName, password, callback) {
+        callback({ error: null, authorized: true, disconnect: false });
     }
 );
-```
 
-Listen to pool events
-
-```javascript
-/*
-
-'data' object contains:
-    job: 4, //stratum work job ID
-    ip: '71.33.19.37', //ip address of client
-    port: 3333, //port of the client
-    worker: 'matt.worker1', //stratum worker name
-    height: 443795, //block height
-    blockReward: 5000000000, //the number of satoshis received as payment for solving this block
-    difficulty: 64, //stratum worker difficulty
-    shareDiff: 78, //actual difficulty of the share
-    blockDiff: 3349, //block difficulty adjusted for share padding
-    blockDiffActual: 3349 //actual difficulty for this block
-
-
-    //AKA the block solution - set if block was found
-    blockHash: '110c0447171ad819dd181216d5d80f41e9218e25d833a2789cb8ba289a52eee4',
-
-    //Exists if "emitInvalidBlockHashes" is set to true
-    blockHashInvalid: '110c0447171ad819dd181216d5d80f41e9218e25d833a2789cb8ba289a52eee4'
-
-    //txHash is the coinbase transaction hash from the block
-    txHash: '41bb22d6cc409f9c0bae2c39cecd2b3e3e1be213754f23d12c5d6d2003d59b1d,
-
-    error: 'low share difficulty' //set if share is rejected for some reason
-*/
-pool.on('share', function (isValidShare, isValidBlock, data) {
-    if (isValidBlock) console.log('Block found');
-    else if (isValidShare) console.log('Valid share submitted');
-    else if (data.blockHash)
-        console.log(
-            'We thought a block was found but it was rejected by the daemon'
-        );
-    else console.log('Invalid share submitted');
-
-    console.log('share data: ' + JSON.stringify(data));
+pool.on('share', (isValidShare, isValidBlock, data) => {
+    // data: job, ip, port, worker, height, blockReward, difficulty,
+    // shareDiff, blockDiff, blockDiffActual, blockHash (when a block was
+    // found), blockHashInvalid (with emitInvalidBlockHashes), txHash,
+    // error (when rejected)
 });
-
-/*
-'severity': can be 'debug', 'warning', 'error'
-'logKey':   can be 'system' or 'client' indicating if the error
-            was caused by our system or a stratum client
-*/
-pool.on('log', function (severity, logKey, logText) {
-    console.log(severity + ': ' + '[' + logKey + '] ' + logText);
+pool.on('log', (severity, logKey, text) => {
+    // severity: debug | warning | error; logKey: system | client
 });
-```
+pool.on('difficultyUpdate', (workerName, diff) => {});
+pool.on('started', () => {});
 
-Start pool
-
-```javascript
 pool.start();
 ```
 
-Community, donations, contributing guidelines and credits live in the [root README](../../README.md).
+Pool options accepted by `createPool` are exactly the keys of a pool config
+plus the `defaultPoolConfigs` block of `config.json`, so
+[guide.md](guide.md) is the field reference.

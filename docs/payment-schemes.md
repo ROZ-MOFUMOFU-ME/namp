@@ -1,10 +1,14 @@
-# Design: Solo / PPS / D-PPS Payment Schemes for NAMP
+# Payment schemes
 
-> Status: **IMPLEMENTED** on `develop` — `solo`, `pps` and `dpps` are all live in
-> `paymentProcessing.paymentMode` (alongside `prop`/`pplnt`). This is the original
-> design; the `file:line` references below predate the code and may have drifted.
-> D-PPS rate math lives in `src/ppsLogic.ts` (unit-tested in
-> `test/ppsLogic.test.ts`); accrual is in `paymentProcessor.ts` (shared with PPS).
+All ten modes of `paymentProcessing.paymentMode` — `prop`, `pplnt`, `pplns`,
+`solo`, `pps`, `dpps`, `fpps`, `ppsplus`, `smpps`, `esmpps` — are implemented
+in `src/paymentProcessor.ts` (the Ethash pools support `prop`, `solo` and
+`pplns`, see [ethash.md](ethash.md)). This document is the design they were
+built from: what each scheme pays, what the pool risks, and which Redis
+keys carry the state. The rate math lives in `src/ppsLogic.ts`,
+`src/pplnsLogic.ts` and `src/smppsLogic.ts`, each with its own unit test;
+the `file:line` references below predate the code and may have drifted.
+Configuration examples are in every `pool_configs/examples/*.json`.
 
 ---
 
@@ -411,21 +415,3 @@ unaffected.
 | ESMPPS | bounded share-based (income-capped, equalized) | smpps:owed, smpps:stats                   | Low-Medium (capped at income; carries debt) | M      | After a sustained testnet run                            |
 
 (Existing: prop = block-based no risk; pplnt = block-based + time-weight, no risk.)
-
-## 8. Recommended order
-
-1. **Solo first** — contained Step-3 change, zero new Redis state, zero
-   shareProcessor change, no liability. Validates the pluggable-`paymentMode`
-   refactor without touching the financial model.
-2. **Refactor groundwork** (during Solo) — normalize `paymentMode`, thread it
-   into shareProcessor (already receives `poolConfig`) for PPS's later
-   `shareBuffer` write. Keep prop/pplnt behavior identical.
-3. **PPS — gated.** Accrual step + `pps:*` keys + float guard (reuse
-   `listUnspent` `1446-1476`) + metrics + kill-switch. Not on mainnet until
-   sustained testnet run, float-sizing guidance, and liability alerting.
-4. **D-PPS last** — superset of PPS; only the dynamic-rate controller + luck
-   bookkeeping on top.
-
-**Principle:** block-based (Solo) is downside-free and ships incrementally;
-share-based (PPS/D-PPS) turn the pool into a counterparty that owes miners money
-it may not yet have — keep them behind float management + extensive testnet.

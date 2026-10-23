@@ -76,14 +76,26 @@ Coin definitions take an optional `epochLength`:
 
 ## Miner setup
 
-The stratum ports speak the **eth-proxy** dialect, which ethminer, T-Rex,
-lolMiner, NBMiner and gminer all support. Each miner names it differently:
+The stratum ports speak the **eth-proxy** dialect, which every Ethash miner
+still in use supports — lolMiner, Rigel, BzMiner, T-Rex (unmaintained since
+2023 but common), ethminer, and the Ethash ASICs (Antminer E9 Pro / E11,
+Jasminer X-series). Each names it differently:
 
 ```bash
-ethminer -P stratum1+tcp://0xYourWallet.rig1@pool-host:3333   # stratum1 = eth-proxy in ethminer
-t-rex -a ethash -o stratum+tcp://pool-host:3333 -u 0xYourWallet -w rig1
 lolMiner -a ETHASH -p pool-host:3333 -u 0xYourWallet.rig1      # --ethstratum ETHPROXY, the default
+rigel -a etchash -o stratum+tcp://pool-host:3333 -u 0xYourWallet.rig1
+t-rex -a ethash -o stratum+tcp://pool-host:3333 -u 0xYourWallet -w rig1
+ethminer -P stratum1+tcp://0xYourWallet.rig1@pool-host:3333   # stratum1 = eth-proxy in ethminer
+# ASIC web UI: stratum+tcp://pool-host:3333, worker 0xYourWallet.rig1
 ```
+
+Size the ports for the hardware of the day. Ethash difficulty is counted in
+hashes, so a port's `diff` is simply hashrate × seconds per share: a
+130 MH/s RTX 4090 at 4 s wants about 5 × 10⁸, an Antminer E9 Pro (3.7 GH/s)
+or E11 (9.5 GH/s) 10¹⁰–10¹¹, and a fixed port for ASIC farms 10¹¹ and up —
+which is what the VirBiCoin production pool runs (100 M varDiff, 1 G, 10 G
+fixed). Etchash's halved epoch length keeps the ETC DAG under 4 GB for
+years, so 4 GB cards and older ASICs remain usable there.
 
 The NiceHash dialects (EthereumStratum/1.0.0 and 2.0.0, `mining.subscribe`;
 T-Rex's `stratum2+tcp`, lolMiner's `--ethstratum ETHV1`) are **not** spoken;
