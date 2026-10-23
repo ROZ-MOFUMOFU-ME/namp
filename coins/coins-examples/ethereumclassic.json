@@ -1,0 +1,44 @@
+{
+    "name": "EthereumClassic",
+    "symbol": "ETC",
+    "algorithm": "etchash",
+    "blockTime": 13,
+    "_comment_epochLength": "ECIP-1099: the Etchash DAG epoch is 60000 blocks, half the Ethash rate, which keeps the DAG under 4 GB for years.",
+    "epochLength": 60000,
+    "_comment_blockRewardSchedule": "ECIP-1017 (5M20): the block reward falls by 20% every 5,000,000 blocks; era n starts at block (n-1)*5000000+1. Uncle rewards are not paid by the pool.",
+    "blockRewardSchedule": [
+        { "height": 0, "reward": 5 },
+        { "height": 5000001, "reward": 4 },
+        { "height": 10000001, "reward": 3.2 },
+        { "height": 15000001, "reward": 2.56 },
+        { "height": 20000001, "reward": 2.048 },
+        { "height": 25000001, "reward": 1.6384 },
+        { "height": 30000001, "reward": 1.31072 },
+        { "height": 35000001, "reward": 1.048576 },
+        { "height": 40000001, "reward": 0.8388608 },
+        { "height": 45000001, "reward": 0.67108864 }
+    ],
+    "explorer": {
+        "txURL": "https://etc.blockscout.com/tx/",
+        "blockURL": "https://etc.blockscout.com/block/",
+        "address": "https://etc.blockscout.com/address/"
+    },
+    "miningTools": [
+        {
+            "name": "lolMiner",
+            "url": "https://github.com/Lolliedieb/lolMiner-releases/releases"
+        },
+        {
+            "name": "Rigel",
+            "url": "https://github.com/rigelminer/rigel/releases"
+        },
+        {
+            "name": "BzMiner",
+            "url": "https://www.bzminer.com/"
+        },
+        {
+            "name": "T-Rex (unmaintained, still common)",
+            "url": "https://github.com/trexminer/t-rex/releases"
+        }
+    ]
+}

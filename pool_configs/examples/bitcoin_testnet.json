@@ -102,6 +102,12 @@
         }
     },
 
+    "_comment_sv2": "Optional Stratum V2 port: add a port with \"sv2\": true and the authority secret from `npm run sv2:keygen` (see pool_configs/examples/bitcoin.json).",
+    "sv2": {
+        "authoritySecretKey": "",
+        "certificateValiditySeconds": 86400
+    },
+
     "poolId": "main",
     "_comment_poolId": "use it for region identification: eu, us, asia or keep default if you have one stratum instance for one coin",
 

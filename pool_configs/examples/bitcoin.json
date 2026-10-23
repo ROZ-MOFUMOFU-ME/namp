@@ -112,7 +112,25 @@
                 "retargetTime": 60,
                 "variancePercent": 30
             }
+        },
+        "3336": {
+            "_comment": "Stratum V2 (Noise-encrypted). Miners connect to stratum2+tcp://host:3336/<authority public key>; Braiins OS, the SRI translator (for V1 miners) and SV2 firmware. Needs sv2.authoritySecretKey below.",
+            "sv2": true,
+            "diff": 262144,
+            "varDiff": {
+                "minDiff": 128,
+                "maxDiff": 268435456,
+                "targetTime": 15,
+                "retargetTime": 60,
+                "variancePercent": 30
+            }
         }
+    },
+
+    "_comment_sv2": "Stratum V2 identity: run `npm run sv2:keygen` once, paste the secret here (keep it private) and publish the public key to miners. The pool signs a fresh certificate per connection, valid certificateValiditySeconds (default 86400).",
+    "sv2": {
+        "authoritySecretKey": "",
+        "certificateValiditySeconds": 86400
     },
 
     "poolId": "main",

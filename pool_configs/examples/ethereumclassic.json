@@ -1,0 +1,59 @@
+{
+    "enabled": false,
+    "coin": "ethereumclassic.json",
+    "_comment_address": "The node's etherbase: every block reward lands here. For payouts the node keystore must hold this key and --http.api must include personal (core-geth), or sign payouts elsewhere.",
+    "address": "0xYourPoolEtherbaseAddress",
+    "rewardRecipients": {
+        "_comment": "Pool fee percentages by address, e.g. \"0xFeeAddress\": 1.0"
+    },
+    "_comment_daemons": "core-geth on the ETC mainnet: geth --classic --http --http.api eth,net,web3,miner --mine --miner.threads=0 --miner.etherbase <address>. See docs/ethash.md.",
+    "daemons": [
+        {
+            "host": "127.0.0.1",
+            "port": 8545,
+            "user": "",
+            "password": ""
+        }
+    ],
+    "paymentProcessing": {
+        "enabled": false,
+        "_comment_paymentMode": "prop (round shares) | solo (finder takes all) | pplns (last-N window, n x block difficulty)",
+        "paymentMode": "pplns",
+        "pplns": {
+            "n": 2
+        },
+        "_comment_minConf": "Confirmations before a block matures. 120 at ~13 s blocks is about 26 minutes; ETC exchanges typically wait longer, the pool only needs the block to be final.",
+        "minConf": 120,
+        "minimumPayment": 0.1,
+        "paymentInterval": 600,
+        "blockCheckInterval": 60,
+        "_comment_accountPassword": "Keystore password for personal_unlockAccount before each payout run.",
+        "accountPassword": ""
+    },
+    "_comment_ports": "diff is the share difficulty in hashes (1 = 1 hash); size it at hashrate x seconds per share. 8003: GPUs (an RTX 4090 does ~130 MH/s on Etchash, ~5e8 at 4 s), varDiff covers 10-500 MH/s rigs. 8004: Etchash ASICs (Antminer E9 Pro 3.7 GH/s, E11 9.5 GH/s, Jasminer X-series) and proxies, fixed at 4e10. Both ports speak the eth-proxy stratum dialect every current miner and ASIC supports.",
+    "ports": {
+        "8003": {
+            "diff": 500000000,
+            "varDiff": {
+                "minDiff": 50000000,
+                "maxDiff": 20000000000,
+                "targetTime": 4,
+                "retargetTime": 60,
+                "variancePercent": 30
+            }
+        },
+        "8004": {
+            "diff": 40000000000,
+            "_comment": "Fixed high-difficulty port for ASICs and farm proxies."
+        }
+    },
+    "banning": {
+        "enabled": true,
+        "time": 600,
+        "invalidPercent": 50,
+        "checkThreshold": 500,
+        "purgeInterval": 300
+    },
+    "connectionTimeout": 600,
+    "blockRefreshInterval": 500
+}
