@@ -5,6 +5,10 @@ generated commit list, this file the summary.
 
 ## Unreleased
 
+- The web UI's "Pool wallet balance" label is translated in the 14
+  languages that showed it in English, and the menu button's label exists
+  in all 20. A test keeps the table complete: same keys and placeholders
+  in every language, and every key the UI asks for.
 - Taproot (`bc1p…`) pool and fee addresses work. bitcoinjs-lib had no ECC
   backend, so turning one into an output script threw at startup; the
   in-tree secp256k1 now provides it. Address-to-script conversion has

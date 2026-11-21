@@ -42,7 +42,7 @@ export default function Header() {
                     <button
                         type="button"
                         onClick={() => setOpen((v) => !v)}
-                        aria-label={t('nav_menu', 'Menu')}
+                        aria-label={t('nav_menu')}
                         aria-expanded={open}
                         className="inline-flex shrink-0 items-center justify-center rounded-md px-3 py-2 text-nav hover:bg-navhover hover:text-white lg:hidden"
                     >
