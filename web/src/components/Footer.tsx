@@ -23,12 +23,14 @@ export default function Footer() {
                         ROZ
                     </a>
                     {t('footer_credits')}{' '}
+                    {/* A proper name, identical in every language, linked to
+                        the license text that actually applies. */}
                     <a
                         target="_blank"
                         rel="noreferrer"
-                        href="https://en.wikipedia.org/wiki/MIT_License"
+                        href="https://github.com/ROZ-MOFUMOFU-ME/namp/blob/main/LICENSE"
                     >
-                        {t('footer_mit_license')}
+                        GNU GPL v2.0
                     </a>
                     .
                 </div>

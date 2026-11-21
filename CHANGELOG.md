@@ -3,6 +3,12 @@
 Releases are tagged `vX.Y.Z` on `main`; the GitHub release carries the
 generated commit list, this file the summary.
 
+## Unreleased
+
+- The web UI footer said NAMP is licensed under the MIT License (wording
+  inherited from the NOMP-era portal). It now names the GNU GPL v2.0 and
+  links to the repository's `LICENSE`.
+
 ## 1.2.0 — 2026-10-24
 
 ### Stratum V2
