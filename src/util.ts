@@ -2,6 +2,29 @@ import crypto from 'crypto';
 import base58 from 'bs58check';
 import * as bitcoin from 'bitcoinjs-lib';
 import zcash from '@exodus/bitcoinjs-lib-zcash';
+import * as secp from './sv2/secp256k1.ts';
+
+// bitcoinjs-lib refuses to build a taproot (bc1p) output script until it has
+// an ECC backend: it checks that the 32-byte witness program is the x
+// coordinate of a point on the curve, so a pool address cannot name an
+// unspendable key. The in-tree secp256k1 provides the two operations it asks
+// for, and initEccLib verifies them against its own vectors on load.
+bitcoin.initEccLib({
+    isXOnlyPoint(p: Uint8Array): boolean {
+        return p.length === 32 && secp.liftX(secp.bytesToBigInt(p)) !== null;
+    },
+    xOnlyPointAddTweak(p: Uint8Array, tweak: Uint8Array) {
+        const point = secp.liftX(secp.bytesToBigInt(p));
+        const t = secp.bytesToBigInt(tweak);
+        if (point === null || t >= secp.N) return null;
+        const sum = secp.pointAdd(point, secp.pointMul(t, secp.G));
+        if (sum === null) return null;
+        return {
+            parity: secp.hasEvenY(sum) ? 0 : 1,
+            xOnlyPubkey: secp.bigIntToBytes(sum.x)
+        };
+    }
+});
 
 export function addressFromEx(
     exAddress: string,

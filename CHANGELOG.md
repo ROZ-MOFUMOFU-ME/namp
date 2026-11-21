@@ -5,6 +5,10 @@ generated commit list, this file the summary.
 
 ## Unreleased
 
+- Taproot (`bc1p…`) pool and fee addresses work. bitcoinjs-lib had no ECC
+  backend, so turning one into an output script threw at startup; the
+  in-tree secp256k1 now provides it. Address-to-script conversion has
+  known-answer tests against an independent decoder.
 - Dependencies refreshed. body-parser 2.4.0 closes GHSA-27r3-jxmh-p828, a
   denial of service through trailing bytes after a compressed request body
   (the website parses every request body with it). i18next 27,

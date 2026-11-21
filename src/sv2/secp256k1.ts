@@ -2,7 +2,8 @@
  * secp256k1 for the Stratum V2 handshake: field and group arithmetic over
  * BigInt, BIP 340 Schnorr signatures (the certificate the pool presents is a
  * Schnorr signature by the authority key) and the x-only ECDH that the
- * Noise NX pattern needs. Node's own ECDH (OpenSSL) does the secret-key
+ * Noise NX pattern needs. util.ts also hands the point arithmetic to
+ * bitcoinjs-lib as its ECC backend, which taproot addresses require. Node's own ECDH (OpenSSL) does the secret-key
  * operations where it can — scalar multiplication by a private key runs in
  * constant time there — and BigInt arithmetic covers everything OpenSSL has
  * no API for: lifting x coordinates, point subtraction for verification,
