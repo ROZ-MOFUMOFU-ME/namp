@@ -5,6 +5,11 @@ generated commit list, this file the summary.
 
 ## Unreleased
 
+- Dependencies refreshed. body-parser 2.4.0 closes GHSA-27r3-jxmh-p828, a
+  denial of service through trailing bytes after a compressed request body
+  (the website parses every request body with it). i18next 27,
+  react-i18next 18 and @exodus/bitcoinjs-lib-zcash 1.0 are new majors. npm
+  no longer needs the `legacy-peer-deps` setting, so `.npmrc` is gone.
 - The web UI footer said NAMP is licensed under the MIT License (wording
   inherited from the NOMP-era portal). It now names the GNU GPL v2.0 and
   links to the repository's `LICENSE`.

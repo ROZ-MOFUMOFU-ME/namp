@@ -47,7 +47,7 @@ server {
 Slightly faster — static files come straight from disk instead of through Node;
 only `/api/` is proxied. The `root` must be the Vite **build output** `web/dist`
 (not `web/src` or `web/public`, which lack the built `index.html` and `assets/`).
-Build it first: `cd web && npm install --legacy-peer-deps && npm run build`.
+Build it first: `npm run build` from the repository root.
 
 ```nginx
 server {

@@ -13,11 +13,9 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential python3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install the whole workspace tree first for better layer caching. npm resolves
-# the workspace graph from the manifests, and the native addon compiles during
-# install, so its sources come along; .npmrc carries the legacy-peer-deps
-# setting the web SPA needs.
-COPY package.json package-lock.json .npmrc binding.gyp ./
+# Install the dependencies first for better layer caching. The native addon
+# compiles during install, so its sources and build recipe come along.
+COPY package.json package-lock.json binding.gyp ./
 COPY native/ ./native/
 RUN npm ci
 
